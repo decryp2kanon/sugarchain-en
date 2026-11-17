@@ -233,7 +233,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>The passphrase entered for the wallet decryption is incorrect. It contains a null character (ie - a zero byte). If the passphrase was set with a version of this software prior to 25.0, please try again with only the characters up to — but not including — the first null character. If this is successful, please set a new passphrase to avoid this issue in the future.</source>
-        <translation type="unfinished">지갑 암호화 해제를 위해 입력된 비밀문구가 정확하지 않습니다. 비밀문구가 공백 문자 (0 바이트)를 포함하고 있습니다. 만약 비밀문구가 25.0 버전 이전의 비트코인 코어 소프트웨어에 의해 설정되었다면, 비밀문구를 첫 공백 문자 이전까지 입력해보세요. 이렇게 해서 성공적으로 입력되었다면, 차후 이런 문제가 발생하지 않도록 비밀문구를 새로이 설정해 주세요.</translation>
+        <translation type="unfinished">지갑 복호화에 입력한 비밀문구가 올바르지 않습니다. 비밀문구에 널 문자(값이 0인 바이트)가 포함되어 있습니다. 이 소프트웨어의 25.0 이전 버전에서 설정한 비밀문구라면, 첫 번째 널 문자 바로 앞까지만 입력하여 다시 시도해 주세요. 널 문자 자체는 포함하지 마세요. 성공하면 같은 문제가 다시 발생하지 않도록 새 비밀문구를 설정해 주세요.</translation>
     </message>
     <message>
         <source>Wallet passphrase was successfully changed.</source>
@@ -245,7 +245,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>The old passphrase entered for the wallet decryption is incorrect. It contains a null character (ie - a zero byte). If the passphrase was set with a version of this software prior to 25.0, please try again with only the characters up to — but not including — the first null character.</source>
-        <translation type="unfinished">지갑 암호화 해제를 위해 입력된 예전 비밀문구가 정확하지 않습니다. 비밀문구가 공백 문자 (0 바이트)를 포함하고 있습니다. 만약 비밀문구가 25.0 버전 이전의 비트코인 코어 소프트웨어에 의해 설정되었다면, 비밀문구를 첫 공백 문자 이전까지 입력해보세요.</translation>
+        <translation type="unfinished">지갑 복호화에 입력한 기존 비밀문구가 올바르지 않습니다. 비밀문구에 널 문자(값이 0인 바이트)가 포함되어 있습니다. 이 소프트웨어의 25.0 이전 버전에서 설정한 비밀문구라면, 첫 번째 널 문자 바로 앞까지만 입력하여 다시 시도해 주세요. 널 문자 자체는 포함하지 마세요.</translation>
     </message>
     <message>
         <source>Warning: The Caps Lock key is on!</source>
@@ -3638,7 +3638,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
     </message>
     <message>
         <source>Generated coins must mature %1 blocks before they can be spent. When you generated this block, it was broadcast to the network to be added to the block chain. If it fails to get into the chain, its state will change to "not accepted" and it won't be spendable. This may occasionally happen if another node generates a block within a few seconds of yours.</source>
-        <translation type="unfinished">신규 채굴된 코인이 사용되기 위해서는 %1 개의 블록이 경과되어야 합니다. 블록을 생성할 때 블록체인에 추가되도록 네트워크에 전파되는 과정을 거치는데, 블록체인에 포함되지 못하고 실패한다면 해당 블록의 상태는 '미승인'으로 표현되고 비트코인 또한 사용될 수 없습니다. 이 현상은 다른 노드가 비슷한 시간대에 동시에 블록을 생성할 때 종종 발생할 수 있습니다.</translation>
+        <translation type="unfinished">채굴한 코인은 %1개의 블록이 지난 뒤 사용할 수 있습니다. 생성한 블록은 블록체인에 추가되도록 네트워크에 전파됩니다. 블록체인에 포함되지 못하면 상태가 ‘미승인’으로 바뀌고 해당 코인을 사용할 수 없습니다. 다른 노드가 거의 같은 시각에 블록을 생성하면 이런 일이 발생할 수 있습니다.</translation>
     </message>
     <message>
         <source>Debug information</source>
@@ -4155,7 +4155,7 @@ Go to File &gt; Open Wallet to load a wallet.
     </message>
     <message>
         <source>Rename of '%s' -&gt; '%s' failed. You should resolve this by manually moving or deleting the invalid snapshot directory %s, otherwise you will encounter the same error again on the next startup.</source>
-        <translation type="unfinished">디렉터리 이름 변경 '%s' -&gt; '%s' 에 실패했습니다. 잘못된 스냅샷 디렉터리 %s를 직접 이동하거나 삭제하여 문제를 해결해야 합니다. 그렇지 않으면 비트코인 코어를 시작할 때 동일한 오류가 다시 발생할 것입니다.</translation>
+        <translation type="unfinished">'%s'에서 '%s'(으)로 이름을 바꾸지 못했습니다. 잘못된 스냅샷 디렉터리 %s를 직접 이동하거나 삭제하여 해결해야 합니다. 해결하지 않으면 다음 시작 때 같은 오류가 다시 발생합니다.</translation>
     </message>
     <message>
         <source>SQLiteDatabase: Unknown sqlite wallet schema version %d. Only version %d is supported</source>

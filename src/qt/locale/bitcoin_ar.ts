@@ -326,7 +326,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Proxy is &lt;b&gt;enabled&lt;/b&gt;: %1</source>
-        <translation type="unfinished">%1 اتصال نشط بشبكة البيتكوين</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Send coins to a Sugarchain address</source>
@@ -1062,7 +1062,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Enable coin &amp;control features</source>
-        <translation type="unfinished">‫تفعيل ميزة &amp;التحكم بوحدات البتكوين‬</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>If you disable the spending of unconfirmed change, the change from a transaction cannot be used until that transaction has at least one confirmation. This also affects how your balance is computed.</source>
@@ -1163,7 +1163,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Choose the default subdivision unit to show in the interface and when sending coins.</source>
-        <translation type="unfinished">‫اختر وحدة التقسيم الفرعية الافتراضية للعرض في الواجهة وعند إرسال البتكوين.‬</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Third-party URLs (e.g. a block explorer) that appear in the transactions tab as context menu items. %s in the URL is replaced by transaction hash. Multiple URLs are separated by vertical bar |.</source>
@@ -1175,7 +1175,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
-        <translation type="unfinished">‫ما اذا أردت إظهار ميزات التحكم في وحدات البتكوين أم لا.‬</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Connect to the Sugarchain network through a separate SOCKS5 proxy for Tor onion services.</source>

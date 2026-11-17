@@ -1061,7 +1061,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     <name>MigrateWalletActivity</name>
     <message>
         <source>Migrate wallet</source>
-        <translation type="unfinished">بٹ کوائن کے لیے بٹوے کو منتقل کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Migrating the wallet will convert this wallet to one or more descriptor wallets. A new wallet backup will need to be made.
@@ -1088,11 +1088,11 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Migration failed</source>
-        <translation type="unfinished">بٹ کوائن کے لیے منتقلی ناکام ہوئی</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Migration Successful</source>
-        <translation type="unfinished">بٹ کوائن کے لیے منتقلی کامیاب ہوئی</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1131,7 +1131,7 @@ The migration process will create a backup of the wallet before migrating. This 
     <message>
         <source>Restore wallet message</source>
         <extracomment>Title of message box which is displayed when the wallet is successfully restored.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے بٹوے کو بحال کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1161,7 +1161,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>You are one step away from creating your new wallet!</source>
-        <translation type="unfinished">آپ بٹ کوائن کے لیے نئے بٹوے بنانے سے صرف ایک قدم دور ہیں!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Please provide a name and, if desired, enable any advanced options</source>
@@ -1366,7 +1366,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Choose data directory</source>
-        <translation type="unfinished">ٹ کوائن کے لیے ڈیٹا ڈائریکٹری منتخب کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <source>(sufficient to restore backups %n day(s) old)</source>
@@ -1465,7 +1465,7 @@ The migration process will create a backup of the wallet before migrating. This 
     <message>
         <source>Maximum database cache size. Make sure you have enough RAM. A larger cache can contribute to faster sync, after which the benefit is less pronounced for most use cases. Lowering the cache size will reduce memory usage. Unused mempool memory is shared for this cache.</source>
         <extracomment>Tooltip text for Options window setting that sets the size of the database cache. Explains the corresponding effects of increasing/decreasing this value.</extracomment>
-        <translation type="unfinished">"بٹ کوائن کے لیے زیادہ سے زیادہ ڈیٹابیس کیش کا سائز۔ یقینی بنائیں کہ آپ کے پاس کافی ریم ہے۔ بڑا کیش تیز سنک کرنے میں مدد کر سکتا ہے، لیکن اس کے بعد زیادہ تر استعمال کے لیے فائدہ کم ہوتا ہے۔ کیش کا سائز کم کرنے سے میموری کا استعمال کم ہوگا۔ غیر استعمال شدہ میمپول میموری اس کیش کے لیے شیئر کی جاتی ہے</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Size of &amp;database cache</source>
@@ -1481,7 +1481,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Map port using PCP or NA&amp;T-PMP</source>
-        <translation type="unfinished">بٹ کوائن کے لیے PCP یا NAT-PMP کا استعمال کرتے ہوئے پورٹ میپ کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>IP address of the proxy (e.g. IPv4: 127.0.0.1 / IPv6: ::1)</source>
@@ -1497,7 +1497,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Font in the Overview tab: </source>
-        <translation type="unfinished">بٹ کوائن کے لیے اوور ویو ٹیب میں فونٹ"</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open Configuration File</source>
@@ -1525,27 +1525,26 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>MiB</source>
-        <translation type="unfinished">بٹ کوائن کے لیے بلاک اسٹوریج کو میبی بائٹ تک پرون کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Set the number of script verification threads. Negative values correspond to the number of cores you want to leave free to the system.</source>
         <extracomment>Tooltip text for Options window setting that sets the number of script verification threads. Explains that negative values mean to leave these many cores free to the system.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے اسکرپٹ تصدیق کے دھاگوں کی تعداد سیٹ کریں۔ منفی اقدار اس تعداد کے مساوی ہیں جو آپ سسٹم کے لیے آزاد رکھنا چاہتے ہیں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>(0 = auto, &lt;0 = leave that many cores free)</source>
-        <translation type="unfinished">(بٹ کوائن کے لیے) 0 = خودکار، &lt;0 = اتنی کورز کو سسٹم کے لیے آزاد
- چھوڑیں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>This allows you or a third party tool to communicate with the node through command-line and JSON-RPC commands.</source>
         <extracomment>Tooltip text for Options window setting that enables the RPC server.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے اس سے آپ یا کوئی تیسری پارٹی کا ٹول نوڈ کے ساتھ کمانڈ لائن اور JSON-RPC کمانڈز کے ذریعے رابطہ کر سکتا ہے۔"</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Whether to set subtract fee from amount as default or not.</source>
         <extracomment>Tooltip text for Options window setting that sets subtracting the fee from a sending amount as default.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے کیا فیس کو رقم سے خودکار طور پر منہا کرنا ہے یا نہیں۔</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Subtract &amp;fee from amount by default</source>

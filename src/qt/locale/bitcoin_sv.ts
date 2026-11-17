@@ -2559,7 +2559,7 @@ Om den här plånboken innehåller lösbara</translation>
     <name>SendCoinsDialog</name>
     <message>
         <source>Send Coins</source>
-        <translation type="unfinished">Skicka Bitcoins</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Coin Control Features</source>
@@ -3468,7 +3468,7 @@ Gå till Fil &gt; Öppna plånbok för att läsa in en plånbok.
     <name>WalletModel</name>
     <message>
         <source>Send Coins</source>
-        <translation type="unfinished">Skicka Bitcoins</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Fee bump error</source>
@@ -3748,7 +3748,7 @@ Gå till Fil &gt; Öppna plånbok för att läsa in en plånbok.
     </message>
     <message>
         <source>Insufficient funds</source>
-        <translation type="unfinished">Otillräckligt med bitcoins</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Invalid -onion address or hostname: '%s'</source>

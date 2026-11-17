@@ -3270,7 +3270,7 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
     </message>
     <message>
         <source>Confirm send coins</source>
-        <translation type="unfinished">Vátta bitcoin flyting</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The recipient address is not valid. Please recheck.</source>

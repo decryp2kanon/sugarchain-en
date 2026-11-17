@@ -1572,7 +1572,7 @@ Això és ideal per a carteres de mode només lectura.</translation>
     </message>
     <message>
         <source>Full path to a %1 compatible script (e.g. C:\Downloads\hwi.exe or /Users/you/Downloads/hwi.py). Beware: malware can steal your coins!</source>
-        <translation type="unfinished">Camí complet a %1 script compatible amb Bitcoin Core (per exemple, C:\Downloads\hwi.exe o /Users/you/Downloads/hwi.py). Aneu amb compte: el programari maliciós pot robar-vos les monedes!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Automatically open the Sugarchain client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>

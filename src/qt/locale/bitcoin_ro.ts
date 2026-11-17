@@ -1658,7 +1658,7 @@ Semnarea este posibilă numai cu adrese de tip "legacy".</translation>
     </message>
     <message>
         <source>Choose the default subdivision unit to show in the interface and when sending coins.</source>
-        <translation type="unfinished">Alegeţi subdiviziunea folosită la afişarea interfeţei şi la trimiterea de bitcoin.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
@@ -1727,7 +1727,7 @@ Semnarea este posibilă numai cu adrese de tip "legacy".</translation>
     </message>
     <message>
         <source>The supplied proxy address is invalid.</source>
-        <translation type="unfinished">Adresa bitcoin pe care aţi specificat-o nu este validă.</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

@@ -704,7 +704,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Migrate a wallet</source>
-        <translation type="unfinished">הסבת ארנק לביטקוין</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>

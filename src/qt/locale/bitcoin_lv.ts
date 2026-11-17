@@ -43,11 +43,11 @@
     </message>
     <message>
         <source>Choose the address to send coins to</source>
-        <translation type="unfinished">Izvēlies adresi uz kuru sūtīt bitcoins</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Choose the address to receive coins with</source>
-        <translation type="unfinished">Izvēlies adresi ar kuru saņemt bitcoins</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>C&amp;hoose</source>
@@ -789,7 +789,7 @@
     </message>
     <message>
         <source>Enable coin &amp;control features</source>
-        <translation type="unfinished">Ieslēgt bitcoin &amp;kontroles funkcijas</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Spend unconfirmed change</source>
@@ -837,11 +837,11 @@
     </message>
     <message>
         <source>Choose the default subdivision unit to show in the interface and when sending coins.</source>
-        <translation type="unfinished">Izvēlēties dalījuma vienību pēc noklusēšanas, ko izmantot interfeisā un nosūtot bitkoinus.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Whether to show coin control features or not.</source>
-        <translation type="unfinished">Vai rādīt Bitcoin kontroles funkcijas vai nē.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;OK</source>
@@ -1174,11 +1174,11 @@
     <name>SendCoinsDialog</name>
     <message>
         <source>Send Coins</source>
-        <translation type="unfinished">Sūtīt Bitkoinus</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Coin Control Features</source>
-        <translation type="unfinished">Bitcoin Kontroles Funkcijas</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>automatically selected</source>
@@ -1462,7 +1462,7 @@
     <name>WalletModel</name>
     <message>
         <source>Send Coins</source>
-        <translation type="unfinished">Sūtīt Bitkoinus</translation>
+        <translation type="unfinished"></translation>
     </message>
     </context>
 <context>
@@ -1497,7 +1497,7 @@
     </message>
     <message>
         <source>Insufficient funds</source>
-        <translation type="unfinished">Nepietiek bitkoinu</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Signing transaction failed</source>

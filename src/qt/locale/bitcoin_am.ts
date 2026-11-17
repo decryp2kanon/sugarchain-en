@@ -140,15 +140,15 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Encrypt wallet</source>
-        <translation type="unfinished">የቢትኮይን ቦርሳውን አመስጥር</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>This operation needs your wallet passphrase to unlock the wallet.</source>
-        <translation type="unfinished">ይህ ክንዋኔ የቢትኮይን ቦርሳዎን ለመክፈት የቦርሳዎ ይለፍ-ሐረግ ያስፈልገዋል::</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Unlock wallet</source>
-        <translation type="unfinished">የቢትኮይን ቦርሳውን ክፈት</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Change passphrase</source>
@@ -156,7 +156,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Confirm wallet encryption</source>
-        <translation type="unfinished">የቢትኮይን ቦርሳዎን ማመስጠር ያረጋግጡ</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>

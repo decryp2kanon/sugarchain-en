@@ -47,11 +47,11 @@
     </message>
     <message>
         <source>Choose the address to send coins to</source>
-        <translation type="unfinished">Επιλέξτε τη διεύθυνση στην οποία θα στείλετε bitcoin</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Choose the address to receive coins with</source>
-        <translation type="unfinished">Επιλέξτε τη διεύθυνση παραλαβής bitcoin</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>C&amp;hoose</source>
@@ -1522,7 +1522,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Full path to a %1 compatible script (e.g. C:\Downloads\hwi.exe or /Users/you/Downloads/hwi.py). Beware: malware can steal your coins!</source>
-        <translation type="unfinished">Πλήρης διαδρομή ενός script συμβατού με το %1 (π.χ.: C:\Downloads\hwi.exe ή /Users/you/Downloads/hwi.py). Προσοχή: ένα κακόβουλο λογισμικό μπορεί να κλέψει τα bitcoin σας!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Automatically open the Sugarchain client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
@@ -1717,7 +1717,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Choose the default subdivision unit to show in the interface and when sending coins.</source>
-        <translation type="unfinished">Διαλέξτε την προεπιλεγμένη υποδιαίρεση που θα εμφανίζεται όταν στέλνετε bitcoins.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Third-party URLs (e.g. a block explorer) that appear in the transactions tab as context menu items. %s in the URL is replaced by transaction hash. Multiple URLs are separated by vertical bar |.</source>
@@ -2401,7 +2401,7 @@ For more information on using this console, type %6.
     <name>SendCoinsDialog</name>
     <message>
         <source>Send Coins</source>
-        <translation type="unfinished">Αποστολή bitcoin</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Coin Control Features</source>
@@ -2689,7 +2689,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
     </message>
     <message>
         <source>Confirm send coins</source>
-        <translation type="unfinished"> Επιβεβαιώστε την αποστολή bitcoin</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <source>Estimated to begin confirmation within %n block(s).</source>
@@ -2949,7 +2949,7 @@ Go to File &gt; Open Wallet to load a wallet.
     <name>WalletModel</name>
     <message>
         <source>Send Coins</source>
-        <translation type="unfinished">Αποστολή bitcoin</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Fee bump error</source>

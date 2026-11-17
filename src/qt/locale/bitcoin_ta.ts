@@ -47,7 +47,7 @@
     </message>
     <message>
         <source>Choose the address to receive coins with</source>
-        <translation type="unfinished">பிட்காயின்களை பெற முகவரியைத் தேர்வுசெய்யவும்</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>C&amp;hoose</source>
@@ -1908,7 +1908,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>&amp;Create new receiving address</source>
-        <translation type="unfinished">&amp;புதிய பிட்காயின் பெறும் முகவரியை உருவாக்கு</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Clear all fields of the form.</source>
@@ -2198,7 +2198,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Confirm send coins</source>
-        <translation type="unfinished">அனுப்பும் பிட்காயின்களை உறுதிப்படுத்தவும்</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The recipient address is not valid. Please recheck.</source>
