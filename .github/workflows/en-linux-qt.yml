@@ -1,0 +1,82 @@
+name: En Linux Qt
+
+on:
+  pull_request:
+    branches: [en]
+  push:
+    branches: ['**']
+    tags-ignore: ['**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  linux-qt:
+    name: Linux GUI, wallet and IPC
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      QT_QPA_PLATFORM: minimal
+      CTEST_OUTPUT_ON_FAILURE: 1
+    steps:
+      - name: Check out source
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends -y \
+            build-essential cmake ninja-build pkgconf python3 \
+            libevent-dev libboost-dev libsqlite3-dev capnproto libcapnp-dev \
+            qt6-base-dev qt6-tools-dev qt6-l10n-tools qt6-tools-dev-tools \
+            libqrencode-dev libgl-dev libzmq3-dev systemtap-sdt-dev
+
+      - name: Configure GUI, wallet and IPC tests
+        run: |
+          cmake -S . -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DBUILD_GUI=ON -DBUILD_TESTS=ON -DBUILD_GUI_TESTS=ON \
+            -DENABLE_WALLET=ON -DENABLE_IPC=ON -DBUILD_BENCH=OFF \
+            -DWITH_ZMQ=ON -DWITH_USDT=ON
+
+      - name: Build applications and Qt tests
+        run: |
+          cmake --build build --parallel 2 --target \
+            bitcoind bitcoin-cli bitcoin bitcoin-node bitcoin-gui bitcoin-qt \
+            bitcoin-wallet test_bitcoin-qt
+
+      - name: Run the complete Qt test executable
+        env:
+          XDG_CONFIG_HOME: ${{ runner.temp }}/en-qt/config
+          XDG_DATA_HOME: ${{ runner.temp }}/en-qt/data
+          XDG_CACHE_HOME: ${{ runner.temp }}/en-qt/cache
+          XDG_RUNTIME_DIR: ${{ runner.temp }}/en-qt/runtime
+        run: |
+          mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
+          install -d -m 700 "$XDG_RUNTIME_DIR"
+          ctest --test-dir build --output-on-failure --no-tests=error \
+            -R '^test_bitcoin-qt$' --output-junit qt-results.xml
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: en-linux-qt-diagnostics
+          path: |
+            build/CMakeCache.txt
+            build/CMakeFiles/CMakeConfigureLog.yaml
+            build/Testing/Temporary/
+            build/qt-results.xml
+          if-no-files-found: ignore
+          retention-days: 7
