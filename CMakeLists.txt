@@ -64,7 +64,7 @@ endif()
 
 set(COPYRIGHT_HOLDERS "The %s developers")
 set(COPYRIGHT_HOLDERS_FINAL "The Bitcoin Core developers")
-set(CLIENT_BUGREPORT "https://github.com/sugarchain-project/sugarchain/issues")
+set(CLIENT_BUGREPORT "https://github.com/decryp2kanon/Sugarchain-En/issues")
 
 #=============================
 # Language setup

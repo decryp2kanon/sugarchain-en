@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: Sugarchain bug reports
-    url: https://github.com/sugarchain-project/sugarchain/issues
+    url: https://github.com/decryp2kanon/Sugarchain-En/issues
     about: Report a Sugarchain issue
   - name: Sugarchain contact and community
     url: https://t.me/sugarchain
