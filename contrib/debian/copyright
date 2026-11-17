@@ -1,8 +1,12 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: Bitcoin
-Upstream-Contact: Satoshi Nakamoto <satoshin@gmx.com>
- irc://#bitcoin-core-dev@libera.chat
-Source: https://github.com/bitcoin/bitcoin
+Upstream-Name: Sugarchain En
+Upstream-Contact: https://github.com/decryp2kanon/sugarchain-en/issues
+Source: https://github.com/decryp2kanon/sugarchain-en
+Comment: This package is the Sugarchain En fork of Bitcoin Core.
+ The original Bitcoin source is https://github.com/bitcoin/bitcoin.
+ Its original upstream contacts were Satoshi Nakamoto <satoshin@gmx.com>
+ and irc://#bitcoin-core-dev@libera.chat. The original copyright notices
+ and license terms are retained below.
 
 Files: *
 Copyright: 2009-2026, Bitcoin Core Developers
@@ -77,6 +81,7 @@ Files: src/qt/res/icons/sugarchain.*
        share/pixmaps/sugarchain*
        share/pixmaps/nsis-header.bmp
        share/pixmaps/nsis-wizard.bmp
+       doc/sugarchain_logo_doxygen.png
 Copyright: 2018-2020, The Sugarchain Yumekawa developers
 License: Expat
 Comment: Official assets from https://github.com/sugarchain-project/sugarchain
