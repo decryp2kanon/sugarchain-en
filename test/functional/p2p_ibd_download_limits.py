@@ -16,7 +16,7 @@ class IBDDownloadLimitsTest(P2PIBDStallingTest):
     def set_test_params(self):
         super().set_test_params()
         self.supports_cli = False
-        self.extra_args = [['-conf=bitcoin.conf', '-disablewallet=1',
+        self.extra_args = [['-conf=sugarchain.conf', '-disablewallet=1',
                             '-maxibdblocksinflight=' + self.options.inflight_limit]]
 
     def run_test(self):
