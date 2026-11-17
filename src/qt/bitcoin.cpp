@@ -230,9 +230,10 @@ BitcoinApplication::~BitcoinApplication()
 }
 
 #ifdef ENABLE_WALLET
-void BitcoinApplication::createPaymentServer()
+bool BitcoinApplication::createPaymentServer()
 {
     paymentServer = new PaymentServer(this);
+    return paymentServer->isListening();
 }
 #endif
 
@@ -632,13 +633,17 @@ int GuiMain(int argc, char* argv[])
     // of the server.
     // - Do this after creating app and setting up translations, so errors are
     // translated properly.
-    if (PaymentServer::ipcSendCommandLine())
-        exit(EXIT_SUCCESS);
+    QString payment_error;
+    if (PaymentServer::ipcSendCommandLine(payment_error)) return EXIT_SUCCESS;
+    if (!payment_error.isEmpty()) {
+        QMessageBox::critical(nullptr, CLIENT_NAME, payment_error);
+        return EXIT_FAILURE;
+    }
 
     // Start up the payment server early, too, so impatient users that click on
     // sugarchain: links repeatedly have their payment requests routed to this process:
     if (WalletModel::isWalletEnabled()) {
-        app.createPaymentServer();
+        if (!app.createPaymentServer()) return EXIT_FAILURE;
     }
 #endif // ENABLE_WALLET
 

@@ -31,6 +31,7 @@ import_plugins(test_bitcoin-qt)
 if(ENABLE_WALLET)
   target_sources(test_bitcoin-qt
     PRIVATE
+      paymentipctests.cpp
       addressbooktests.cpp
       wallettests.cpp
       ../../wallet/test/wallet_test_fixture.cpp

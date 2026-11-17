@@ -7,6 +7,7 @@
 #include <qt/bitcoinunits.h>
 #include <qt/guiutil.h>
 #include <qt/optionsmodel.h>
+#include <qt/paymentipc.h>
 
 #include <chainparams.h>
 #include <common/args.h>
@@ -21,6 +22,7 @@
 
 #include <QApplication>
 #include <QByteArray>
+#include <QCryptographicHash>
 #include <QDataStream>
 #include <QDebug>
 #include <QFile>
@@ -29,10 +31,11 @@
 #include <QList>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QLockFile>
+#include <QStandardPaths>
 #include <QStringList>
 #include <QUrlQuery>
 
-const int BITCOIN_IPC_CONNECT_TIMEOUT = 1000; // milliseconds
 const QString BITCOIN_IPC_PREFIX("sugarchain:");
 
 //
@@ -42,15 +45,7 @@ const QString BITCOIN_IPC_PREFIX("sugarchain:");
 //
 static QString ipcServerName()
 {
-    QString name("SugarchainKomorebi");
-
-    // Append a simple hash of the datadir
-    // Note that gArgs.GetDataDirNet() returns a different path
-    // for -testnet versus main net
-    QString ddir(GUIUtil::PathToQString(gArgs.GetDataDirNet()));
-    name.append(QString::number(qHash(ddir)));
-
-    return name;
+    return PaymentIpcServerName(GUIUtil::PathToQString(gArgs.GetDataDirNet()));
 }
 
 //
@@ -89,37 +84,12 @@ void PaymentServer::ipcParseCommandLine(int argc, char* argv[])
 // and the items in savedPaymentRequest will be handled
 // when uiReady() is called.
 //
-bool PaymentServer::ipcSendCommandLine()
+bool PaymentServer::ipcSendCommandLine(QString& error)
 {
-    bool fResult = false;
-    for (const QString& r : savedPaymentRequests)
-    {
-        QLocalSocket* socket = new QLocalSocket();
-        socket->connectToServer(ipcServerName(), QIODevice::WriteOnly);
-        if (!socket->waitForConnected(BITCOIN_IPC_CONNECT_TIMEOUT))
-        {
-            delete socket;
-            socket = nullptr;
-            return false;
-        }
-
-        QByteArray block;
-        QDataStream out(&block, QIODevice::WriteOnly);
-        out.setVersion(QDataStream::Qt_4_0);
-        out << r;
-        out.device()->seek(0);
-
-        socket->write(block);
-        socket->flush();
-        socket->waitForBytesWritten(BITCOIN_IPC_CONNECT_TIMEOUT);
-        socket->disconnectFromServer();
-
-        delete socket;
-        socket = nullptr;
-        fResult = true;
-    }
-
-    return fResult;
+    const QString datadir = GUIUtil::PathToQString(gArgs.GetDataDirNet());
+    const auto result = SendPaymentIpc({PaymentIpcServerName(datadir), PaymentIpcServerName(datadir, true)}, savedPaymentRequests, error);
+    if (result == PaymentIpcResult::SENT) savedPaymentRequests.clear();
+    return result == PaymentIpcResult::SENT;
 }
 
 PaymentServer::PaymentServer(QObject* parent, bool startLocalServer)
@@ -131,27 +101,31 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer)
     if (parent)
         parent->installEventFilter(this);
 
-    QString name = ipcServerName();
-
-    // Clean up old socket leftover from a crash:
-    QLocalServer::removeServer(name);
-
-    if (startLocalServer)
-    {
+    if (startLocalServer) {
+        const QString name = ipcServerName();
+        const QByteArray id = QCryptographicHash::hash(name.toUtf8(), QCryptographicHash::Sha256).toHex();
+        const QString lock_path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) +
+                                  QStringLiteral("/Sugarchain/.en-ipc/") + QString::fromLatin1(id) + QStringLiteral(".lock");
         uriServer = new QLocalServer(this);
-
-        if (!uriServer->listen(name)) {
-            // constructor is called early in init, so don't use "Q_EMIT message()" here
-            QMessageBox::critical(nullptr, tr("Payment request error"),
-                tr("Cannot start sugarchain: click-to-pay handler"));
-        }
-        else {
+        QString error;
+        if (!ListenPaymentIpc(*uriServer, name, lock_path, ipcClaim, error)) {
+            QMessageBox::critical(nullptr, tr("Payment request error"), error);
+        } else {
             connect(uriServer, &QLocalServer::newConnection, this, &PaymentServer::handleURIConnection);
         }
     }
 }
 
-PaymentServer::~PaymentServer() = default;
+PaymentServer::~PaymentServer()
+{
+    // Close/remove our socket before releasing the lifetime startup claim.
+    delete uriServer;
+}
+
+bool PaymentServer::isListening() const
+{
+    return uriServer && uriServer->isListening();
+}
 
 //
 // OSX-specific way of handling sugarchain: URIs
@@ -240,22 +214,23 @@ void PaymentServer::handleURIOrFile(const QString& s)
 
 void PaymentServer::handleURIConnection()
 {
-    QLocalSocket *clientConnection = uriServer->nextPendingConnection();
-
-    while (clientConnection->bytesAvailable() < (int)sizeof(quint32))
-        clientConnection->waitForReadyRead();
-
-    connect(clientConnection, &QLocalSocket::disconnected, clientConnection, &QLocalSocket::deleteLater);
-
-    QDataStream in(clientConnection);
-    in.setVersion(QDataStream::Qt_4_0);
-    if (clientConnection->bytesAvailable() < (int)sizeof(quint16)) {
-        return;
-    }
-    QString msg;
-    in >> msg;
-
-    handleURIOrFile(msg);
+    QLocalSocket* client = uriServer->nextPendingConnection();
+    connect(client, &QLocalSocket::disconnected, client, &QLocalSocket::deleteLater);
+    const auto read_request = [this, client] {
+        QDataStream in(client);
+        in.setVersion(QDataStream::Qt_4_0);
+        in.startTransaction();
+        QString request;
+        in >> request;
+        if (!in.commitTransaction()) return;
+        // A connection carries one request, matching the legacy protocol.
+        client->disconnect(this);
+        handleURIOrFile(request);
+        client->disconnectFromServer();
+        client->deleteLater();
+    };
+    connect(client, &QLocalSocket::readyRead, this, read_request);
+    read_request();
 }
 
 void PaymentServer::setOptionsModel(OptionsModel *_optionsModel)

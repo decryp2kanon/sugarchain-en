@@ -40,7 +40,7 @@ public:
 
 #ifdef ENABLE_WALLET
     /// Create payment server
-    void createPaymentServer();
+    bool createPaymentServer();
 #endif
     /// parameter interaction/setup based on rules
     void parameterSetup();

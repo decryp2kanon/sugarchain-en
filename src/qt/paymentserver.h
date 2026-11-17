@@ -37,6 +37,8 @@
 #include <QObject>
 #include <QString>
 
+#include <memory>
+
 class OptionsModel;
 
 namespace interfaces {
@@ -47,6 +49,7 @@ QT_BEGIN_NAMESPACE
 class QApplication;
 class QByteArray;
 class QLocalServer;
+class QLockFile;
 class QUrl;
 QT_END_NAMESPACE
 
@@ -66,11 +69,12 @@ public:
     // process.
     // Note: if a payment request is given, SelectParams(MAIN/TESTNET)
     // will be called so we startup in the right mode.
-    static bool ipcSendCommandLine();
+    static bool ipcSendCommandLine(QString& error);
 
     // parent should be QApplication object
     explicit PaymentServer(QObject* parent, bool startLocalServer = true);
     ~PaymentServer();
+    bool isListening() const;
 
     // OptionsModel is used for getting proxy settings and display unit
     void setOptionsModel(OptionsModel *optionsModel);
@@ -99,6 +103,7 @@ protected:
     bool eventFilter(QObject *object, QEvent *event) override;
 
 private:
+    std::unique_ptr<QLockFile> ipcClaim;
     bool saveURIs{true}; // true during startup
     QLocalServer* uriServer{nullptr};
     OptionsModel* optionsModel{nullptr};
