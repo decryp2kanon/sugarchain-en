@@ -29,6 +29,7 @@ target_link_libraries(test_bitcoin-qt
 import_plugins(test_bitcoin-qt)
 
 if(ENABLE_WALLET)
+  target_link_libraries(test_bitcoin-qt Qt6::Network)
   target_sources(test_bitcoin-qt
     PRIVATE
       paymentipctests.cpp
