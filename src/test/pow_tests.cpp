@@ -14,7 +14,7 @@
 
 BOOST_FIXTURE_TEST_SUITE(pow_tests, BasicTestingSetup)
 
-// These historical Bitcoin retarget vectors must not use Komorebi's mainnet
+// These historical Bitcoin retarget vectors must not use Sugarchain En's mainnet
 // parameters. Keep the original expected results and explicitly select the
 // Bitcoin Core v31 mainnet PoW rules for these algorithm tests.
 static Consensus::Params BitcoinMainnetPowParams()

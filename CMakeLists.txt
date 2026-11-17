@@ -26,7 +26,7 @@ get_directory_property(precious_variables CACHE_VARIABLES)
 #=============================
 # Project / Package metadata
 #=============================
-set(CLIENT_NAME "Sugarchain Komorebi")
+set(CLIENT_NAME "Sugarchain En")
 set(CLIENT_VERSION_MAJOR 31)
 set(CLIENT_VERSION_MINOR 1)
 set(CLIENT_VERSION_BUILD 0)
@@ -50,9 +50,9 @@ set(CMAKE_TRY_COMPILE_PLATFORM_VARIABLES
   CMAKE_CXX_LINK_EXECUTABLE
 )
 
-project(SugarchainKomorebi
+project(SugarchainEn
   VERSION ${CLIENT_VERSION_MAJOR}.${CLIENT_VERSION_MINOR}.${CLIENT_VERSION_BUILD}
-  DESCRIPTION "Sugarchain Komorebi client software"
+  DESCRIPTION "Sugarchain En client software"
   HOMEPAGE_URL "https://sugarchain.org/"
   LANGUAGES NONE
 )

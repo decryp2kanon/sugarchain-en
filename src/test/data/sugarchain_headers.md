@@ -64,7 +64,7 @@ target immediately outside the averaging interval must have no effect.
 
 The existing Bitcoin retarget vectors in `pow_tests.cpp` keep their original
 expected results and explicitly use Bitcoin v31 mainnet PoW parameters instead
-of Komorebi mainnet parameters. Chain-parameter sanity tests check overflow for
+of Sugarchain En mainnet parameters. Chain-parameter sanity tests check overflow for
 the selected algorithm: SugarShield's target sum and divide-then-multiply path,
 or Bitcoin's multiply-then-divide retarget path.
 

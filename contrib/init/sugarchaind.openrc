@@ -18,7 +18,7 @@ BITCOIND_BIN=${BITCOIND_BIN:-/usr/bin/sugarchaind}
 BITCOIND_NICE=${BITCOIND_NICE:-${NICELEVEL:-0}}
 BITCOIND_OPTS="${BITCOIND_OPTS:-${BITCOIN_OPTS}}"
 
-name="Sugarchain Komorebi Daemon"
+name="Sugarchain En Daemon"
 description="Sugarchain cryptocurrency P2P network daemon"
 
 command="/usr/bin/sugarchaind"
