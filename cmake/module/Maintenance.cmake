@@ -32,6 +32,11 @@ function(add_windows_deploy_target)
     #       See https://cmake.org/cmake/help/latest/cpack_gen/nsis.html
     include(GenerateSetupNsi)
     generate_setup_nsi()
+    # Release scripts must follow the configured client version, which can
+    # differ from the Git-derived source archive version (including RCs).
+    file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/windows-installer-path.txt
+      CONTENT "${PROJECT_BINARY_DIR}/Sugarchain-En-${CLIENT_VERSION_STRING}-win64-setup.exe\n"
+    )
     add_custom_command(
       OUTPUT ${PROJECT_BINARY_DIR}/Sugarchain-En-${CLIENT_VERSION_STRING}-win64-setup.exe
       COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/release
@@ -74,6 +79,9 @@ function(add_macos_deploy_target)
 
     set(macos_zip "Sugarchain-En-${CLIENT_VERSION_STRING}-macos")
     if(CMAKE_HOST_APPLE)
+      file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/macos-archive-path.txt
+        CONTENT "${PROJECT_BINARY_DIR}/${macos_zip}.zip\n"
+      )
       add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/${macos_zip}.zip
         COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus "${macos_app}" -translations-dir=${QT_TRANSLATIONS_DIR} -zip=${macos_zip}
@@ -87,6 +95,9 @@ function(add_macos_deploy_target)
         DEPENDS ${PROJECT_BINARY_DIR}/${macos_zip}.zip
       )
     else()
+      file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/macos-archive-path.txt
+        CONTENT "${PROJECT_BINARY_DIR}/dist/${macos_zip}.zip\n"
+      )
       add_custom_command(
         OUTPUT "${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Sugarchain-Qt"
         COMMAND ${CMAKE_COMMAND} -E env OBJDUMP=${CMAKE_OBJDUMP} $<TARGET_FILE:Python3::Interpreter> ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus "${macos_app}" -translations-dir=${QT_TRANSLATIONS_DIR}

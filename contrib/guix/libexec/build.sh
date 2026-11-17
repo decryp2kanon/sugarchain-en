@@ -260,7 +260,8 @@ mkdir -p "$DISTSRC"
     case "$HOST" in
         *mingw*)
             cmake --build build -j "$JOBS" -t deploy ${V:+--verbose}
-            mv build/sugarchain-win64-setup.exe "${OUTDIR}/${DISTNAME}-win64-setup-unsigned.exe"
+            read -r installer_path < build/windows-installer-path.txt
+            mv "$installer_path" "${OUTDIR}/${DISTNAME}-win64-setup-unsigned.exe"
             ;;
     esac
 
@@ -377,7 +378,8 @@ mkdir -p "$DISTSRC"
             ;;
         *darwin*)
             cmake --build build --target deploy ${V:+--verbose}
-            mv build/dist/sugarchain-macos-app.zip "${OUTDIR}/${DISTNAME}-${HOST}-unsigned.zip"
+            read -r macos_archive_path < build/macos-archive-path.txt
+            mv "$macos_archive_path" "${OUTDIR}/${DISTNAME}-${HOST}-unsigned.zip"
             mkdir -p "unsigned-app-${HOST}"
             cp  --target-directory="unsigned-app-${HOST}" \
                 contrib/macdeploy/detached-sig-create.sh
