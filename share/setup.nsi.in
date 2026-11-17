@@ -1,4 +1,5 @@
 Name "@CLIENT_NAME@"
+OutFile "@abs_top_builddir@/Sugarchain-En-@CLIENT_VERSION_STRING@-win64-setup.exe"
 
 RequestExecutionLevel highest
 SetCompressor /SOLID lzma
@@ -10,7 +11,9 @@ Unicode true
 #SetDatablockOptimize off
 
 # General Symbol Definitions
-!define REGKEY "SOFTWARE\Sugarchain Komorebi"
+!define REGKEY "SOFTWARE\Sugarchain En"
+!define LEGACY_REGKEY "SOFTWARE\Sugarchain Komorebi"
+!define UNINSTALL_REGKEY "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain En"
 !define COMPANY "@CLIENT_NAME@ project"
 !define URL @CLIENT_URL@
 
@@ -21,8 +24,8 @@ Unicode true
 !define MUI_HEADERIMAGE_RIGHT
 !define MUI_HEADERIMAGE_BITMAP "@abs_top_srcdir@/share/pixmaps/nsis-header.bmp"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
-!define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
-!define MUI_STARTMENUPAGE_REGISTRY_KEY ${REGKEY}
+!define MUI_STARTMENUPAGE_REGISTRY_ROOT HKCU
+!define MUI_STARTMENUPAGE_REGISTRY_KEY "${REGKEY}"
 !define MUI_STARTMENUPAGE_REGISTRY_VALUENAME StartMenuGroup
 !define MUI_STARTMENUPAGE_DEFAULTFOLDER "@CLIENT_NAME@"
 !define MUI_FINISHPAGE_RUN "$WINDIR\explorer.exe"
@@ -38,9 +41,14 @@ Unicode true
 
 # Variables
 Var StartMenuGroup
+Var LegacyInstallDir
+Var LegacyStartMenuGroup
+Var LegacyRegKey
+Var LegacyProductName
 
 # Installer pages
 !insertmacro MUI_PAGE_WELCOME
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE CheckInstallDirectory
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_STARTMENU Application $StartMenuGroup
 !insertmacro MUI_PAGE_INSTFILES
@@ -52,7 +60,7 @@ Var StartMenuGroup
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-InstallDir "$PROGRAMFILES64\Sugarchain Komorebi"
+InstallDir "$PROGRAMFILES64\Sugarchain En"
 CRCCheck force
 XPStyle on
 BrandingText " "
@@ -70,13 +78,18 @@ ShowUninstDetails show
 
 # Installer sections
 Section -Main SEC0000
+    # Also check silent installs, which do not visit the directory page.
+    Call CheckInstallDirectory
     SetOutPath $INSTDIR
     SetOverwrite on
     File @abs_top_builddir@/release/@BITCOIN_GUI_NAME@@EXEEXT@
     File @abs_top_builddir@/release/@BITCOIN_WRAPPER_NAME@@EXEEXT@
     File /oname=COPYING.txt @abs_top_srcdir@/COPYING
     File /oname=readme.txt @abs_top_srcdir@/doc/README_windows.txt
+    # Keep an existing installation's local configuration unchanged.
+    SetOverwrite off
     File @abs_top_srcdir@/share/examples/sugarchain.conf
+    SetOverwrite on
     SetOutPath $INSTDIR\share\rpcauth
     File @abs_top_srcdir@/share/rpcauth/*.*
     SetOutPath $INSTDIR\daemon
@@ -92,7 +105,11 @@ SectionEnd
 Section -post SEC0001
     WriteRegStr HKCU "${REGKEY}" Path $INSTDIR
     SetOutPath $INSTDIR
+    ClearErrors
     WriteUninstaller $INSTDIR\uninstall.exe
+    IfErrors 0 +3
+        MessageBox MB_OK|MB_ICONSTOP "Could not write the Sugarchain En uninstaller. Existing registration has been retained."
+        Abort
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory $SMPROGRAMS\$StartMenuGroup
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk" $INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@
@@ -101,31 +118,41 @@ Section -post SEC0001
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (testnet4).lnk" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" "-testnet4" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" 3
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk" $INSTDIR\uninstall.exe
     !insertmacro MUI_STARTMENU_WRITE_END
-    WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" DisplayName "$(^Name)"
-    WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" DisplayVersion "@CLIENT_VERSION_STRING@"
-    WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" Publisher "${COMPANY}"
-    WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" URLInfoAbout "${URL}"
-    WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" DisplayIcon $INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@
-    WriteRegStr HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" UninstallString $INSTDIR\uninstall.exe
-    WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" NoModify 1
-    WriteRegDWORD HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi" NoRepair 1
+    WriteRegStr HKCU "${UNINSTALL_REGKEY}" DisplayName "$(^Name)"
+    WriteRegStr HKCU "${UNINSTALL_REGKEY}" DisplayVersion "@CLIENT_VERSION_STRING@"
+    WriteRegStr HKCU "${UNINSTALL_REGKEY}" Publisher "${COMPANY}"
+    WriteRegStr HKCU "${UNINSTALL_REGKEY}" URLInfoAbout "${URL}"
+    WriteRegStr HKCU "${UNINSTALL_REGKEY}" DisplayIcon '"$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@"'
+    WriteRegStr HKCU "${UNINSTALL_REGKEY}" UninstallString '"$INSTDIR\uninstall.exe"'
+    WriteRegDWORD HKCU "${UNINSTALL_REGKEY}" NoModify 1
+    WriteRegDWORD HKCU "${UNINSTALL_REGKEY}" NoRepair 1
     WriteRegStr HKCR "@CLIENT_TARNAME@" "URL Protocol" ""
     WriteRegStr HKCR "@CLIENT_TARNAME@" "" "URL:Sugarchain"
     WriteRegStr HKCR "@CLIENT_TARNAME@\DefaultIcon" "" $INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@
     WriteRegStr HKCR "@CLIENT_TARNAME@\shell\open\command" "" '"$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" "%1"'
 
-    # Lingering since fb2b05b1259d3e69e6e675adfa30b429424c7625 which removed the suffix
-    DeleteRegValue HKCU "${REGKEY} (64-bit)\Components" Main
-    DeleteRegKey HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi (64-bit)"
-    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name) (64-bit).lnk"
-    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\$(^Name) (64-bit).lnk"
-    DeleteRegValue HKCU "${REGKEY} (64-bit)" StartMenuGroup
-    DeleteRegValue HKCU "${REGKEY} (64-bit)" Path
-    DeleteRegKey /IfEmpty HKCU "${REGKEY} (64-bit)\Components"
-    DeleteRegKey /IfEmpty HKCU "${REGKEY} (64-bit)"
-
-    # Lingering since 77b2923f87131a407f7d4193c54db22375130403
-    Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Sugarchain Komorebi (testnet, 64-bit).lnk"
+    # Retire only the legacy installation upgraded in place. Its uninstaller
+    # has been replaced; never delete another product's installation tree.
+    ${If} $LegacyInstallDir != ""
+    ${AndIf} $LegacyInstallDir == $INSTDIR
+        DeleteRegKey HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\$LegacyProductName"
+        DeleteRegValue HKCU "$LegacyRegKey\Components" Main
+        DeleteRegValue HKCU "$LegacyRegKey" StartMenuGroup
+        DeleteRegValue HKCU "$LegacyRegKey" Path
+        DeleteRegKey /IfEmpty HKCU "$LegacyRegKey\Components"
+        DeleteRegKey /IfEmpty HKCU "$LegacyRegKey"
+        ${If} $LegacyStartMenuGroup != ""
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Sugarchain Komorebi.lnk"
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Sugarchain Komorebi (testnet).lnk"
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Sugarchain Komorebi (testnet4).lnk"
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Sugarchain Komorebi (test signet).lnk"
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Uninstall Sugarchain Komorebi.lnk"
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Sugarchain Komorebi (64-bit).lnk"
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Uninstall Sugarchain Komorebi (64-bit).lnk"
+            Delete "$SMPROGRAMS\$LegacyStartMenuGroup\Sugarchain Komorebi (testnet, 64-bit).lnk"
+            RMDir "$SMPROGRAMS\$LegacyStartMenuGroup"
+        ${EndIf}
+    ${EndIf}
 SectionEnd
 
 # Macro for selecting uninstaller sections
@@ -147,28 +174,38 @@ Section /o -un.Main UNSEC0000
     Delete /REBOOTOK $INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@
     Delete /REBOOTOK $INSTDIR\COPYING.txt
     Delete /REBOOTOK $INSTDIR\readme.txt
-    Delete /REBOOTOK $INSTDIR\sugarchain.conf
-    RMDir /r /REBOOTOK $INSTDIR\share
-    RMDir /r /REBOOTOK $INSTDIR\daemon
+    # Leave configuration and extra user files untouched. Never recursively
+    # delete directories: remove only files supplied by this package.
+    Delete /REBOOTOK $INSTDIR\share\rpcauth\rpcauth.py
+    Delete /REBOOTOK $INSTDIR\share\rpcauth\README.md
+    RMDir /REBOOTOK $INSTDIR\share\rpcauth
+    RMDir /REBOOTOK $INSTDIR\share
+    Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_DAEMON_NAME@@EXEEXT@
+    Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_CLI_NAME@@EXEEXT@
+    Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_TX_NAME@@EXEEXT@
+    Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_WALLET_TOOL_NAME@@EXEEXT@
+    Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_TEST_NAME@@EXEEXT@
+    RMDir /REBOOTOK $INSTDIR\daemon
     DeleteRegValue HKCU "${REGKEY}\Components" Main
 SectionEnd
 
 Section -un.post UNSEC0001
-    DeleteRegKey HKCU "SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Sugarchain Komorebi"
+    DeleteRegKey HKCU "${UNINSTALL_REGKEY}"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (testnet).lnk"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (testnet4).lnk"
     Delete /REBOOTOK "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (test signet).lnk"
-    Delete /REBOOTOK "$SMSTARTUP\Sugarchain.lnk"
     Delete /REBOOTOK $INSTDIR\uninstall.exe
-    Delete /REBOOTOK $INSTDIR\debug.log
-    Delete /REBOOTOK $INSTDIR\db.log
     DeleteRegValue HKCU "${REGKEY}" StartMenuGroup
     DeleteRegValue HKCU "${REGKEY}" Path
     DeleteRegKey /IfEmpty HKCU "${REGKEY}\Components"
     DeleteRegKey /IfEmpty HKCU "${REGKEY}"
-    DeleteRegKey HKCR "@CLIENT_TARNAME@"
+    # Do not unregister another installation's payment URI handler.
+    ReadRegStr $R0 HKCR "@CLIENT_TARNAME@\shell\open\command" ""
+    ${If} $R0 == '"$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" "%1"'
+        DeleteRegKey HKCR "@CLIENT_TARNAME@"
+    ${EndIf}
     RmDir /REBOOTOK $SMPROGRAMS\$StartMenuGroup
     RmDir /REBOOTOK $INSTDIR
     Push $R0
@@ -188,11 +225,62 @@ Function .onInit
       MessageBox MB_OK|MB_ICONSTOP "Cannot install 64-bit version on a 32-bit system."
       Abort
     ${EndIf}
+    # InstallDirRegKey is evaluated before the explicit 64-bit registry view.
+    ReadRegStr $R1 HKCU "${REGKEY}" Path
+    ${If} $R1 != ""
+        StrCpy $INSTDIR $R1
+    ${EndIf}
+    StrCpy $LegacyProductName "Sugarchain Komorebi"
+    StrCpy $LegacyRegKey "${LEGACY_REGKEY}"
+    ReadRegStr $LegacyInstallDir HKCU "$LegacyRegKey" Path
+    ${If} $LegacyInstallDir == ""
+        StrCpy $LegacyProductName "Sugarchain Komorebi (64-bit)"
+        StrCpy $LegacyRegKey "${LEGACY_REGKEY} (64-bit)"
+        ReadRegStr $LegacyInstallDir HKCU "$LegacyRegKey" Path
+    ${EndIf}
+    ${If} $LegacyInstallDir != ""
+        GetFullPathName $LegacyInstallDir $LegacyInstallDir
+        ${If} $R1 != ""
+        ${AndIf} $R1 != $LegacyInstallDir
+            MessageBox MB_OK|MB_ICONSTOP "Separate Sugarchain En and Komorebi installations are registered. Uninstall the old product normally before upgrading En. No files have been changed."
+            Abort
+        ${EndIf}
+        IfFileExists "$LegacyInstallDir\uninstall.exe" 0 invalid_legacy
+        IfFileExists "$LegacyInstallDir\@BITCOIN_GUI_NAME@@EXEEXT@" 0 invalid_legacy
+        ReadRegStr $LegacyStartMenuGroup HKCU "$LegacyRegKey" StartMenuGroup
+        # Older installers stored the menu group in HKLM instead of HKCU.
+        ${If} $LegacyStartMenuGroup == ""
+            ReadRegStr $LegacyStartMenuGroup HKLM "$LegacyRegKey" StartMenuGroup
+        ${EndIf}
+        StrCpy $INSTDIR $LegacyInstallDir
+        IfSilent done
+        MessageBox MB_OK|MB_ICONINFORMATION "Sugarchain Komorebi will be upgraded to Sugarchain En in its existing installation folder. Wallets, chain data and settings are preserved. To choose a new folder, first uninstall the old application normally."
+    ${EndIf}
+    Goto done
+invalid_legacy:
+    MessageBox MB_OK|MB_ICONSTOP "The registered Sugarchain Komorebi installation is incomplete. Repair or uninstall it normally before installing Sugarchain En. No files have been changed."
+    Abort
+done:
+FunctionEnd
+
+Function CheckInstallDirectory
+    GetFullPathName $INSTDIR $INSTDIR
+    ${If} $LegacyInstallDir != ""
+    ${AndIf} $LegacyInstallDir != $INSTDIR
+        MessageBox MB_OK|MB_ICONSTOP "Upgrade Sugarchain Komorebi in its existing folder, or uninstall it normally before selecting a new folder."
+        Abort
+    ${EndIf}
 FunctionEnd
 
 # Uninstaller functions
 Function un.onInit
-    ReadRegStr $INSTDIR HKCU "${REGKEY}" Path
+    SetRegView 64
+    # Bind the uninstaller to its own installation, not a stale registry path.
+    ReadRegStr $R0 HKCU "${REGKEY}" Path
+    ${If} $R0 != $INSTDIR
+        MessageBox MB_OK|MB_ICONSTOP "This uninstaller no longer matches the registered Sugarchain En installation. No files have been removed."
+        Abort
+    ${EndIf}
     !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuGroup
     !insertmacro SELECT_UNSECTION Main ${UNSEC0000}
 FunctionEnd
