@@ -48,8 +48,9 @@ conversion, or operational data directory is changed by this work.
   placeholders, plural-form counts and translation attributes, and no changes to
   unrelated messages or PSBT terminology.
 - A Qt `QTranslator` runtime check loaded all 100 generated QM catalogs and made
-  11,100 lookups, checking preserved localized text, English fallback and removal
-  of the old Bitcoin source keys.
+  11,439 lookups, checking preserved localized text, English fallback, removal
+  of the old Bitcoin source keys and the additional translation-only corrections
+  described below.
 - An offscreen GUI with a fresh, isolated regtest data/configuration directory
   initialized, answered `getblockchaininfo`, and exited with status 0 after RPC
   `stop`. It did not open the operational node's data directory or wallets.
@@ -60,7 +61,52 @@ conversion, or operational data directory is changed by this work.
   **not** reported as passing.
 - Template YAML, UI/translation XML, resource paths, official asset hashes and
   `git diff --check` were checked. Protected consensus, wallet, network, signed
-  message, amount-conversion and P2P user-agent files were unchanged.
+  message and amount-conversion implementations were unchanged. The P2P
+  user-agent value and behavior were preserved; `clientversion.cpp` changed only
+  the source-code URL printed in license information.
+
+### Complete tracked-text review before merging
+
+The final review covered **all 2,896 tracked UTF-8 text files**, including files
+without candidate terms. Coverage was reconciled by path, rather than by adding
+overlapping directory counts: runtime/build/resources 2,090, test code/configuration
+414, documentation/CI 302 and TS catalogs 100, with 10 shared paths. The other
+108 tracked files were classified as binary or non-UTF-8 assets. Generated build
+directories and untracked user files were outside the source-text scope.
+
+The review included localized spellings of Bitcoin, not only English source
+keys. It found **113 additional messages in 33 catalogs** whose generic source
+text had an obsolete product name inserted only in the translation. These do not
+overlap the 37-source-key repair above. Four Korean translations were corrected,
+including the distinction between a NUL byte and a space; 109 uncertain
+translations now fall back to the correct English source. Source keys,
+placeholders, plural structures and unrelated translations were preserved.
+
+Four runtime string edits completed the license source URL, port-mapping warning,
+database recovery executable name and exception module label. Developer guides,
+tool help, tracing labels and Doxygen docset identifiers were aligned with the
+actual project. Upstream tutorials, release history, external services, standard
+terminology, copyright notices and internal identifiers remain explicitly
+distinguished from current product instructions. The English XLF contains no
+obsolete product label; its five PSBT standard-name references were retained.
+
+The same review found existing test/CI defaults still looking for Bitcoin output
+names. Defaults now use the actual Sugarchain executables, `sugarchain.conf`,
+`sugarchaind.pid` and platform data-directory names. Existing environment-variable
+keys, explicit overrides, CMake target names, arbitrary custom filenames and
+chain/address/amount expectations were preserved. macOS archive checks consume
+the generated archive-path marker and quote the application name with spaces;
+Windows checks use the actual `sugarchain*.exe` outputs.
+
+Validation included Python and shell syntax, binary/config/PID mapping contracts,
+Windows output mappings and a simulated macOS archive/codesign argument check.
+Both direct `sugarchaind` and `sugarchain -m node` were then exercised through the
+actual functional-test framework in separate fresh regtest directories. RPC and
+CLI access, configuration/PID discovery, wallet creation, restart and wallet reload
+all passed, with clean exit status 0. These checks did not use operational node
+data or wallets. This is not a claim that the complete functional suite or native
+Windows/macOS execution passed. The full Qt result remains the same 36 passes and
+three previously documented failures; their fixtures were not changed.
 
 Doxygen is not installed in the validation environment, so actual HTML
 generation was not tested. The new PNG and configured resource path were checked
