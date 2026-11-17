@@ -34,7 +34,7 @@ See [dependencies.md](dependencies.md) for a complete overview.
 ### 2. Clone Bitcoin Repo
 Now that `git` and all the required dependencies are installed, let's clone the Sugarchain En repository to a directory. All build scripts and commands will run from this directory.
 ```bash
-git clone --branch core31 https://github.com/decryp2kanon/sugarchain-en.git
+git clone --branch en https://github.com/decryp2kanon/sugarchain-en.git
 cd sugarchain-en
 ```
 

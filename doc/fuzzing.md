@@ -1,12 +1,12 @@
-# Fuzzing Bitcoin Core using libFuzzer
+# Fuzzing Sugarchain En using libFuzzer
 
 ## Quickstart guide
 
-To quickly get started fuzzing Bitcoin Core using [libFuzzer](https://llvm.org/docs/LibFuzzer.html):
+To quickly get started fuzzing Sugarchain En using [libFuzzer](https://llvm.org/docs/LibFuzzer.html):
 
 ```sh
-$ git clone https://github.com/bitcoin/bitcoin
-$ cd bitcoin/
+$ git clone --branch en https://github.com/decryp2kanon/sugarchain-en.git
+$ cd sugarchain-en/
 $ cmake --preset=libfuzzer
 $ cmake --build build_fuzz
 $ FUZZ=process_message build_fuzz/bin/fuzz
@@ -24,7 +24,7 @@ For source-based coverage reports, see [developer notes](/doc/developer-notes.md
 macOS users: We recommend fuzzing on Linux, see [macOS notes](#macos-notes) for
 more information.
 
-## Overview of Bitcoin Core fuzzing
+## Overview of Sugarchain En fuzzing
 
 [Google](https://github.com/google/fuzzing/) has a good overview of fuzzing in general, with contributions from key architects of some of the most-used fuzzers. [This paper](https://agroce.github.io/bitcoin_report.pdf) includes an external overview of the status of Bitcoin Core fuzzing, as of summer 2021.  [John Regehr](https://blog.regehr.org/archives/1687) provides good advice on writing code that assists fuzzers in finding bugs, which is useful for developers to keep in mind.
 
@@ -109,8 +109,8 @@ INFO: seed corpus: files: 991 min: 1b max: 1858b total: 288291b rss: 150Mb
 MSan [requires](https://clang.llvm.org/docs/MemorySanitizer.html#handling-external-code)
 that all linked code be instrumented. The exact steps to achieve this may vary
 but involve compiling `clang` from source, using the built `clang` to compile
-an instrumentalized libc++, then using it to build [Bitcoin Core dependencies
-from source](../depends/README.md) and finally the Bitcoin Core fuzz binary
+an instrumentalized libc++, then using it to build [Sugarchain En dependencies
+from source](../depends/README.md) and finally the Sugarchain En fuzz binary
 itself. One can use the MSan CI job as an example for how to perform these
 steps.
 
@@ -193,15 +193,15 @@ best results. On macOS this can be done within Docker or a virtual machine.
 Reproducing and debugging fuzz testcases on macOS is supported, by building the
 fuzz binary without support for any specific fuzzing engine.
 
-# Fuzzing Bitcoin Core using afl++
+# Fuzzing Sugarchain En using afl++
 
 ## Quickstart guide
 
-To quickly get started fuzzing Bitcoin Core using [afl++](https://github.com/AFLplusplus/AFLplusplus):
+To quickly get started fuzzing Sugarchain En using [afl++](https://github.com/AFLplusplus/AFLplusplus):
 
 ```sh
-$ git clone https://github.com/bitcoin/bitcoin
-$ cd bitcoin/
+$ git clone --branch en https://github.com/decryp2kanon/sugarchain-en.git
+$ cd sugarchain-en/
 $ git clone https://github.com/AFLplusplus/AFLplusplus
 $ make -C AFLplusplus/ source-only
 # If afl-clang-lto is not available, see
@@ -220,15 +220,15 @@ $ FUZZ=bech32 ./AFLplusplus/afl-fuzz -i inputs/ -o outputs/ -- build_fuzz/bin/fu
 
 Read the [afl++ documentation](https://github.com/AFLplusplus/AFLplusplus) for more information.
 
-# Fuzzing Bitcoin Core using Honggfuzz
+# Fuzzing Sugarchain En using Honggfuzz
 
 ## Quickstart guide
 
-To quickly get started fuzzing Bitcoin Core using [Honggfuzz](https://github.com/google/honggfuzz):
+To quickly get started fuzzing Sugarchain En using [Honggfuzz](https://github.com/google/honggfuzz):
 
 ```sh
-$ git clone https://github.com/bitcoin/bitcoin
-$ cd bitcoin/
+$ git clone --branch en https://github.com/decryp2kanon/sugarchain-en.git
+$ cd sugarchain-en/
 $ git clone https://github.com/google/honggfuzz
 $ cd honggfuzz/
 $ make

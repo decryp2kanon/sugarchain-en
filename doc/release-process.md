@@ -1,6 +1,12 @@
 Release Process
 ====================
 
+This checklist is inherited from Bitcoin Core. Upstream signing infrastructure,
+release repositories, and download URLs below describe Bitcoin Core releases;
+they are not Sugarchain En distribution endpoints. Sugarchain En source changes
+are reviewed in [this repository](https://github.com/decryp2kanon/sugarchain-en/pulls)
+against its `en` branch.
+
 ## Branch updates
 
 ### Before every release candidate

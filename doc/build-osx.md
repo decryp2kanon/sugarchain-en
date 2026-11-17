@@ -71,7 +71,7 @@ Now that all the required dependencies are installed, let's clone the Sugarchain
 All build scripts and commands will run from this directory.
 
 ``` bash
-git clone --branch core31 https://github.com/decryp2kanon/sugarchain-en.git
+git clone --branch en https://github.com/decryp2kanon/sugarchain-en.git
 cd sugarchain-en
 ```
 
