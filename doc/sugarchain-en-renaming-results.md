@@ -44,6 +44,8 @@ SSH는 이 PC의 호스트 키 확인에서 실패하여 저장소 한정으로 
 | 새 소스 경로 clean configure·빌드 | 새 CMake 빌드 디렉터리에서 성공. 기존 절대 경로 캐시를 수정해서 재사용하지 않음 |
 | 설치된 주 실행파일 7개 | 모두 실행 가능하고 버전 첫 줄에 Sugarchain En 표시 |
 | 설치된 wrapper | `sugarchain gui --version`, `sugarchain node --version` 정상 |
+| 설치된 GUI 전체 시작·종료 | 분리된 regtest·XDG 환경에서 RPC 준비, GUI 시작 잠금 유지, 정상 종료 코드 0·잠금 해제 확인 |
+| 공개 새 주소 fresh clone | 게시된 HEAD를 새 URL에서 받아 GUI·IPC 포함 CMake 구성 성공, 프로젝트명 SugarchainEn 확인 |
 | 설정 이관 회귀검사 | QtTest 집계 9개 통과. 기존·빈 신규 프로필 보존, 5개 네트워크, 재시도·손상 저널 처리 |
 | 결제 IPC 회귀검사 | QtTest 집계 8개 통과. 새 서버 우선·구 서버 전달·경합·부분 전달 후 재전송 방지 |
 | 실제 Linux Native QSettings | 분리된 XDG 환경에서 구 프로필 최초 복사·구 프로필 보존·새 프로필 덮어쓰기 방지 확인 |
