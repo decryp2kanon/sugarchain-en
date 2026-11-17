@@ -43,7 +43,7 @@
   <true/>
 
   <key>CFBundleIdentifier</key>
-  <string>org.sugarchain.SugarchainKomorebi</string>
+  <string>org.sugarchain.SugarchainEn</string>
 
   <key>CFBundleURLTypes</key>
   <array>
