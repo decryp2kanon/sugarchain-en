@@ -640,9 +640,9 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
         if (chain == ChainType::MAIN)
-            optionFile << "Name=Sugarchain Komorebi\n";
+            optionFile << "Name=Sugarchain En\n";
         else
-            optionFile << strprintf("Name=Sugarchain Komorebi (%s)\n", ChainTypeToString(chain));
+            optionFile << strprintf("Name=Sugarchain En (%s)\n", ChainTypeToString(chain));
         optionFile << "Exec=" << pszExePath << strprintf(" -min -chain=%s\n", ChainTypeToString(chain));
         optionFile << "Icon=sugarchain\n";
         optionFile << "Terminal=false\n";
