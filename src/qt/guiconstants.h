@@ -48,11 +48,11 @@ static const int TOOLTIP_WRAP_THRESHOLD = 80;
 
 #define QAPP_ORG_NAME "Sugarchain"
 #define QAPP_ORG_DOMAIN "sugarchain.org"
-#define QAPP_APP_NAME_DEFAULT "Sugarchain Komorebi"
-#define QAPP_APP_NAME_TESTNET "Sugarchain Komorebi-testnet"
-#define QAPP_APP_NAME_TESTNET4 "Sugarchain Komorebi-testnet4"
-#define QAPP_APP_NAME_SIGNET "Sugarchain Komorebi-signet"
-#define QAPP_APP_NAME_REGTEST "Sugarchain Komorebi-regtest"
+#define QAPP_APP_NAME_DEFAULT "Sugarchain En"
+#define QAPP_APP_NAME_TESTNET "Sugarchain En-testnet"
+#define QAPP_APP_NAME_TESTNET4 "Sugarchain En-testnet4"
+#define QAPP_APP_NAME_SIGNET "Sugarchain En-signet"
+#define QAPP_APP_NAME_REGTEST "Sugarchain En-regtest"
 
 /* One gigabyte (GB) in bytes */
 static constexpr uint64_t GB_BYTES{1000000000};
