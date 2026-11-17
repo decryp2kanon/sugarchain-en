@@ -34,7 +34,7 @@ To run:
 
 #### bitcoingui.(h/cpp)
 
-- Represents the main window of the Bitcoin UI.
+- Represents the main window of the Sugarchain En UI.
 
 #### \*model.(h/cpp)
 
@@ -72,7 +72,7 @@ To run:
 
 See [CONTRIBUTING.md](/CONTRIBUTING.md) for general guidelines.
 
-**Note:** Do not change `local/bitcoin_en.ts`. It is updated [automatically](/doc/translation_process.md#writing-code-with-translations).
+**Note:** Regenerate `locale/bitcoin_en.ts` with the [translation target](/doc/translation_process.md#writing-code-with-translations) and review the generated source together with the affected Sugarchain En translations.
 
 ## Using Qt Creator as an IDE
 

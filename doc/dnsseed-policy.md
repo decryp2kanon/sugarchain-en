@@ -1,3 +1,7 @@
+<!-- Upstream reference: preserved intentionally. -->
+
+> **Upstream Bitcoin DNS seed policy.** This document preserves the upstream Bitcoin network DNS seed policy. Its community contacts and seed-operator requirements refer to Bitcoin and do not define Sugarchain En DNS seed operations.
+
 Expectations for DNS Seed operators
 ====================================
 

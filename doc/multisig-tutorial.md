@@ -1,3 +1,7 @@
+<!-- Upstream reference: preserved intentionally. -->
+
+> **Upstream multisig tutorial.** This inherited tutorial records a Bitcoin wallet workflow and Bitcoin example data. It has not been validated as a Sugarchain En wallet procedure; use the [current wallet documentation](managing-wallets.md) for this fork.
+
 # 1. Multisig Tutorial
 
 Currently, it is possible to create a multisig wallet using Bitcoin Core only.

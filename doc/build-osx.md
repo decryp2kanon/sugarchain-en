@@ -213,13 +213,13 @@ chmod 600 "/Users/${USER}/Library/Application Support/Sugarchain/sugarchain.conf
 You can monitor the download process by looking at the debug.log file:
 
 ```shell
-tail -f $HOME/Library/Application\ Support/Bitcoin/debug.log
+tail -f $HOME/Library/Application\ Support/Sugarchain/debug.log
 ```
 
 ## Other commands:
 
 ```shell
-./build/bin/sugarchaind -daemon      # Starts the bitcoin daemon.
+./build/bin/sugarchaind -daemon      # Starts the Sugarchain daemon.
 ./build/bin/sugarchain-cli --help    # Outputs a list of command-line options.
 ./build/bin/sugarchain-cli help      # Outputs a list of RPC commands when the daemon is running.
 ./build/bin/sugarchain-qt -server # Starts the sugarchain-qt server mode, allows sugarchain-cli control

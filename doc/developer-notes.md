@@ -190,7 +190,7 @@ Refer to [/test/functional/README.md#style-guidelines](/test/functional/README.m
 
 ## Coding Style (Doxygen-compatible comments)
 
-Bitcoin Core uses [Doxygen](https://www.doxygen.nl/) to generate its official documentation.
+Sugarchain En uses [Doxygen](https://www.doxygen.nl/) to generate its official documentation.
 
 Use Doxygen-compatible comment blocks for functions, methods, and fields.
 
@@ -330,7 +330,7 @@ see [test/functional/](/test/functional) for tests that run in `-regtest` mode.
 
 ### DEBUG_LOCKORDER
 
-Bitcoin Core is a multi-threaded application, and deadlocks or other
+Sugarchain En is a multi-threaded application, and deadlocks or other
 multi-threading bugs can be very difficult to track down. The `-DCMAKE_BUILD_TYPE=Debug`
 build option adds `-DDEBUG_LOCKORDER` to the compiler flags. This inserts
 run-time checks to keep track of which locks are held and adds warnings to the
@@ -478,7 +478,7 @@ llvm-cov show \
     --show-line-counts-or-regions \
     --show-expansions \
     --output-dir=build/coverage_report \
-    --project-title="Bitcoin Core Coverage Report"
+    --project-title="Sugarchain En Coverage Report"
 ```
 
 > **Note:** The "functions have mismatched data" warning can be safely ignored, the coverage report will still be generated correctly despite this warning.
@@ -522,7 +522,7 @@ llvm-cov show \
     --show-line-counts-or-regions \
     --show-expansions \
     --output-dir=build/coverage_report \
-    --project-title="Bitcoin Core Fuzz Coverage Report"
+    --project-title="Sugarchain En Fuzz Coverage Report"
 ```
 
 The generated coverage report can be accessed at `build/coverage_report/index.html`.
@@ -588,7 +588,7 @@ See the functional test documentation for how to invoke perf within tests.
 
 ### Sanitizers
 
-Bitcoin Core can be compiled with various "sanitizers" enabled, which add
+Sugarchain En can be compiled with various "sanitizers" enabled, which add
 instrumentation for issues regarding things like memory safety, thread race
 conditions, or undefined behavior. This is controlled with the
 `-DSANITIZERS` cmake build flag, which should be a comma separated list of
@@ -712,9 +712,9 @@ and its `cs_KeyStore` lock for example).
 # Development guidelines
 
 A few non-style-related recommendations for developers, as well as points to
-pay attention to for reviewers of Bitcoin Core code.
+pay attention to for reviewers of Sugarchain En code.
 
-## General Bitcoin Core
+## General Sugarchain En
 
 - New features should be exposed on RPC first, then can be made available in the GUI.
 
@@ -882,7 +882,7 @@ int GetInt(Tabs tab)
 
 - For `strprintf`, `LogInfo`, `LogDebug`, etc formatting characters don't need size specifiers (hh, h, l, ll, j, z, t, L) for arithmetic types.
 
-  - *Rationale*: Bitcoin Core uses tinyformat, which is type safe. Leave them out to avoid confusion.
+  - *Rationale*: Sugarchain En uses tinyformat, which is type safe. Leave them out to avoid confusion.
 
 - Use `.c_str()` sparingly. Its only valid use is to pass C++ strings to C functions that take NULL-terminated
   strings.
@@ -1136,7 +1136,7 @@ you must be aware of.
 
 In most configurations, we use the default LevelDB value for `max_open_files`,
 which is 1000 at the time of this writing. If LevelDB actually uses this many
-file descriptors, it will cause problems with Bitcoin's `select()` loop, because
+file descriptors, it will cause problems with Sugarchain En's `select()` loop, because
 it may cause new sockets to be created where the fd value is >= 1024. For this
 reason, on 64-bit Unix systems, we rely on an internal LevelDB optimization that
 uses `mmap()` + `close()` to open table files without actually retaining

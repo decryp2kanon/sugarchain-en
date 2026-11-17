@@ -1,5 +1,10 @@
 # Fuzzing Sugarchain En using libFuzzer
 
+> Local build commands in this guide apply to Sugarchain En. The Bitcoin Core
+> QA corpus, OSS-Fuzz dashboards, and upstream security links below describe
+> upstream resources; they do not establish OSS-Fuzz coverage or a disclosure
+> destination for Sugarchain En. See [SECURITY.md](../SECURITY.md) for this fork.
+
 ## Quickstart guide
 
 To quickly get started fuzzing Sugarchain En using [libFuzzer](https://llvm.org/docs/LibFuzzer.html):
@@ -76,7 +81,7 @@ block^@M-^?M-^?M-^?M-^?M-^?nM-^?M-^?
 
 In this case the fuzzer managed to create a `block` message which when passed to `ProcessMessage(...)` increased coverage.
 
-It is possible to specify `bitcoind` arguments to the `fuzz` executable.
+It is possible to specify `sugarchaind` arguments to the `fuzz` executable.
 Depending on the test, they may be ignored or consumed and alter the behavior
 of the test. Just make sure to use double-dash to distinguish them from the
 fuzzer's own arguments:
@@ -250,7 +255,7 @@ Read the [Honggfuzz documentation](https://github.com/google/honggfuzz/blob/mast
 Bitcoin Core participates in Google's [OSS-Fuzz](https://github.com/google/oss-fuzz/tree/master/projects/bitcoin-core)
 program, which includes a dashboard of [publicly disclosed vulnerabilities](https://issues.oss-fuzz.com/issues?q=bitcoin-core%20status:open).
 
-Bitcoin Core follows its [security disclosure policy](https://bitcoincore.org/en/security-advisories/),
+Upstream Bitcoin Core follows its [security disclosure policy](https://bitcoincore.org/en/security-advisories/),
 which may differ from Google's standard
 [90-day disclosure window](https://google.github.io/oss-fuzz/getting-started/bug-disclosure-guidelines/)
 .

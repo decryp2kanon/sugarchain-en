@@ -7,6 +7,11 @@ Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet n
 
 The Sugarchain homepage is https://sugarchain.org/.
 
+This directory also retains upstream Bitcoin Core technical references, BIPs,
+example transactions, and historical release notes. Their Bitcoin names,
+addresses, and external service links identify the upstream material; they
+do not describe Sugarchain En releases or guarantee support by an external tool.
+
 Running
 ---------------------
 The following are some helpful notes on how to run Sugarchain En on your native platform.
@@ -64,8 +69,8 @@ See this repository's [contribution guide](/CONTRIBUTING.md) for the development
 - [Internal Design Docs](design/)
 
 ### Resources
-* Discuss on the [BitcoinTalk](https://bitcointalk.org/) forums, in the [Development & Technical Discussion board](https://bitcointalk.org/index.php?board=6.0).
-* Discuss project-specific development on #bitcoin-core-dev on Libera Chat. If you don't have an IRC client, you can use [web.libera.chat](https://web.libera.chat/#bitcoin-core-dev).
+* Discuss Sugarchain En changes in the [project issues](https://github.com/decryp2kanon/sugarchain-en/issues) and pull requests.
+* Upstream Bitcoin Core technical discussions remain useful references; they are not Sugarchain En support channels.
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)

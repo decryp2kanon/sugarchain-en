@@ -42,7 +42,7 @@ To install Python, run:
 winget install python3
 ```
 
-### 2. Clone Bitcoin Repository
+### 2. Clone Sugarchain En Repository
 
 `git` should already be installed as a component of Visual Studio. If not, download and install [Git for Windows](https://git-scm.com/downloads/win).
 
@@ -129,4 +129,4 @@ Available features are listed in the [`vcpkg.json`](/vcpkg.json) file.
 
 ### Antivirus Software
 
-To improve the build process performance, one might add the Bitcoin repository directory to the Microsoft Defender Antivirus exclusions.
+To improve the build process performance, one might add the Sugarchain En repository directory to the Microsoft Defender Antivirus exclusions.

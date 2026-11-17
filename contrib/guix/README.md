@@ -1,6 +1,8 @@
-# Bootstrappable Bitcoin Core Builds
+# Bootstrappable Sugarchain En Builds
 
-This directory contains the files necessary to perform bootstrappable Bitcoin
+> The build steps below apply to Sugarchain En. References to `bitcoin-detached-sigs`, `bitcoin-core/guix.sigs`, and upstream signing participants document the inherited Bitcoin Core signing workflow; they are not Sugarchain En release-signing infrastructure.
+
+This directory contains the files necessary to perform bootstrappable Sugarchain En
 Core builds.
 
 [Bootstrappability][b17e] furthers our binary security guarantees by allowing us
@@ -57,7 +59,7 @@ and examples](#common-guix-build-invocation-patterns-and-examples) section below
 before starting a build. For a full list of customization options, see the
 [recognized environment variables][env-vars-list] section.*
 
-To build Bitcoin Core reproducibly with all default options, invoke the
+To build Sugarchain En reproducibly with all default options, invoke the
 following from the top of a clean repository:
 
 ```sh
@@ -80,7 +82,7 @@ crucial differences:
     * _**DETACHED_SIGS_REPO**_
 
       Set the directory where detached codesignatures can be found for the current
-      Bitcoin Core version being built.
+      Sugarchain En version being built.
 
       _REQUIRED environment variable_
 

@@ -1,4 +1,4 @@
-# Bitcoin Core file system
+# Sugarchain En file system
 
 **Contents**
 
@@ -50,7 +50,7 @@ Subdirectory       | File(s)               | Description
 -------------------|-----------------------|------------
 `blocks/`          |                       | Blocks directory; can be specified by `-blocksdir` option (except for `blocks/index/`)
 `blocks/index/`    | LevelDB database      | Block index; `-blocksdir` option does not affect this path
-`blocks/`          | `blkNNNNN.dat`<sup>[\[2\]](#note2)</sup> | Actual Bitcoin blocks (dumped in network format, 128 MiB per file)
+`blocks/`          | `blkNNNNN.dat`<sup>[\[2\]](#note2)</sup> | Actual Sugarchain blocks (dumped in network format, 128 MiB per file)
 `blocks/`          | `revNNNNN.dat`<sup>[\[2\]](#note2)</sup> | Block undo data (custom format)
 `blocks/`          | `xor.dat`             | Rolling XOR pattern for block and undo data files
 `chainstate/`      | LevelDB database      | Blockchain state (a compact representation of all currently unspent transaction outputs (UTXOs) and metadata about the transactions they are from)
@@ -110,7 +110,7 @@ or migrated.
 
 ## Legacy subdirectories and files
 
-These subdirectories and files are no longer used by Bitcoin Core:
+These inherited subdirectories and files are no longer used by Sugarchain En:
 
 Path           | Description | Repository notes
 ---------------|-------------|-----------------
@@ -147,7 +147,7 @@ This table describes the files installed by Sugarchain En across different platf
 | sugarchain.conf                                               | [Generated](../contrib/devtools/gen-sugarchain-conf.sh) configuration file     |
 | bin/sugarchain                                                | Command-line tool for interacting with Sugarchain. Calls other binaries below. |
 | bin/sugarchain-cli                                            | Tool for making node and wallet RPC calls.                                  |
-| bin/sugarchain-qt                                             | Bitcoin node and wallet GUI                                                 |
+| bin/sugarchain-qt                                             | Sugarchain node and wallet GUI                                                 |
 | bin/sugarchain-tx                                             | Tool for creating and modifying transactions                                |
 | bin/sugarchain-util                                           | Miscellaneous utilities                                                     |
 | bin/sugarchain-wallet                                         | Sugarchain wallet tool                                                         |

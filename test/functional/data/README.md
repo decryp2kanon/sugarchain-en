@@ -1,5 +1,7 @@
 # Various test vectors
 
+> The Bitcoin fixture-generation examples below are retained as upstream test-data references. They are not instructions for accessing the Sugarchain mainnet or modifying a user wallet.
+
 ## sugarchain_block_1.hex
 
 The complete 262-byte Sugarchain mainnet block at height 1, including its witness,

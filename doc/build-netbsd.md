@@ -49,7 +49,7 @@ Compile with `-DENABLE_IPC=OFF` if you do not need IPC functionality.
 
 See [dependencies.md](dependencies.md) for a complete overview.
 
-### 2. Clone Bitcoin Repo
+### 2. Clone Sugarchain En Repo
 
 Clone the Sugarchain En repository to a directory. All build scripts and commands will run from this directory.
 
