@@ -3,7 +3,7 @@ Sugarchain En
 
 Setup
 ---------------------
-Sugarchain En is based on Bitcoin Core v31.1; network and consensus rules remain at the Bitcoin baseline. It downloads and, by default, stores the entire history of Bitcoin transactions, which requires several hundred gigabytes or more of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to several days or more.
+Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet networking and consensus. Its mainnet downloads and validates Sugarchain blocks and transactions, not the Bitcoin blockchain. The current mainnet parameters are defined in [`src/kernel/chainparams.cpp`](../src/kernel/chainparams.cpp). Initial synchronization time and storage depend on the chain size, pruning settings, hardware, and network connection. The inherited non-main networks are separate test environments; do not assume that their parameters match Sugarchain mainnet.
 
 The Sugarchain homepage is https://sugarchain.org/.
 
