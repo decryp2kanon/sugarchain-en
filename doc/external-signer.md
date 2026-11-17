@@ -1,3 +1,7 @@
+<!-- Upstream reference: preserved intentionally. -->
+
+> **Upstream external-signer examples.** This API reference and its hardware-wallet examples are inherited from Bitcoin Core. Example tools, descriptors, addresses, and derivation paths below describe Bitcoin; they do not establish Sugarchain support for an external signer or hardware wallet.
+
 # Support for signing transactions outside of Bitcoin Core
 
 Bitcoin Core can be launched with `-signer=<cmd>` where `<cmd>` is an external tool which can sign transactions and perform other functions. For example, it can be used to communicate with a hardware wallet.

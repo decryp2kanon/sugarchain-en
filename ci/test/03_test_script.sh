@@ -64,9 +64,9 @@ fi
 
 # Make sure default datadir does not exist and is never read by creating a dummy file
 if [ "$CI_OS_NAME" == "macos" ]; then
-  echo > "${HOME}/Library/Application Support/Bitcoin"
+  echo > "${HOME}/Library/Application Support/Sugarchain"
 else
-  echo > "${HOME}/.bitcoin"
+  echo > "${HOME}/.sugarchain"
 fi
 
 if [ -z "$NO_DEPENDS" ]; then
@@ -138,8 +138,9 @@ if [ "$RUN_CHECK_DEPS" = "true" ]; then
 fi
 
 if [[ "$CI_OS_NAME" == "macos" && "${GOAL}" = "install deploy" ]]; then
-  unzip "${BASE_BUILD_DIR}/bitcoin-macos-app.zip" -d "${BASE_BUILD_DIR}/deploy"
-  if ! ( codesign --verify "${BASE_BUILD_DIR}/deploy/Bitcoin-Qt.app" ); then
+  macos_archive=$(cat "${BASE_BUILD_DIR}/macos-archive-path.txt")
+  unzip "${macos_archive}" -d "${BASE_BUILD_DIR}/deploy"
+  if ! ( codesign --verify "${BASE_BUILD_DIR}/deploy/Sugarchain En.app" ); then
     echo "Codesigning failed."
     false
   fi

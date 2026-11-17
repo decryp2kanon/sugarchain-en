@@ -10,6 +10,9 @@ filenames only, `bitcoin` is replaced with `sugarchain`:
 - `share/pixmaps/bitcoin.ico`
 - `share/pixmaps/bitcoin{16,32,64,128,256}.{png,xpm}`
 - `share/pixmaps/nsis-header.bmp`, `nsis-wizard.bmp` (names unchanged)
+- `share/pixmaps/bitcoin32.png` is also copied to
+  `doc/sugarchain_logo_doxygen.png`. Its unchanged 32-pixel height fits the
+  Doxygen header's maximum 55-pixel logo height.
 
 The source Qt qrc/networkstyle and Windows RC use the PNG/ICO files;
 its Makefile.am and macOS Info.plist use the ICNS; its NSIS script uses

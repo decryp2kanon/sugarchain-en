@@ -4,7 +4,7 @@
 
 ### 1.1 Creating the Wallet
 
-Since version 0.21, Bitcoin Core no longer has a default wallet.
+Sugarchain En has no default wallet, following the upstream Bitcoin Core change in version 0.21.
 Wallets can be created with the `createwallet` RPC or with the `Create wallet` GUI menu item.
 
 In the GUI, the `Create a new wallet` button is displayed on the main screen when there is no wallet loaded. Alternatively, there is the option `File` ->`Create wallet`.
@@ -126,7 +126,7 @@ The restored wallet can also be loaded in the GUI via `File` ->`Open wallet`.
 
 ## Wallet Passphrase
 
-Understanding wallet security is crucial for safely storing your Bitcoin. A key aspect is the wallet passphrase, used for encryption. Let's explore its nuances, role, encryption process, and limitations.
+Understanding wallet security is crucial for safely storing your SUGAR. A key aspect is the wallet passphrase, used for encryption. Let's explore its nuances, role, encryption process, and limitations.
 
 - **Not the Seed:**
 The wallet passphrase and the seed are two separate components in wallet security. The seed, or HD seed, functions as a master key for deriving private and public keys in a hierarchical deterministic (HD) wallet. In contrast, the passphrase serves as an additional layer of security specifically designed to secure the private keys within the wallet. The passphrase serves as a safeguard, demanding an additional layer of authentication to access funds in the wallet.

@@ -1,5 +1,7 @@
 ### Verify Binaries
 
+> This tool and its examples verify upstream Bitcoin Core releases and signatures. They do not authenticate Sugarchain En release artifacts or define signing keys for this fork.
+
 #### Preparation
 
 As of Bitcoin Core v22.0, releases are signed by a number of public keys on the basis

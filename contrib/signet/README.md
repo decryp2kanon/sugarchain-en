@@ -1,4 +1,6 @@
 Contents
+
+> This inherited signet helper and faucet example document the upstream Bitcoin workflow. They do not establish a Sugarchain signet faucet or service.
 ========
 This directory contains tools related to Signet, both for running a Signet yourself and for using one.
 

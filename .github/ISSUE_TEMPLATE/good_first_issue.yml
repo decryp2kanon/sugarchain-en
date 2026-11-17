@@ -28,7 +28,7 @@ body:
     id: useful-skills
     attributes:
       label: Useful Skills
-      description: For example, “`std::thread`”, “Qt6 GUI and async GUI design” or “basic understanding of Bitcoin mining and the Sugarchain En RPC interface”.
+      description: For example, “`std::thread`”, “Qt6 GUI and async GUI design” or “basic understanding of Sugarchain mining and the Sugarchain En RPC interface”.
       value: |
         * Compiling Sugarchain En from source
         * Running the C++ unit tests and the Python functional tests
@@ -40,5 +40,5 @@ body:
       value: |
         Want to work on this issue?
 
-        For guidance on contributing, please read [CONTRIBUTING.md](https://github.com/decryp2kanon/sugarchain-en/blob/core31/CONTRIBUTING.md) before opening your pull request.
+        For guidance on contributing, please read [CONTRIBUTING.md](https://github.com/decryp2kanon/sugarchain-en/blob/en/CONTRIBUTING.md) before opening your pull request.
 

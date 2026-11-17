@@ -1,3 +1,7 @@
+<!-- Upstream reference: preserved intentionally. -->
+
+> **Upstream offline-signing tutorial.** This inherited tutorial records a Bitcoin wallet workflow and Bitcoin example data. It has not been validated as a Sugarchain En wallet procedure; use the [current wallet documentation](managing-wallets.md) for this fork.
+
 # Offline Signing Tutorial
 
 This tutorial will describe how to use two instances of Bitcoin Core, one online and one offline, to greatly increase security by not having private keys reside on a networked device.

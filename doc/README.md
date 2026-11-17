@@ -7,6 +7,11 @@ Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet n
 
 The Sugarchain homepage is https://sugarchain.org/.
 
+This directory also retains upstream Bitcoin Core technical references, BIPs,
+example transactions, and historical release notes. Their Bitcoin names,
+addresses, and external service links identify the upstream material; they
+do not describe Sugarchain En releases or guarantee support by an external tool.
+
 Running
 ---------------------
 The following are some helpful notes on how to run Sugarchain En on your native platform.
@@ -48,12 +53,12 @@ The following are developer notes on how to build Sugarchain En on your native p
 
 Development
 ---------------------
-The Bitcoin repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+See this repository's [contribution guide](/CONTRIBUTING.md) for the development process and testing expectations.
 
 - [Developer Notes](developer-notes.md)
 - [Productivity Notes](productivity.md)
 - [Release Process](release-process.md)
-- [Source Code Documentation (External Link)](https://doxygen.bitcoincore.org/)
+- [Upstream Bitcoin Core Source Documentation (External Link)](https://doxygen.bitcoincore.org/)
 - [Translation Process](translation_process.md)
 - [Translation Strings Policy](translation_strings_policy.md)
 - [JSON-RPC Interface](JSON-RPC-interface.md)
@@ -64,8 +69,8 @@ The Bitcoin repo's [root README](/README.md) contains relevant information on th
 - [Internal Design Docs](design/)
 
 ### Resources
-* Discuss on the [BitcoinTalk](https://bitcointalk.org/) forums, in the [Development & Technical Discussion board](https://bitcointalk.org/index.php?board=6.0).
-* Discuss project-specific development on #bitcoin-core-dev on Libera Chat. If you don't have an IRC client, you can use [web.libera.chat](https://web.libera.chat/#bitcoin-core-dev).
+* Discuss Sugarchain En changes in the [project issues](https://github.com/decryp2kanon/sugarchain-en/issues) and pull requests.
+* Upstream Bitcoin Core technical discussions remain useful references; they are not Sugarchain En support channels.
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)

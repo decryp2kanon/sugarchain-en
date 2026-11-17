@@ -1,5 +1,7 @@
 # Seeds
 
+> The commands and seed-list services below are inherited Bitcoin tooling examples. They do not supply Sugarchain En DNS seeds; do not use the Bitcoin seed list as a Sugarchain peer list.
+
 Utility to generate the seeds.txt list that is compiled into the client
 (see [src/chainparamsseeds.h](/src/chainparamsseeds.h) and other utilities in [contrib/seeds](/contrib/seeds)).
 

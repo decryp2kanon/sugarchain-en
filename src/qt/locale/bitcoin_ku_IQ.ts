@@ -54,14 +54,13 @@
         <translation type="unfinished">&amp;هەڵبژێرە</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">ئەمانە ناونیشانی بیتکۆبیتەکانی تۆنە بۆ ناردنی پارەدانەکان. هەمیشە بڕی و ناونیشانی وەرگرەکان بپشکنە پێش ناردنی دراوەکان.</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">ئەمانە ناونیشانی بیتکۆبیتەکانی تۆنە بۆ وەرگرتنی پارەدانەکان. دوگمەی 'دروستکردنیناونیشانی وەرگرتنی نوێ' لە تابی وەرگرتندا بۆ دروستکردنی ناونیشانی نوێ بەکاربێنە.
-واژووکردن تەنها دەکرێت لەگەڵ ناونیشانەکانی جۆری 'میرات'.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -159,8 +158,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">دەستەواژەی تێپەڕەوی نوێ بنووسە بۆ جزدان. &lt;br/&gt;تکایە دەستەواژەی تێپەڕێک بەکاربێنە لە &lt;b&gt;دە یان زیاتر لە هێما هەڕەمەکییەکان&lt;/b&gt;یان &lt;b&gt;هەشت یان وشەی زیاتر&lt;/b&gt;.</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">بیرت بێت کە ڕەمزاندنی جزدانەکەت ناتوانێت بەتەواوی بیتکۆبیتەکانت بپارێزێت لە دزرابوون لەلایەن وورنەری تووشکردنی کۆمپیوتەرەکەت.</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>IMPORTANT: Any previous backups you have made of your wallet file should be replaced with the newly generated, encrypted wallet file. For security reasons, previous backups of the unencrypted wallet file will become useless as soon as you start using the new, encrypted wallet.</source>
@@ -262,7 +261,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">زانیاری</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
             <numerusform />
@@ -379,8 +378,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Bitcoin block chain.</source>
-        <translation type="unfinished">%1 کۆپیەکی زنجیرەی بلۆکی بیتکۆپ دائەبەزێنێت و خەزنی دەکات.</translation>
+        <source>%1 will download and store a copy of the Sugarchain block chain.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Error</source>
@@ -456,10 +455,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </context>
 <context>
     <name>PaymentServer</name>
-    <message>
-        <source>Cannot start bitcoin: click-to-pay handler</source>
-        <translation type="unfinished">ناتوانێت دەست بکات بە bitcoin: کرتە بکە بۆ-پارەدانی کار</translation>
-    </message>
+
     </context>
 <context>
     <name>PeerTableModel</name>
@@ -644,8 +640,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">شاردنەوەی ڕێکخستنەکانی باجی مامەڵە</translation>
     </message>
     <message>
-        <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for bitcoin transactions than the network can process.</source>
-        <translation type="unfinished">کاتێک قەبارەی مامەڵە کەمتر بێت لە بۆشایی بلۆکەکان، لەوانەیە کانەکان و گرێکانی گواستنەوە کەمترین کرێ جێبەجێ بکەن. پێدانی تەنیا ئەم کەمترین کرێیە تەنیا باشە، بەڵام ئاگاداربە کە ئەمە دەتوانێت ببێتە هۆی ئەوەی کە هەرگیز مامەڵەیەکی پشتڕاستکردنەوە ئەنجام بدرێت جارێک داواکاری زیاتر هەیە بۆ مامەڵەکانی بیت کۆبیتکۆ لەوەی کە تۆڕەکە دەتوانێت ئەنجامی بدات.</translation>
+        <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for Sugarchain transactions than the network can process.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>or</source>
