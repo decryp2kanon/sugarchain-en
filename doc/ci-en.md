@@ -2,8 +2,8 @@
 
 The [En Linux Qt workflow](../.github/workflows/en-linux-qt.yml) builds the
 Linux applications and runs the complete Qt test executable on Ubuntu 24.04.
-It runs on branch pushes, pull requests targeting `en`, and manual dispatches.
-A pull request update cancels an older baseline run for the same source branch.
+It runs on pushes to `en`, pull requests targeting `en`, and manual dispatches.
+A pull request update cancels an older run for the same pull request.
 Manual dispatch becomes available after the workflow is on the default branch.
 
 The job explicitly enables the GUI, wallet, IPC, Qt tests, ZMQ, and USDT. It
