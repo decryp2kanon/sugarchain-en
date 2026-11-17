@@ -22,7 +22,6 @@
 
 #include <QApplication>
 #include <QByteArray>
-#include <QCryptographicHash>
 #include <QDataStream>
 #include <QDebug>
 #include <QFile>
@@ -32,7 +31,6 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QLockFile>
-#include <QStandardPaths>
 #include <QStringList>
 #include <QUrlQuery>
 
@@ -103,9 +101,10 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer)
 
     if (startLocalServer) {
         const QString name = ipcServerName();
-        const QByteArray id = QCryptographicHash::hash(name.toUtf8(), QCryptographicHash::Sha256).toHex();
-        const QString lock_path = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) +
-                                  QStringLiteral("/Sugarchain/.en-ipc/") + QString::fromLatin1(id) + QStringLiteral(".lock");
+        // The claim follows the network datadir, even when launchers use
+        // different GUI configuration directories. The node's .lock stays
+        // untouched and remains the authority for wallet/database ownership.
+        const QString lock_path = GUIUtil::PathToQString(gArgs.GetDataDirNet() / ".en-gui-startup.lock");
         uriServer = new QLocalServer(this);
         QString error;
         if (!ListenPaymentIpc(*uriServer, name, lock_path, ipcClaim, error)) {
