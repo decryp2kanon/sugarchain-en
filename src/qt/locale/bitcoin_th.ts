@@ -54,13 +54,13 @@
         <translation type="unfinished">เลือก</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">นี่คือลิงก์ที่อยู่ Bitcoin ของคุณสำหรับการส่งการชำระเงิน ควรตรวจสอบจำนวนเงินและที่อยู่ผู้รับก่อนการส่งเหรียญ</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">นี่คือที่อยู่บิตคอยน์ของคุณสำหรับรับการชำระเงิน ใช้ปุ่ม 'สร้างที่อยู่รับใหม่' ในแท็บรับเพื่อสร้างที่อยู่ใหม่ การลงนามทำได้เฉพาะกับที่อยู่ประเภท 'legacy'</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -159,8 +159,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ยืนยันการเข้ารหัสกระเป๋าเงิน</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation type="unfinished">คำเตือน: หากคุณเข้ารหัสกระเป๋าของคุณและสูญเสียรหัสผ่านของคุณ คุณจะสูญเสียบิตคอยน์ทั้งหมดของคุณ!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -187,8 +187,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">กลับ</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">จำไว้ว่าการเข้ารหัสกระเป๋าของคุณไม่สามารถปกป้องบิตคอยน์ของคุณจากการถูกขโมยโดยมัลแวร์ที่ติดเชื้อคอมพิวเตอร์ของคุณได้อย่างสมบูรณ์</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -322,8 +322,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">จำนวน:</translation>
     </message>
     <message>
-        <source>Enter a Bitcoin address (e.g. %1)</source>
-        <translation type="unfinished">กรอกที่อยู่ Bitcoin (เช่น %1)</translation>
+        <source>Enter a Sugarchain address (e.g. %1)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Ctrl+W</source>
@@ -546,8 +546,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">เปิดใช้พร็อกซี: %1</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation type="unfinished">ส่งเหรียญไปยังที่อยู่บิตคอยน์</translation>
+        <source>Send coins to a Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -590,16 +590,16 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ป้าย &amp; ข้อความ…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">ลงนามข้อความด้วยที่อยู่ Bitcoin ของคุณเพื่อพิสูจน์ว่าคุณเป็นเจ้าของ</translation>
+        <source>Sign messages with your Sugarchain addresses to prove you own them</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
         <translation type="unfinished">ตรวจสอบข้อความ...</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation type="unfinished">ตรวจสอบข้อความเพื่อให้แน่ใจว่าข้อความเหล่านั้นได้รับการลงชื่อด้วยที่อยู่ Bitcoin ที่ระบุไว้</translation>
+        <source>Verify messages to ensure they were signed with specified Sugarchain addresses</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Load PSBT from file…</source>
@@ -654,8 +654,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">กำลังประมวลผลบล็อกบนดิสก์...</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation type="unfinished">เรียกเก็บ การชำระเงิน (สร้าง QR codes และ bitcoin: URIs)</translation>
+        <source>Request payments (generates QR codes and sugarchain: URIs)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -732,8 +732,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">&amp;ตัวเลือกคำสั่งในบรรทัดคำสั่ง</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI</source>
-        <translation type="unfinished">เปิดบิตคอยน์: URI</translation>
+        <source>Open a sugarchain: URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open Wallet</source>
@@ -770,8 +770,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ย้ายกระเป๋าเงิน</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation type="unfinished">แสดงข้อความช่วยเหลือ %1 เพื่อดูรายการตัวเลือกคำสั่งบิตคอยน์ที่เป็นไปได้</translation>
+        <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Mask values</source>
@@ -820,10 +820,10 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">แสดง</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
-            <numerusform>การเชื่อมต่อที่ใช้งานอยู่ %n รายการไปยังเครือข่ายบิตคอยน์</numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -1276,8 +1276,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ใช้ไดเรกทอรีข้อมูลที่กำหนดเอง:</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation type="unfinished">บิตคอยน์</translation>
+        <source>Sugarchain</source>
+        <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <source>%n GB of space available</source>
@@ -1317,8 +1317,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         </translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Bitcoin block chain.</source>
-        <translation type="unfinished">%1 จะดาวน์โหลดและเก็บสำเนาของบล็อกเชนของบิตคอยน์</translation>
+        <source>%1 will download and store a copy of the Sugarchain block chain.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1336,12 +1336,12 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">จาก</translation>
     </message>
     <message>
-        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the bitcoin network, as detailed below.</source>
-        <translation type="unfinished">ธุรกรรมล่าสุดอาจยังไม่ปรากฏ และดังนั้นยอดคงเหลือในกระเป๋าของคุณอาจไม่ถูกต้อง ข้อมูลนี้จะถูกต้องเมื่อกระเป๋าของคุณเสร็จสิ้นการซิงค์กับเครือข่ายบิตคอยน์ ตามที่อธิบายไว้ด้านล่าง</translation>
+        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the Sugarchain network, as detailed below.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Attempting to spend bitcoins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
-        <translation type="unfinished">การพยายามใช้บิตคอยน์ที่ได้รับผลกระทบจากธุรกรรมที่ยังไม่ได้แสดงจะไม่ได้รับการยอมรับจากเครือข่าย</translation>
+        <source>Attempting to spend Sugarchain coins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Number of blocks left</source>
@@ -1395,8 +1395,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
 <context>
     <name>OpenURIDialog</name>
     <message>
-        <source>Open bitcoin URI</source>
-        <translation type="unfinished">เปิด URI ของบิตคอยน์</translation>
+        <source>Open Sugarchain URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>URI:</source>
@@ -1574,8 +1574,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">อนุญาตการเชื่อมต่อที่เข้ามา (Anuyat kan cheuamto thi khaoma)</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
-        <translation type="unfinished">เชื่อมต่อกับเครือข่าย Bitcoin ผ่านพร็อกซี SOCKS5.</translation>
+        <source>Connect to the Sugarchain network through a SOCKS5 proxy.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
@@ -1668,8 +1668,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">จะแสดงคุณสมบัติการควบคุมเหรียญหรือไม่</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a separate SOCKS5 proxy for Tor onion services.</source>
-        <translation type="unfinished">เชื่อมต่อกับเครือข่าย Bitcoin ผ่านพร็อกซี SOCKS5 แยกต่างหากสำหรับบริการ Tor onion</translation>
+        <source>Connect to the Sugarchain network through a separate SOCKS5 proxy for Tor onion services.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Use separate SOCKS&amp;5 proxy to reach peers via Tor onion services:</source>
@@ -1760,8 +1760,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">จาก</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-        <translation type="unfinished">ข้อมูลที่แสดงอาจจะล้าสมัย กระเป๋าของคุณจะทำการซิงค์อัตโนมัติกับเครือข่าย Bitcoin หลังจากที่เชื่อมต่อเสร็จสิ้นแล้ว แต่กระบวนการนี้ยังไม่เสร็จสมบูรณ์</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Sugarchain network after a connection is established, but this process has not completed yet.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Available:</source>
@@ -1950,17 +1950,14 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <source>Payment request error</source>
         <translation type="unfinished">ข้อผิดพลาดในการขอชำระเงิน</translation>
     </message>
-    <message>
-        <source>Cannot start bitcoin: click-to-pay handler</source>
-        <translation type="unfinished">ไม่สามารถเริ่มต้นบิตคอยน์: ตัวจัดการคลิกเพื่อจ่าย</translation>
-    </message>
+
     <message>
         <source>URI handling</source>
         <translation type="unfinished">การจัดการ URI</translation>
     </message>
     <message>
-        <source>'bitcoin://' is not a valid URI. Use 'bitcoin:' instead.</source>
-        <translation type="unfinished">'bitcoin://' ไม่ใช่ URI ที่ถูกต้อง ใช้ 'bitcoin:' แทน</translation>
+        <source>'sugarchain://' is not a valid URI. Use 'sugarchain:' instead.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Cannot process payment request because BIP70 is not supported.
@@ -1971,8 +1968,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
 หากคุณได้รับข้อผิดพลาดนี้คุณควรขอให้พ่อค้าจัดเตรียม URI ที่รองรับ BIP21</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Bitcoin address or malformed URI parameters.</source>
-        <translation type="unfinished">ไม่สามารถแยก URI ได้! สิ่งนี้อาจเกิดจากที่อยู่ Bitcoin ที่ไม่ถูกต้องหรือพารามิเตอร์ URI ที่ผิดรูปแบบ</translation>
+        <source>URI cannot be parsed! This can be caused by an invalid Sugarchain address or malformed URI parameters.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Payment request file handling</source>
@@ -2051,8 +2048,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">ที่อยู่ท้องถิ่น</translation>
     </message>
     <message>
-        <source>Network addresses that your Bitcoin node is currently using to communicate with other nodes.</source>
-        <translation type="unfinished">ที่อยู่เครือข่ายที่โหนด Bitcoin ของคุณกำลังใช้ในการสื่อสารกับโหนดอื่นๆ</translation>
+        <source>Network addresses that your Sugarchain node is currently using to communicate with other nodes.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Block chain</source>

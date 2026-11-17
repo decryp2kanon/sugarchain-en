@@ -54,13 +54,13 @@
         <translation type="unfinished">D&amp;ewis</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">Rhain ydi eich cyfeiriadau Bitcoin ar gyfer gyrru taliadau. Gwnewch yn sicr o'r swm a'r cyfeiriad derbyn cyn gyrru arian.</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished">Rhain ydi eich cyfeiriadau Sugarchain ar gyfer gyrru taliadau. Gwnewch yn sicr o'r swm a'r cyfeiriad derbyn cyn gyrru arian.</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">Dyma'ch cyfeiriadau Bitcoin ar gyfer derbyn taliadau. Defnyddiwch y botwm 'Creu cyfeiriad derbyn newydd' yn y tab derbyn i greu cyfeiriadau newydd. Dim ond gyda chyfeiriadau o'r math 'etifeddol' y mae llofnodi yn bosibl.</translation>
+        <translation type="unfinished">Dyma'ch cyfeiriadau Sugarchain ar gyfer derbyn taliadau. Defnyddiwch y botwm 'Creu cyfeiriad derbyn newydd' yn y tab derbyn i greu cyfeiriadau newydd. Dim ond gyda chyfeiriadau o'r math 'etifeddol' y mae llofnodi yn bosibl.</translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -155,8 +155,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Cadarnhau amgryptio'r waled</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation type="unfinished">Rhybudd: Os ydych yn amgryptio'r waled ag yn colli'r cyfrinair, byddwch yn &lt;b&gt; COLLI EICH BITCOINS I GYD &lt;b&gt; !</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>
+        <translation type="unfinished">Rhybudd: Os ydych yn amgryptio'r waled ag yn colli'r cyfrinair, byddwch yn &lt;b&gt; COLLI EICH SUGAR I GYD &lt;b&gt; !</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -183,8 +183,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Yn ôl</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">Cofiwch nad yw cryptio eich waled yn gallu amddiffyn eich bitcoiniodd yn llawn rhag cael eu dwyn gan feddalwedd ymosodol sy'n heintio eich cyfrifiadur.</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished">Cofiwch nad yw cryptio eich waled yn gallu amddiffyn eich SUGAR yn llawn rhag cael eu dwyn gan feddalwedd ymosodol sy'n heintio eich cyfrifiadur.</translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -434,8 +434,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Mae'r procsï yw&lt;b&gt;wedi'i alluog&lt;/b&gt;i:%1</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation type="unfinished">Anfon arian i gyfeiriad Bitcoin</translation>
+        <source>Send coins to a Sugarchain address</source>
+        <translation type="unfinished">Anfon arian i gyfeiriad Sugarchain</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -478,16 +478,16 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Llofnodi &amp;neges…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">Arwyddo negeseuon gyda eich cyfeiriadau Bitcoin i brofi mae chi sy'n berchen arnynt</translation>
+        <source>Sign messages with your Sugarchain addresses to prove you own them</source>
+        <translation type="unfinished">Arwyddo negeseuon gyda eich cyfeiriadau Sugarchain i brofi mae chi sy'n berchen arnynt</translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
         <translation type="unfinished">&amp;Gwirio neges…</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation type="unfinished">Gwirio negeseuon i sicrhau eu bod wedi eu harwyddo gyda cyfeiriadau Bitcoin penodol</translation>
+        <source>Verify messages to ensure they were signed with specified Sugarchain addresses</source>
+        <translation type="unfinished">Gwirio negeseuon i sicrhau eu bod wedi eu harwyddo gyda cyfeiriadau Sugarchain penodol</translation>
     </message>
     <message>
         <source>&amp;Load PSBT from file…</source>
@@ -546,8 +546,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Cysylltu â chydweithwyr…</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation type="unfinished">Gofyn taliadau (creu côd QR a bitcoin: URIs)</translation>
+        <source>Request payments (generates QR codes and sugarchain: URIs)</source>
+        <translation type="unfinished">Gofyn taliadau (creu côd QR a sugarchain: URIs)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -632,8 +632,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">&amp;Derbyn cyfeiriadau</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI</source>
-        <translation type="unfinished">Agor bitcoin: URI</translation>
+        <source>Open a sugarchain: URI</source>
+        <translation type="unfinished">Agor sugarchain: URI</translation>
     </message>
     <message>
         <source>Open Wallet</source>
@@ -670,8 +670,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Mudo waled</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation type="unfinished">Dangos y%1neges gymorth i gael rhestr gyda'r opsiynau llinell-gorchymyn Bitcoin posibl</translation>
+        <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>
+        <translation type="unfinished">Dangos y%1neges gymorth i gael rhestr gyda'r opsiynau llinell-gorchymyn Sugarchain posibl</translation>
     </message>
     <message>
         <source>&amp;Mask values</source>
@@ -730,7 +730,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Dangos</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
             <numerusform />
@@ -1155,8 +1155,8 @@ Bydd y broses fudo yn creu copi wrth gefn o'r waled cyn mudo. Bydd y ffeil wrth 
         <translation type="unfinished">Golygu'r cyfeiriad anfon</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Bitcoin address.</source>
-        <translation type="unfinished">Y cyfeiriad a roddwyd "%1Nid yw " yn gyfeiriad Bitcoin dilys.</translation>
+        <source>The entered address "%1" is not a valid Sugarchain address.</source>
+        <translation type="unfinished">Y cyfeiriad a roddwyd "%1Nid yw " yn gyfeiriad Sugarchain dilys.</translation>
     </message>
     <message>
         <source>Address "%1" already exists as a receiving address with label "%2" and so cannot be added as a sending address.</source>
@@ -1261,8 +1261,8 @@ Bydd y broses fudo yn creu copi wrth gefn o'r waled cyn mudo. Bydd y ffeil wrth 
         </translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Bitcoin block chain.</source>
-        <translation type="unfinished">%1yn lawrlwytho ac yn storio copi o'r gadwyn bloc Bitcoin.</translation>
+        <source>%1 will download and store a copy of the Sugarchain block chain.</source>
+        <translation type="unfinished">%1yn lawrlwytho ac yn storio copi o'r gadwyn bloc Sugarchain.</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1450,8 +1450,8 @@ Bydd y broses fudo yn creu copi wrth gefn o'r waled cyn mudo. Bydd y ffeil wrth 
         <translation type="unfinished">Caniatáu cysylltiadau sy'n dod i mewn</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
-        <translation type="unfinished">Cysylltu â rhwydwaith Bitcoin trwy brocsï SOCKS5.</translation>
+        <source>Connect to the Sugarchain network through a SOCKS5 proxy.</source>
+        <translation type="unfinished">Cysylltu â rhwydwaith Sugarchain trwy brocsï SOCKS5.</translation>
     </message>
     <message>
         <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
