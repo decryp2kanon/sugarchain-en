@@ -126,7 +126,7 @@ class Peer:
 
 def main(pid):
     peers = dict()
-    print(f"Hooking into bitcoind with pid {pid}")
+    print(f"Hooking into sugarchaind with pid {pid}")
     bitcoind_with_usdts = USDT(pid=int(pid))
 
     # attaching the trace functions defined in the BPF program to the tracepoints
@@ -259,7 +259,7 @@ def running_as_root():
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("USAGE:", sys.argv[0], "<pid of bitcoind>")
+        print("USAGE:", sys.argv[0], "<pid of sugarchaind>")
         exit()
     if not running_as_root():
         print("You might not have the privileges required to hook into the tracepoints!")
