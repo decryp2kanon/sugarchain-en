@@ -2,22 +2,22 @@
 
 검증일: 2026년 11월 18일
 
-제품 이름을 **Sugarchain En**, GitHub 저장소와 로컬 주 폴더 이름을 **Sugarchain-En**으로 변경했다. 코드·패키징·문서뿐 아니라 기존 Qt 설정의 최초 이관, 결제 IPC 호환, 로컬 빌드·IBD 도구 경로를 함께 처리했다.
+제품 이름을 **Sugarchain En**, GitHub 저장소와 로컬 주 폴더 이름을 **sugarchain-en**으로 변경했다. 코드·패키징·문서뿐 아니라 기존 Qt 설정의 최초 이관, 결제 IPC 호환, 로컬 빌드·IBD 도구 경로를 함께 처리했다.
 
 ## 최종 위치와 실행 방법
 
 | 항목 | 최종 값 |
 |---|---|
-| GitHub | https://github.com/decryp2kanon/Sugarchain-En |
+| GitHub | https://github.com/decryp2kanon/sugarchain-en |
 | 저장소 ID | `1390440223`, 이름 변경 전과 동일 |
 | 기본 브랜치 | `core31` |
-| 로컬 주 폴더 | `/home/ak/git/Sugarchain-En` |
-| origin | `https://github.com/decryp2kanon/Sugarchain-En.git` |
-| GUI | `/home/ak/git/Sugarchain-En/build/bin/sugarchain-qt` |
-| daemon | `/home/ak/git/Sugarchain-En/build/bin/sugarchaind` |
-| CLI | `/home/ak/git/Sugarchain-En/build/bin/sugarchain-cli` |
+| 로컬 주 폴더 | `/home/ak/git/sugarchain-en` |
+| origin | `https://github.com/decryp2kanon/sugarchain-en.git` |
+| GUI | `/home/ak/git/sugarchain-en/build/bin/sugarchain-qt` |
+| daemon | `/home/ak/git/sugarchain-en/build/bin/sugarchaind` |
+| CLI | `/home/ak/git/sugarchain-en/build/bin/sugarchain-cli` |
 | 빌드 명령 | `sugarchain-build` 또는 `sugarchain-build en` |
-| 이전 빌드 보관 | `/home/ak/git/Sugarchain-En/build-before-en-20261118` |
+| 이전 빌드 보관 | `/home/ak/git/sugarchain-en/build-before-en-20261118` |
 
 현재 `build`는 검증된 실행파일의 설치 위치다. 실제 clean configure·컴파일과 시험은 등록된 NVMe 임시 작업 공간에서 수행했다. 다음 빌드도 관리 래퍼를 사용하면 소스 폴더와 임시 결과물을 분리할 수 있다. `sugarchain-build core31`은 호환 별칭으로 새 En 빌드를 선택하고, 별도 `legacy` 분기는 구형 저장소를 유지한다.
 
@@ -90,3 +90,9 @@ Windows 실제 설치·업그레이드·제거, Windows 레지스트리 기반 �
 6. 구 Qt 프로필은 남아 있으므로 구버전은 원래 설정을 사용할 수 있다. 새 프로필을 구 프로필에 역복사하지 않는다.
 
 옛 저장소 이름을 재사용해 새 저장소를 만들면 GitHub redirect가 깨질 수 있으므로 사용하지 않는다. 과거 태그·릴리스·저작권 고지는 새 이름으로 소급 수정하지 않는다.
+
+## 2026-11-18 폴더·저장소 이름 소문자 정정
+
+사용자 최종 지시에 따라 로컬 주 폴더를 `/home/ak/git/sugarchain-en`, GitHub 저장소를 `decryp2kanon/sugarchain-en`으로 정정했다. 저장소 ID `1390440223`, `core31` 브랜치와 이력은 유지한다. 제품 표시 이름 `Sugarchain En`, 배포 파일 접두사와 기존 백업 폴더 이름은 그대로 보존한다.
+
+연결된 worktree 기록 15개를 유지하고 실제 존재하는 14개의 HEAD와 공통 Git 디렉터리 연결을 확인했다. 다른 worktree의 미커밋 변경과 사용자 PNG도 보존했다. 빌드 래퍼와 IBD 도구의 경로를 수정했고, 기본 실행과 기존 별칭을 포함한 빌드 래퍼 선택 7건, 셸 문법 검사, 새 소스 경로에서 GUI·IPC를 켠 CMake 구성, 설치된 도구 7종 및 GUI·노드 하위 명령의 버전 확인 9건이 통과했다. 이번 경로 정정에서는 전체 재컴파일이나 운영 노드 재시작을 하지 않았다. SSH 파일과 설정도 변경하지 않았다.

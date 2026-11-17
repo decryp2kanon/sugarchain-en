@@ -49,8 +49,8 @@ winget install python3
 Clone the Sugarchain En repository to a directory. All build scripts and commands will run from this directory.
 
 ```powershell
-git clone --branch core31 https://github.com/decryp2kanon/Sugarchain-En.git
-cd Sugarchain-En
+git clone --branch core31 https://github.com/decryp2kanon/sugarchain-en.git
+cd sugarchain-en
 ```
 
 

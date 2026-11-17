@@ -6,18 +6,18 @@
 
 ## 목표와 확정 명칭
 
-**제품 이름을 Sugarchain En으로 통일하고, GitHub 저장소와 로컬 주 작업 폴더를 모두 Sugarchain-En으로 바꾼다. 기존 지갑·체인 데이터·개인 설정과 개발 작업은 보존한다.**
+**제품 이름을 Sugarchain En으로 통일하고, GitHub 저장소와 로컬 주 작업 폴더를 모두 sugarchain-en으로 바꾼다. 기존 지갑·체인 데이터·개인 설정과 개발 작업은 보존한다.**
 
-사용자가 지정한 대소문자와 구분자를 그대로 적용한다. `En`, `Sugarchain En`, `Sugarchain-En`을 용도에 맞게 구분하며 저장소를 임의로 소문자 이름으로 만들지 않는다.
+2026-11-18 사용자 정정에 따라 폴더와 GitHub 저장소 이름은 `sugarchain-en`으로 모두 소문자를 사용한다. 제품 표시 이름은 `Sugarchain En`으로 유지하며, 배포 파일 접두사와 기존 백업 폴더 이름은 별도로 보존한다.
 
 | 용도 | 현재 | 변경 후 |
 |---|---|---|
 | 제품과 GUI 표시 | Sugarchain Komorebi | **Sugarchain En** |
 | 제품 단축명 | Komorebi | **En** |
-| GitHub 저장소 | `decryp2kanon/sugarchain-komorebi` | **`decryp2kanon/Sugarchain-En`** |
-| 저장소 웹 주소 | `https://github.com/decryp2kanon/sugarchain-komorebi` | `https://github.com/decryp2kanon/Sugarchain-En` |
-| SSH origin | `git@github.com:decryp2kanon/sugarchain-komorebi.git` | `git@github.com:decryp2kanon/Sugarchain-En.git` |
-| 로컬 주 작업 폴더 | `/home/ak/git/sugarchain-core31` | **`/home/ak/git/Sugarchain-En`** |
+| GitHub 저장소 | `decryp2kanon/sugarchain-komorebi` | **`decryp2kanon/sugarchain-en`** |
+| 저장소 웹 주소 | `https://github.com/decryp2kanon/sugarchain-komorebi` | `https://github.com/decryp2kanon/sugarchain-en` |
+| SSH origin | `git@github.com:decryp2kanon/sugarchain-komorebi.git` | `git@github.com:decryp2kanon/sugarchain-en.git` |
+| 로컬 주 작업 폴더 | `/home/ak/git/sugarchain-core31` | **`/home/ak/git/sugarchain-en`** |
 | CMake 프로젝트 식별자 | `SugarchainKomorebi` | `SugarchainEn` |
 | Qt 조직 | `Sugarchain` | 유지 |
 | Qt 앱 설정 이름 | `Sugarchain Komorebi`와 네트워크별 접미사 | `Sugarchain En`과 동일한 네트워크별 접미사 |
@@ -80,7 +80,7 @@ Windows 신규 설치는 Sugarchain En 경로를 쓴다. 기존 설치를 감지
 
 | 위치 | 필요한 변경 |
 |---|---|
-| `/home/ak/git/sugarchain-core31` | `/home/ak/git/Sugarchain-En`으로 주 폴더 이전 |
+| `/home/ak/git/sugarchain-core31` | `/home/ak/git/sugarchain-en`으로 주 폴더 이전 |
 | `/home/ak/git/pr11-review-split` 등 연결 worktree | 주 저장소 이동 뒤 `.git` 연결과 공통 Git 디렉터리 복구 |
 | `/home/ak/.local/bin/sugarchain-build` | 관리 래퍼로 연결되는 링크와 새 기본 동작 검증 |
 | `/home/ak/.local/lib/enikk-temp/sugarchain/build-core31.sh:9` | CMake 소스 경로를 새 폴더로 변경 |
@@ -158,7 +158,7 @@ Qt는 조직·앱 이름을 기준으로 설정을 찾으므로 이름만 바꾸
 ### GitHub 저장소 이름 변경
 
 1. 전환 직전에 새 이름 충돌, 저장소 ID, 기본 브랜치·보호 규칙·ruleset·권한·Pages·workflow·웹훅·릴리스·외부 의존을 다시 확인한다. 비밀 값을 로그로 출력하지 않는다.
-2. 새 저장소를 생성하거나 이력을 복사하지 않고 기존 저장소를 **`Sugarchain-En`으로 rename**한다.
+2. 새 저장소를 생성하거나 이력을 복사하지 않고 기존 저장소를 **`sugarchain-en`으로 rename**한다.
 3. 이름 변경 후 저장소 ID가 `1390440223`으로 같은지, 브랜치·태그·PR·이슈·릴리스가 유지되는지 대조한다.
 4. 모든 실제 clone의 origin을 새 주소로 변경한다. 연결 worktree는 공통 Git 설정을 쓰므로 저장소별로 한 번 변경하고 각 worktree에서 확인한다. 별도 clone은 각각 확인한다.
 5. README·clone 명령·배지·릴리스 링크·외부 스크립트를 새 주소로 맞춘다. 새 주소로 `ls-remote`와 별도 clone을 시험한다.
@@ -172,7 +172,7 @@ GitHub 푸시로 수행되는 자동화가 있다면 해당 자동화에 맡긴�
 
 1. 사용자 앱 전환 전에 새 코드와 빌드 결과를 검증하고, 작업 중인 에이전트·셸·빌드가 기존 폴더를 변경하지 않는지 확인한다.
 2. 운영 지갑의 정상 저장·종료를 확인한다. 강제 종료하지 않으며, 데이터 디렉터리 이름을 바꾸지 않는다.
-3. `/home/ak/git/Sugarchain-En`이 없는지 다시 확인하고, 같은 파일시스템 안에서 기존 주 폴더를 새 이름으로 이동한다. 파일 내용·권한·Git 객체를 복사본으로 덮어쓰지 않는다.
+3. `/home/ak/git/sugarchain-en`이 없는지 다시 확인하고, 같은 파일시스템 안에서 기존 주 폴더를 새 이름으로 이동한다. 파일 내용·권한·Git 객체를 복사본으로 덮어쓰지 않는다.
 4. 새 주 폴더에서 `git worktree repair`를 수행한다. 연결 worktree도 이동한 경우 해당 새 경로를 명시한다. worktree마다 공통 Git 디렉터리·HEAD·브랜치·변경 파일 상태를 이전 기록과 비교한다.
 5. 기존 경로가 없는 worktree 기록은 이번 변경을 이유로 prune하지 않는다. 다른 작업자가 쓰는 worktree나 브랜치를 정리하지 않는다.
 6. 외부 래퍼·IBD 도구·바로가기의 실제 참조를 새 폴더로 바꾼다. 과거 `core31` 명령 별칭이 필요하면 새 경로로 연결하되 주 작업 폴더 자체를 옛 이름의 영구 symlink로 숨기지 않는다.
@@ -199,9 +199,9 @@ GitHub 푸시로 수행되는 자동화가 있다면 해당 자동화에 맡긴�
 | 시험 지갑 | 별도 regtest 환경의 생성·재실행·송수신·잔액 및 RPC 결과 정상 |
 | Windows 설치·업그레이드·제거 | 등록 정보·바로가기 정상, 사용자 데이터와 설정 보존 |
 | macOS 앱·설치물 | 앱 이름·bundle·실행파일·알림·서명 대상 일치, 실행과 설정 이관 정상 |
-| 로컬 폴더와 worktree | 주 경로는 정확히 `/home/ak/git/Sugarchain-En`, 연결된 실제 worktree의 이력·수정 내용 보존 |
+| 로컬 폴더와 worktree | 주 경로는 정확히 `/home/ak/git/sugarchain-en`, 연결된 실제 worktree의 이력·수정 내용 보존 |
 | 빌드·IBD 래퍼 | 새 경로와 fixture 동작, 별도 legacy 저장소의 동작 보존 |
-| 원격 이력 | 저장소 표시 이름은 정확히 Sugarchain-En, 동일 ID·브랜치·태그·PR·릴리스 유지 |
+| 원격 이력 | 저장소 표시 이름은 정확히 sugarchain-en, 동일 ID·브랜치·태그·PR·릴리스 유지 |
 
 플랫폼별로 실제 실행 시험과 정적 검토를 구분해 보고한다. Windows/macOS 실행 환경이 없으면 그 항목을 정적 검토만으로 합격 처리하지 않는다. 아직 검증하지 않은 플랫폼은 남은 조건으로 명시한다.
 
@@ -224,7 +224,7 @@ GitHub 푸시로 수행되는 자동화가 있다면 해당 자동화에 맡긴�
 
 ## 실행 전 마지막 확인
 
-- [ ] 제품 Sugarchain En, 폴더와 저장소 Sugarchain-En의 대소문자 일치
+- [ ] 제품 Sugarchain En, 폴더와 저장소 sugarchain-en의 대소문자 일치
 - [ ] 최신 HEAD·변경 파일·worktree·실행 앱·원격 설정 다시 기록
 - [ ] 이름이 같은 기존 로컬 폴더와 GitHub 저장소가 없는지 확인
 - [ ] 기능별 커밋과 설정 이관·IPC·패키징 검증 준비

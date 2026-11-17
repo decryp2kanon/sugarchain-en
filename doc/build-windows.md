@@ -39,11 +39,11 @@ If you want to build the Windows installer using the `deploy` build target, you 
 
 Acquire the source in the usual way:
 
-    git clone --branch core31 https://github.com/decryp2kanon/Sugarchain-En.git
-    cd Sugarchain-En
+    git clone --branch core31 https://github.com/decryp2kanon/sugarchain-en.git
+    cd sugarchain-en
 
 Note that for WSL the Sugarchain En source path MUST be somewhere in the default mount file system, for
-example /usr/src/Sugarchain-En, AND not under /mnt/d/. If this is not the case the dependency autoconf scripts will fail.
+example /usr/src/sugarchain-en, AND not under /mnt/d/. If this is not the case the dependency autoconf scripts will fail.
 This means you cannot use a directory that is located directly on the host Windows file system to perform the build.
 
 Build using:

@@ -4,7 +4,7 @@ Homepage: https://sugarchain.org/
 
 Contact/community: https://t.me/sugarchain
 
-Bug reports: https://github.com/decryp2kanon/Sugarchain-En/issues
+Bug reports: https://github.com/decryp2kanon/sugarchain-en/issues
 
 ## Upstream Bitcoin Core reference
 

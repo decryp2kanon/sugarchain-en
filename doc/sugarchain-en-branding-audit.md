@@ -1,7 +1,7 @@
 # Sugarchain En branding audit and retained names
 
 Current names are `Sugarchain En` (product), `SugarchainEn` (CMake project), and
-`decryp2kanon/Sugarchain-En` (repository). The default branch remains `core31`.
+`decryp2kanon/sugarchain-en` (repository). The default branch remains `core31`.
 Executable names, `.sugarchain`, payment URI scheme, coin units, consensus,
 network identifiers, and the P2P user-agent name are outside this rename.
 

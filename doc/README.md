@@ -32,7 +32,7 @@ Drag Sugarchain En to your applications folder, and then run Sugarchain En.
 ### Need Help?
 
 * Contact/community: https://t.me/sugarchain
-* Bug reports: https://github.com/decryp2kanon/Sugarchain-En/issues
+* Bug reports: https://github.com/decryp2kanon/sugarchain-en/issues
 
 Building
 ---------------------

@@ -210,8 +210,8 @@ Setup and Build Example: Arch Linux
 This example lists the steps necessary to setup and build a command line only distribution of the latest changes on Arch Linux:
 
     pacman --sync --needed capnproto cmake boost gcc git libevent make python sqlite
-    git clone --branch core31 https://github.com/decryp2kanon/Sugarchain-En.git
-    cd Sugarchain-En/
+    git clone --branch core31 https://github.com/decryp2kanon/sugarchain-en.git
+    cd sugarchain-en/
     cmake -B build
     cmake --build build
     ctest --test-dir build
