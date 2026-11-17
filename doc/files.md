@@ -22,7 +22,7 @@
 
 ## Data directory location
 
-The data directory is the default location where the Sugarchain Komorebi files are stored.
+The data directory is the default location where the Sugarchain En files are stored.
 
 1. The default data directory paths for supported platforms are:
 
@@ -102,9 +102,11 @@ Subdirectory | File                 | Description
 
 `sugarchain-qt` uses [`QSettings`](https://doc.qt.io/qt-6/qsettings.html) class; this implies platform-specific [locations where application settings are stored](https://doc.qt.io/qt-6/qsettings.html#locations-where-application-settings-are-stored).
 
-The organization is `Sugarchain` and the application is `Sugarchain Komorebi`
-(with the existing network suffix on non-main networks). Bitcoin Core settings
-are not read or migrated.
+The organization is `Sugarchain` and the application is `Sugarchain En`
+(with the existing network suffix on non-main networks). On first use, existing settings from the former `Sugarchain Komorebi` application
+are copied to the corresponding new network profile without replacing an existing
+En profile. The source settings are preserved. Bitcoin Core settings are not read
+or migrated.
 
 ## Legacy subdirectories and files
 
@@ -137,7 +139,7 @@ Subdirectory | File(s)           | Description
 
 ## Installed Files
 
-This table describes the files installed by Sugarchain Komorebi across different platforms.
+This table describes the files installed by Sugarchain En across different platforms.
 
 | **Path**                                                   | **Description**                                                             |
 |------------------------------------------------------------|-----------------------------------------------------------------------------|

@@ -1,15 +1,15 @@
-Sugarchain Komorebi
+Sugarchain En
 =============
 
 Setup
 ---------------------
-Sugarchain Komorebi is based on Bitcoin Core v31.1; network and consensus rules remain at the Bitcoin baseline. It downloads and, by default, stores the entire history of Bitcoin transactions, which requires several hundred gigabytes or more of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to several days or more.
+Sugarchain En is based on Bitcoin Core v31.1; network and consensus rules remain at the Bitcoin baseline. It downloads and, by default, stores the entire history of Bitcoin transactions, which requires several hundred gigabytes or more of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to several days or more.
 
 The Sugarchain homepage is https://sugarchain.org/.
 
 Running
 ---------------------
-The following are some helpful notes on how to run Sugarchain Komorebi on your native platform.
+The following are some helpful notes on how to run Sugarchain En on your native platform.
 
 ### Unix
 
@@ -27,16 +27,16 @@ Unpack the files into a directory, and then run sugarchain-qt.exe.
 
 ### macOS
 
-Drag Sugarchain Komorebi to your applications folder, and then run Sugarchain Komorebi.
+Drag Sugarchain En to your applications folder, and then run Sugarchain En.
 
 ### Need Help?
 
 * Contact/community: https://t.me/sugarchain
-* Bug reports: https://github.com/sugarchain-project/sugarchain/issues
+* Bug reports: https://github.com/decryp2kanon/Sugarchain-En/issues
 
 Building
 ---------------------
-The following are developer notes on how to build Sugarchain Komorebi on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+The following are developer notes on how to build Sugarchain En on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
 - [Dependencies](dependencies.md)
 - [macOS Build Notes](build-osx.md)

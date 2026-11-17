@@ -1,4 +1,4 @@
-This directory contains the source code for the Sugarchain Komorebi graphical user interface (GUI). It uses the [Qt](https://www1.qt.io/developers/) cross-platform framework.
+This directory contains the source code for the Sugarchain En graphical user interface (GUI). It uses the [Qt](https://www1.qt.io/developers/) cross-platform framework.
 
 The current precise version for Qt is specified in [qt_details.mk](/depends/packages/qt_details.mk).
 
@@ -121,4 +121,4 @@ sudo apt-get install qtcreator
 
 8. While in the `Projects` tab, ensure that you have the `sugarchain-qt` executable specified under `Run`
  - If the executable is not specified: click `"Choose..."`, navigate to `build/bin`, and select `sugarchain-qt`
-9. You're all set! Start developing, building, and debugging the Sugarchain Komorebi GUI
+9. You're all set! Start developing, building, and debugging the Sugarchain En GUI

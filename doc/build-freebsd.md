@@ -19,7 +19,7 @@ SQLite is required for the wallet:
 pkg install sqlite3
 ```
 
-To build Sugarchain Komorebi without the wallet, use `-DENABLE_WALLET=OFF`.
+To build Sugarchain En without the wallet, use `-DENABLE_WALLET=OFF`.
 
 Cap'n Proto is needed for IPC functionality (see [multiprocess.md](multiprocess.md)):
 
@@ -32,9 +32,10 @@ Compile with `-DENABLE_IPC=OFF` if you do not need IPC functionality.
 See [dependencies.md](dependencies.md) for a complete overview.
 
 ### 2. Clone Bitcoin Repo
-Now that `git` and all the required dependencies are installed, let's clone the Sugarchain Komorebi repository to a directory. All build scripts and commands will run from this directory.
+Now that `git` and all the required dependencies are installed, let's clone the Sugarchain En repository to a directory. All build scripts and commands will run from this directory.
 ```bash
-git clone --branch core31-branding-rename https://github.com/decryp2kanon/sugarchain.git
+git clone --branch core31 https://github.com/decryp2kanon/Sugarchain-En.git
+cd Sugarchain-En
 ```
 
 ### 3. Install Optional Dependencies
@@ -42,7 +43,7 @@ git clone --branch core31-branding-rename https://github.com/decryp2kanon/sugarc
 #### GUI Dependencies
 ###### Qt6
 
-Sugarchain Komorebi includes a GUI built with the cross-platform Qt Framework. To compile the GUI, we need to install
+Sugarchain En includes a GUI built with the cross-platform Qt Framework. To compile the GUI, we need to install
 the necessary parts of Qt, the libqrencode and pass `-DBUILD_GUI=ON`. Skip if you don't intend to use the GUI.
 
 ```bash
@@ -64,7 +65,7 @@ Otherwise, if you don't need QR encoding support, use the `-DWITH_QRENCODE=OFF` 
 #### Notifications
 ###### ZeroMQ
 
-Sugarchain Komorebi can provide notifications via ZeroMQ. To compile ZMQ support, install the following dependency and pass `-DWITH_ZMQ=ON` when configuring.
+Sugarchain En can provide notifications via ZeroMQ. To compile ZMQ support, install the following dependency and pass `-DWITH_ZMQ=ON` when configuring.
 ```bash
 pkg install libzmq4
 ```
@@ -78,11 +79,11 @@ pkg install python3 databases/py-sqlite3 net/py-pyzmq
 ```
 ---
 
-## Building Sugarchain Komorebi
+## Building Sugarchain En
 
 ### 1. Configuration
 
-There are many ways to configure Sugarchain Komorebi, here are a few common examples:
+There are many ways to configure Sugarchain En, here are a few common examples:
 
 ##### Wallet and GUI:
 This enables the GUI, assuming `sqlite` and `qt` are installed.
