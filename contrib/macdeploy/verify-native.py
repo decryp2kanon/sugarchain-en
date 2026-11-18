@@ -94,7 +94,7 @@ class Node:
         self.log.close()
         require(self.process.returncode == 0, f"Node did not shut down cleanly: {self.directory}")
 
-    def __exit__(self, exc_type, _exc, _traceback):
+    def __exit__(self, _exc_type, _exc, _traceback):
         self.close()
 
 
