@@ -7,6 +7,11 @@ Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet n
 
 The Sugarchain homepage is https://sugarchain.org/.
 
+Current release preparation targets Linux first; Windows and macOS are deferred.
+See the [Linux candidate build/package guide](sugarchain-en-linux-release.md) and
+[En draft release notes](release-notes/sugarchain-en-draft.md). No public En release
+or download is announced by these preparation documents.
+
 This directory also retains upstream Bitcoin Core technical references, BIPs,
 example transactions, and historical release notes. Their Bitcoin names,
 addresses, and external service links identify the upstream material; they
@@ -14,11 +19,11 @@ do not describe Sugarchain En releases or guarantee support by an external tool.
 
 Running
 ---------------------
-The following are some helpful notes on how to run Sugarchain En on your native platform.
+The following notes describe source builds and private candidates. See the Linux candidate guide for validation and package scope.
 
-### Unix
+### Linux
 
-Unpack the files into a directory and run:
+After building or staging a candidate, run:
 
 - `bin/sugarchain-qt` (GUI) or
 - `bin/sugarchaind` (headless)
@@ -28,11 +33,11 @@ The `sugarchain` command supports subcommands like `sugarchain gui`, `sugarchain
 
 ### Windows
 
-Unpack the files into a directory, and then run sugarchain-qt.exe.
+Native execution and installation are deferred. The Windows build notes are retained for follow-up work; no current En Windows release support is claimed.
 
 ### macOS
 
-Drag Sugarchain En to your applications folder, and then run Sugarchain En.
+Native execution and packaging are deferred. The macOS build notes are retained for follow-up work; no current En macOS release support is claimed.
 
 ### Need Help?
 
