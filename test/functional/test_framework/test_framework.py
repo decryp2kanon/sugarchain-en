@@ -268,6 +268,11 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 raise SkipTest("--usecli specified but test does not support using CLI")
             self.skip_if_no_cli()
         self.skip_test_if_missing_module()
+        supported_chains = self.config["environment"]["SUPPORTED_CHAINS"].split(",")
+        # Mainnet uses an empty data subdirectory in the test framework.
+        chain_name = self.chain or "main"
+        if chain_name not in supported_chains:
+            raise SkipTest(f"Network {chain_name!r} is not supported by this application (supported: {supported_chains})")
         self.setup_chain()
         self.setup_network()
 
