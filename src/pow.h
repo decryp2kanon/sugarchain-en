@@ -7,6 +7,7 @@
 #define BITCOIN_POW_H
 
 #include <consensus/params.h>
+#include <kernel/cs_main.h>
 
 #include <cstdint>
 #include <cstddef>
@@ -64,7 +65,7 @@ YespowerCacheUsage GetYespowerVerificationCacheUsage();
 bool ShrinkYespowerVerificationCache();
 
 /** With cs_main held, restore an evicted proof from a genuinely checked live index. */
-void CacheVerifiedBlockIndexProof(const CBlockIndex& index, const Consensus::Params& params);
+void CacheVerifiedBlockIndexProof(const CBlockIndex& index, const Consensus::Params& params) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
 inline constexpr int DEFAULT_HEADER_POW_WORKERS{8};
 inline constexpr int MAX_HEADER_POW_WORKERS{8};

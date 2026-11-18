@@ -105,13 +105,13 @@ public:
 class BlockTreeDB : public CDBWrapper
 {
     void PopulateBatch(CDBBatch& batch, const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo,
-        int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus);
+        int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
 public:
     using CDBWrapper::CDBWrapper;
-    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus = nullptr);
+    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus = nullptr) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
     /** Consume a temporary pointer vector after serialization, before DB insertion. */
-    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, std::vector<const CBlockIndex*>&& blockinfo, const Consensus::Params* consensus = nullptr);
+    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, std::vector<const CBlockIndex*>&& blockinfo, const Consensus::Params* consensus = nullptr) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
     bool HasYespowerEvidence(const CBlockHeader& header, const Consensus::Params& consensus) const;
     /** Bounded background DB scan; caller keeps this DB alive until joined. */
     std::optional<std::string> VerifyHistoricalPoW(const Consensus::Params& consensus,

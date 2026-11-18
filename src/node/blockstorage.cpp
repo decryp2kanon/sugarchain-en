@@ -391,7 +391,7 @@ bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, s
         log_progress(percent);
     };
     // Validate the pending batch before publishing any process-local proof status.
-    const auto flush_pow = [&] {
+    const auto flush_pow = [&]() EXCLUSIVE_LOCKS_REQUIRED(::cs_main) {
         if (pending_headers.empty()) return true;
         if (!verifier.CheckEach(pending_headers, consensusParams)) {
             // CheckEach reports only batch failure. Recheck this bounded batch
