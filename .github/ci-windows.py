@@ -65,12 +65,23 @@ def github_import_vs_env(_ci_type):
             env_file.write(f"{name}={value}\n")
 
 
+def cmake_warning_options(version):
+    options = ["-Werror=dev"]
+    if tuple(map(int, version.split(".")[:2])) >= (4, 5):
+        # CMake 4.5 adds a default-ignored style advisory; keep it visible
+        # without making inherited non-target directives fatal to CI.
+        # https://cmake.org/cmake/help/v4.5/diagnostic/CMD_NON_TARGET_DIRECTIVE.html
+        options.append("-Wno-error=non-target-directive")
+    return options
+
+
 def generate(ci_type):
+    version = run(["cmake", "--version"], capture_output=True, text=True).stdout.splitlines()[0].split()[-1]
     command = [
         "cmake",
         "-B",
         "build",
-        "-Werror=dev",
+        *cmake_warning_options(version),
         "--preset",
         "vs2026",
     ] + GENERATE_OPTIONS[ci_type]
