@@ -101,7 +101,7 @@ def check_manifests(ci_type):
         return
 
     release_dir = Path.cwd() / "build" / "bin" / "Release"
-    manifest_path = release_dir / "bitcoind.manifest"
+    manifest_path = release_dir / "sugarchaind.manifest"
     cmd_bitcoind_manifest = [
         "mt.exe",
         "-nologo",
@@ -113,7 +113,6 @@ def check_manifests(ci_type):
 
     skips = {  # Skip as they currently do not have manifests
         "fuzz.exe",
-        "bench_bitcoin.exe",
         "test_bitcoin-qt.exe",
         "sugarchain-chainstate.exe",
     }

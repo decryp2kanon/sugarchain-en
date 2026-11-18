@@ -30,7 +30,7 @@ def print_version():
 
 def check_manifests():
     release_dir = Path.cwd() / "bin"
-    manifest_path = release_dir / "bitcoind.manifest"
+    manifest_path = release_dir / "sugarchaind.manifest"
 
     cmd_bitcoind_manifest = [
         "mt.exe",
@@ -43,7 +43,6 @@ def check_manifests():
 
     skipped = {  # Skip as they currently do not have manifests
         "fuzz.exe",
-        "bench_bitcoin.exe",
     }
     for entry in release_dir.iterdir():
         if entry.suffix.lower() != ".exe":
