@@ -56,7 +56,7 @@
 #elif defined(__SSE2__)
 #pragma message("Note: AVX and XOP are not enabled.  That's OK.")
 #elif defined(__x86_64__) || defined(__i386__)
-#warning "SSE2 not enabled.  Expect poor performance."
+#pragma message("Note: SSE2 not enabled.  Expect poor performance.")
 #else
 #pragma message("Note: building generic code for non-x86.  That's OK.")
 #endif
