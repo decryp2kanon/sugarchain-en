@@ -4,6 +4,7 @@
 
 name: CI
 on:
+  workflow_dispatch:
   # See: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#pull_request.
   pull_request:
   # See: https://docs.github.com/en/actions/writing-workflows/choosing-when-your-workflow-runs/events-that-trigger-workflows#push.
@@ -12,6 +13,9 @@ on:
       - '**'
     tags-ignore:
       - '**'
+
+permissions:
+  contents: read
 
 concurrency:
   group: ${{ github.event_name != 'pull_request' && github.run_id || github.ref }}
@@ -133,7 +137,7 @@ jobs:
     # one for the branch push and one for the pull request.
     # This can be avoided by setting SKIP_BRANCH_PUSH=true as a custom env variable
     # in Github repository settings.
-    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' }}
+    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
 
     timeout-minutes: 120
 
@@ -216,7 +220,7 @@ jobs:
     name: ${{ matrix.job-name }}
     runs-on: windows-2025-vs2026
 
-    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' }}
+    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
 
     env:
       PYTHONUTF8: 1
@@ -308,6 +312,10 @@ jobs:
         run: |
           py -3 .github/ci-windows.py ${{ matrix.job-type }} prepare_tests
 
+      - name: Run native network, GUI and wallet smoke checks
+        if: matrix.job-type == 'standard'
+        run: py -3 .github/ci-windows-smoke.py --bindir build/bin/Release --work-dir "${RUNNER_TEMP}/en-native-smoke"
+
       - name: Run tests
         env:
           TEST_RUNNER_EXTRA: "--timeout-factor=${{ env.TEST_RUNNER_TIMEOUT_FACTOR }} ${{ case(github.event_name == 'pull_request', '', '--extended') }}"
@@ -332,7 +340,7 @@ jobs:
     name: 'Windows-cross to x86_64, ${{ matrix.crt }}'
     needs: [runners, record-frozen-commit]
     runs-on: ${{ needs.runners.outputs.provider == 'warp' && 'warp-ubuntu-latest-x64-4x' || 'ubuntu-latest' }}
-    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' }}
+    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
 
     strategy:
       fail-fast: false
@@ -390,6 +398,8 @@ jobs:
             ${{ env.BASE_BUILD_DIR }}/src/secp256k1/bin/*.exe
             ${{ env.BASE_BUILD_DIR }}/src/univalue/*.exe
             ${{ env.BASE_BUILD_DIR }}/test/config.ini
+            ${{ env.BASE_BUILD_DIR }}/*-win64-setup.exe
+            ${{ env.BASE_BUILD_DIR }}/windows-installer-path.txt
 
   windows-native-test:
     name: 'Windows, ${{ matrix.crt }}, test cross-built'
@@ -434,6 +444,15 @@ jobs:
       - name: Prepare Windows test environment
         run: py -3 .github/ci-windows-cross.py prepare_tests
 
+      - name: Run native network, GUI and wallet smoke checks
+        run: py -3 .github/ci-windows-smoke.py --bindir bin --work-dir "${RUNNER_TEMP}/en-cross-smoke-${{ matrix.crt }}"
+
+      - name: Verify installed applications and installer lifecycle
+        run: |
+          py -3 .github/ci-windows-installer.py \
+            --installer "$(basename "$(cat windows-installer-path.txt)")" \
+            --work-dir "${RUNNER_TEMP}/en-installer-${{ matrix.crt }}"
+
       - name: Run unit tests
         run: py -3 .github/ci-windows-cross.py run_unit_tests
 
@@ -447,7 +466,7 @@ jobs:
     name: ${{ matrix.name }}
     needs: runners
     runs-on: ${{ needs.runners.outputs.provider == 'warp' && matrix.warp-runner || matrix.fallback-runner }}
-    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' }}
+    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: ${{ matrix.timeout-minutes }}
 
     env:
@@ -507,7 +526,7 @@ jobs:
             timeout-minutes: 240
             file-env: './ci/test/00_setup_env_native_fuzz.sh'
 
-          - name: 'previous releases'
+          - name: 'Sugarchain legacy wallet compatibility'
             warp-runner: 'warp-ubuntu-latest-x64-8x'
             fallback-runner: 'ubuntu-latest'
             timeout-minutes: 120
@@ -589,7 +608,7 @@ jobs:
     name: 'lint'
     needs: runners
     runs-on: ${{ needs.runners.outputs.provider == 'warp' && 'warp-ubuntu-latest-x64-2x' || 'ubuntu-latest' }}
-    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' }}
+    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
     timeout-minutes: 20
     env:
       CONTAINER_NAME: "bitcoin-linter"

@@ -97,7 +97,7 @@ Section -Main SEC0000
     File @abs_top_builddir@/release/@BITCOIN_CLI_NAME@@EXEEXT@
     File @abs_top_builddir@/release/@BITCOIN_TX_NAME@@EXEEXT@
     File @abs_top_builddir@/release/@BITCOIN_WALLET_TOOL_NAME@@EXEEXT@
-    File @abs_top_builddir@/release/@BITCOIN_TEST_NAME@@EXEEXT@
+    File @abs_top_builddir@/release/@BITCOIN_UTIL_NAME@@EXEEXT@
     SetOutPath $INSTDIR
     WriteRegStr HKCU "${REGKEY}\Components" Main 1
 SectionEnd
@@ -113,9 +113,10 @@ Section -post SEC0001
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory $SMPROGRAMS\$StartMenuGroup
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\$(^Name).lnk" $INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (testnet).lnk" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" "-testnet" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" 1
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (test signet).lnk" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" "-signet" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" 2
-    CreateShortcut "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (testnet4).lnk" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" "-testnet4" "$INSTDIR\@BITCOIN_GUI_NAME@@EXEEXT@" 3
+    # Remove launchers from older En installations for unsupported chains.
+    Delete "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (testnet).lnk"
+    Delete "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (test signet).lnk"
+    Delete "$SMPROGRAMS\$StartMenuGroup\@CLIENT_NAME@ (testnet4).lnk"
     CreateShortcut "$SMPROGRAMS\$StartMenuGroup\Uninstall $(^Name).lnk" $INSTDIR\uninstall.exe
     !insertmacro MUI_STARTMENU_WRITE_END
     WriteRegStr HKCU "${UNINSTALL_REGKEY}" DisplayName "$(^Name)"
@@ -184,7 +185,7 @@ Section /o -un.Main UNSEC0000
     Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_CLI_NAME@@EXEEXT@
     Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_TX_NAME@@EXEEXT@
     Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_WALLET_TOOL_NAME@@EXEEXT@
-    Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_TEST_NAME@@EXEEXT@
+    Delete /REBOOTOK $INSTDIR\daemon\@BITCOIN_UTIL_NAME@@EXEEXT@
     RMDir /REBOOTOK $INSTDIR\daemon
     DeleteRegValue HKCU "${REGKEY}\Components" Main
 SectionEnd

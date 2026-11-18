@@ -27,6 +27,7 @@ jobs:
     env:
       QT_QPA_PLATFORM: minimal
       CTEST_OUTPUT_ON_FAILURE: 1
+      TEST_RUNNER_TIMEOUT_FACTOR: 40
     steps:
       - name: Check out source
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
@@ -50,13 +51,18 @@ jobs:
             -DENABLE_WALLET=ON -DENABLE_IPC=ON -DBUILD_BENCH=OFF \
             -DWITH_ZMQ=ON -DWITH_USDT=ON
 
-      - name: Build applications and Qt tests
+      - name: Build all applications and native tests
         run: |
-          cmake --build build --parallel 2 --target \
-            bitcoind bitcoin-cli bitcoin bitcoin-node bitcoin-gui bitcoin-qt \
-            bitcoin-wallet test_bitcoin-qt
+          cmake --build build --parallel 2
 
-      - name: Run the complete Qt test executable
+      - name: Install applications and verify native runtime behavior
+        run: |
+          cmake --install build --prefix "${RUNNER_TEMP}/en-linux-prefix"
+          python3 .github/ci-windows-smoke.py \
+            --bindir "${RUNNER_TEMP}/en-linux-prefix/bin" \
+            --work-dir "${RUNNER_TEMP}/en-linux-native-smoke"
+
+      - name: Run all unit, IPC, recovery and Qt tests
         env:
           XDG_CONFIG_HOME: ${{ runner.temp }}/en-qt/config
           XDG_DATA_HOME: ${{ runner.temp }}/en-qt/data
@@ -66,7 +72,7 @@ jobs:
           mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
           install -d -m 700 "$XDG_RUNTIME_DIR"
           ctest --test-dir build --output-on-failure --no-tests=error \
-            -R '^test_bitcoin-qt$' --output-junit qt-results.xml
+            --parallel 2 --timeout 2400 --output-junit native-test-results.xml
 
       - name: Upload failure diagnostics
         if: failure()
@@ -77,6 +83,6 @@ jobs:
             build/CMakeCache.txt
             build/CMakeFiles/CMakeConfigureLog.yaml
             build/Testing/Temporary/
-            build/qt-results.xml
+            build/native-test-results.xml
           if-no-files-found: ignore
           retention-days: 7

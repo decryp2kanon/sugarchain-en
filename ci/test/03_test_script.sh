@@ -80,6 +80,10 @@ fi
 if [ "$DOWNLOAD_PREVIOUS_RELEASES" = "true" ]; then
   test/get_previous_releases.py --target-dir "$PREVIOUS_RELEASES_DIR"
 fi
+if [ "$DOWNLOAD_SUGARCHAIN_RELEASE" = "true" ]; then
+  export SUGARCHAIN_LEGACY_BINARY
+  SUGARCHAIN_LEGACY_BINARY=$(python3 .github/ci-legacy-release.py --target-dir "${BASE_SCRATCH_DIR}/sugarchain-legacy-release")
+fi
 
 BITCOIN_CONFIG_ALL="-DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DBUILD_BENCH=ON -DBUILD_FUZZ_BINARY=ON"
 if [ -z "$NO_DEPENDS" ]; then
@@ -137,13 +141,17 @@ if [ "$RUN_CHECK_DEPS" = "true" ]; then
   "${BASE_ROOT_DIR}/contrib/devtools/check-deps.sh" "${BASE_BUILD_DIR}"
 fi
 
-if [[ "$CI_OS_NAME" == "macos" && "${GOAL}" = "install deploy" ]]; then
+if [[ "$CI_OS_NAME" == "macos" && " ${GOAL} " == *" deploy "* ]]; then
   macos_archive=$(cat "${BASE_BUILD_DIR}/macos-archive-path.txt")
   unzip "${macos_archive}" -d "${BASE_BUILD_DIR}/deploy"
   if ! ( codesign --verify "${BASE_BUILD_DIR}/deploy/Sugarchain En.app" ); then
     echo "Codesigning failed."
     false
   fi
+  python3 contrib/macdeploy/verify-native.py \
+    --app "${BASE_BUILD_DIR}/deploy/Sugarchain En.app" \
+    --bindir "${BASE_OUTDIR}/bin" \
+    --work-dir "${RUNNER_TEMP}/en-macos-app-smoke"
 fi
 
 if [ "$RUN_UNIT_TESTS" = "true" ]; then

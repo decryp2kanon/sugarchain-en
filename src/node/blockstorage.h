@@ -17,11 +17,11 @@
 #include <primitives/block.h>
 #include <serialize.h>
 #include <streams.h>
+#include <support/allocators/pool.h>
 #include <sync.h>
 #include <uint256.h>
 #include <util/expected.h>
 #include <util/fs.h>
-#include <util/hasher.h>
 #include <util/obfuscation.h>
 
 #include <algorithm>
@@ -55,6 +55,7 @@ class SignalInterrupt;
 } // namespace util
 
 namespace kernel {
+class Notifications;
 struct HistoricalPoWStats {
     enum State { DISABLED, RUNNING, COMPLETE, INTERRUPTED, FAILED };
     std::atomic<State> state{DISABLED};
@@ -123,7 +124,7 @@ public:
     void ReadReindexing(bool& fReindexing);
     void WriteFlag(const std::string& name, bool fValue);
     bool ReadFlag(const std::string& name, bool& fValue);
-    bool LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt, int pow_workers = 1, bool fast_startup = false, std::function<void(uint64_t)> reserveBlockIndex = {}, bool startup_optimizations = true)
+    bool LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt, int pow_workers = 1, bool fast_startup = false, std::function<void(uint64_t)> reserveBlockIndex = {}, bool startup_optimizations = true, kernel::Notifications* notifications = nullptr)
         EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 };
 } // namespace kernel
