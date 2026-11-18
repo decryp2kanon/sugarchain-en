@@ -20,6 +20,19 @@ import urllib.parse
 import urllib.request
 
 
+def runtime_environment(datadir, platform=None):
+    platform = os.name if platform is None else platform
+    env = os.environ.copy()
+    for kind in ("CONFIG", "DATA", "CACHE"):
+        env[f"XDG_{kind}_HOME"] = str(datadir / f"xdg-{kind.lower()}")
+    # The minimal plugin cannot load application fonts. Windows runners
+    # provide the native desktop; Linux's dynamic Qt build has offscreen.
+    env["QT_QPA_PLATFORM"] = "windows" if platform == "nt" else "offscreen"
+    if platform != "nt":
+        env["DBUS_SESSION_BUS_ADDRESS"] = "unix:path=/nonexistent-sugarchain-en-ci-bus"
+    return env
+
+
 class Node:
     def __init__(self, binary, datadir, chain, gui=False):
         self.datadir = datadir
@@ -41,15 +54,7 @@ class Node:
             command += ["-splash=0", "-min"]
         self.cookie = datadir / ("regtest/.cookie" if chain == "regtest" else ".cookie")
         self.log = (datadir / "process.log").open("wb")
-        env = os.environ.copy()
-        for kind in ("CONFIG", "DATA", "CACHE"):
-            env[f"XDG_{kind}_HOME"] = str(datadir / f"xdg-{kind.lower()}")
-        # The minimal plugin cannot load application fonts. Windows runners
-        # provide the native desktop; Linux's dynamic Qt build has offscreen.
-        env["QT_QPA_PLATFORM"] = "windows" if os.name == "nt" else "offscreen"
-        if os.name != "nt":
-            env["DBUS_SESSION_BUS_ADDRESS"] = "unix:path=/nonexistent-sugarchain-en-ci-bus"
-        self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, env=env)
+        self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, env=runtime_environment(datadir))
 
     def rpc(self, method, *params):
         auth = base64.b64encode(self.cookie.read_bytes().strip()).decode()
@@ -162,12 +167,13 @@ def main():
     suffix = ".exe" if os.name == "nt" else ""
     programs = ["sugarchain", "sugarchaind", "sugarchain-cli", "sugarchain-qt", "sugarchain-wallet", "sugarchain-tx", "sugarchain-util"]
     binaries = {}
+    version_env = runtime_environment(workdir / "version-env")
     for program in programs:
         candidates = [bindir / f"{program}{suffix}", bindir / "daemon" / f"{program}{suffix}"]
         binary = next((path for path in candidates if path.is_file()), candidates[0])
         assert binary.is_file(), binary
         binaries[program] = binary
-        version = subprocess.check_output([str(binary), "--version" if program == "sugarchain" else "-version"], text=True, timeout=30)
+        version = subprocess.check_output([str(binary), "--version" if program == "sugarchain" else "-version"], text=True, timeout=30, env=version_env)
         assert "Sugarchain En" in version, (program, version)
     daemon = binaries["sugarchaind"]
     cli = binaries["sugarchain-cli"]
