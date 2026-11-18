@@ -33,17 +33,35 @@ def runtime_environment(datadir, platform=None):
     return env
 
 
-def check_version(binary, program, datadir, env):
-    command = [str(binary)]
-    # The daemon reads configuration before handling -version. CI guards the
-    # default data directory with a file, so keep this probe private too.
-    if program == "sugarchaind":
-        command.append(f"-datadir={datadir}")
-    command.append("--version" if program == "sugarchain" else "-version")
+def check_version(binary, program, datadir, env, platform=None):
+    platform = os.name if platform is None else platform
+    windows_gui = platform == "nt" and program == "sugarchain-qt"
+    if windows_gui:
+        # Windows displays -version in a modal dialog. Read its version resource
+        # with the stock .NET API; the GUI still undergoes the runtime RPC check.
+        script = (
+            "$ErrorActionPreference='Stop'; "
+            "$v=[System.Diagnostics.FileVersionInfo]::GetVersionInfo($env:SUGARCHAIN_CI_GUI_BINARY); "
+            "@{ProductName=$v.ProductName; FileVersion=$v.FileVersion} | ConvertTo-Json -Compress"
+        )
+        command = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script]
+        env = env | {"SUGARCHAIN_CI_GUI_BINARY": str(binary)}
+    else:
+        command = [str(binary)]
+        # The daemon reads configuration before handling -version. CI guards the
+        # default data directory with a file, so keep this probe private too.
+        if program == "sugarchaind":
+            command.append(f"-datadir={datadir}")
+        command.append("--version" if program == "sugarchain" else "-version")
     result = subprocess.run(command, capture_output=True, text=True, timeout=30, env=env)
     if result.returncode != 0:
         raise RuntimeError(f"{program} version probe exited {result.returncode}:\n{result.stdout}{result.stderr}")
-    assert "Sugarchain En" in result.stdout, (program, result.stdout, result.stderr)
+    if windows_gui:
+        version = json.loads(result.stdout)
+        assert version.get("ProductName") == "Sugarchain En", version
+        assert isinstance(version.get("FileVersion"), str) and version["FileVersion"].strip(), version
+    else:
+        assert "Sugarchain En" in result.stdout, (program, result.stdout, result.stderr)
 
 
 class Node:
