@@ -558,6 +558,9 @@ int GuiMain(int argc, char* argv[])
     QApplication::setOrganizationDomain(QAPP_ORG_DOMAIN);
     QApplication::setApplicationName(QAPP_APP_NAME_DEFAULT);
     QApplication::setApplicationDisplayName(CLIENT_NAME);
+#ifdef Q_OS_LINUX
+    QApplication::setDesktopFileName(QStringLiteral("org.sugarchain.SugarchainEn"));
+#endif
 
     // Migrate the base profile before translations and the datadir selection read it.
     QString migration_error;

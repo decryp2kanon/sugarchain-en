@@ -1,0 +1,14 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Sugarchain En
+GenericName=Cryptocurrency wallet
+Comment=Send, receive and validate Sugarchain transactions
+Exec=sugarchain-qt %u
+TryExec=sugarchain-qt
+Icon=sugarchain
+Terminal=false
+StartupNotify=true
+MimeType=x-scheme-handler/sugarchain;
+Categories=Office;Finance;
+Keywords=Sugarchain;SUGAR;Cryptocurrency;Wallet;
