@@ -20,6 +20,7 @@
 #include <script/sign.h>
 #include <script/signingprovider.h>
 #include <univalue.h>
+#include <util/chaintype.h>
 #include <util/exception.h>
 #include <util/fs.h>
 #include <util/moneystr.h>
@@ -97,7 +98,12 @@ static int AppInitRawTx(int argc, char* argv[])
 
     // Check for chain settings (Params() calls are only valid after this clause)
     try {
-        SelectParams(gArgs.GetChainType());
+        const auto chain{gArgs.GetChainType()};
+        if (auto error = CheckSupportedChainType(chain)) {
+            tfm::format(std::cerr, "Error: %s\n", *error);
+            return EXIT_FAILURE;
+        }
+        SelectParams(chain);
     } catch (const std::exception& e) {
         tfm::format(std::cerr, "Error: %s\n", e.what());
         return EXIT_FAILURE;

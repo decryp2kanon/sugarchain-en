@@ -7,6 +7,7 @@
 #include <common/init.h>
 #include <logging.h>
 #include <tinyformat.h>
+#include <util/chaintype.h>
 #include <util/fs.h>
 #include <util/translation.h>
 
@@ -40,7 +41,11 @@ std::optional<ConfigError> InitConfig(ArgsManager& args, SettingsAbortFn setting
         }
 
         // Check for chain settings (Params() calls are only valid after this clause)
-        SelectParams(args.GetChainType());
+        const auto chain{args.GetChainType()};
+        if (auto error = CheckSupportedChainType(chain)) {
+            return ConfigError{ConfigStatus::FAILED, Untranslated(*error)};
+        }
+        SelectParams(chain);
 
         // Create datadir if it does not exist.
         const auto base_path{args.GetDataDirBase()};
