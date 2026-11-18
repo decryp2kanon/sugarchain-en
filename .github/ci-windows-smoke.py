@@ -33,6 +33,19 @@ def runtime_environment(datadir, platform=None):
     return env
 
 
+def check_version(binary, program, datadir, env):
+    command = [str(binary)]
+    # The daemon reads configuration before handling -version. CI guards the
+    # default data directory with a file, so keep this probe private too.
+    if program == "sugarchaind":
+        command.append(f"-datadir={datadir}")
+    command.append("--version" if program == "sugarchain" else "-version")
+    result = subprocess.run(command, capture_output=True, text=True, timeout=30, env=env)
+    if result.returncode != 0:
+        raise RuntimeError(f"{program} version probe exited {result.returncode}:\n{result.stdout}{result.stderr}")
+    assert "Sugarchain En" in result.stdout, (program, result.stdout, result.stderr)
+
+
 class Node:
     def __init__(self, binary, datadir, chain, gui=False):
         self.datadir = datadir
@@ -167,14 +180,15 @@ def main():
     suffix = ".exe" if os.name == "nt" else ""
     programs = ["sugarchain", "sugarchaind", "sugarchain-cli", "sugarchain-qt", "sugarchain-wallet", "sugarchain-tx", "sugarchain-util"]
     binaries = {}
+    version_datadir = workdir / "version-data"
+    version_datadir.mkdir()
     version_env = runtime_environment(workdir / "version-env")
     for program in programs:
         candidates = [bindir / f"{program}{suffix}", bindir / "daemon" / f"{program}{suffix}"]
         binary = next((path for path in candidates if path.is_file()), candidates[0])
         assert binary.is_file(), binary
         binaries[program] = binary
-        version = subprocess.check_output([str(binary), "--version" if program == "sugarchain" else "-version"], text=True, timeout=30, env=version_env)
-        assert "Sugarchain En" in version, (program, version)
+        check_version(binary, program, version_datadir, version_env)
     daemon = binaries["sugarchaind"]
     cli = binaries["sugarchain-cli"]
     results = [
