@@ -13,6 +13,15 @@ import subprocess
 import sys
 
 
+def nsis_command(program, install_dir, uninstall=False):
+    # NSIS consumes the entire final /D= or _?= suffix, including spaces.
+    # Python's list2cmdline would quote this argument and change NSIS parsing.
+    if '"' in str(program) or '"' in str(install_dir):
+        raise ValueError("NSIS command paths must not contain quotes")
+    suffix = "_?=" if uninstall else "/D="
+    return f'"{program}" /S {suffix}{install_dir}'
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--installer", required=True, type=Path)
@@ -39,8 +48,8 @@ def main():
     else:
         raise AssertionError("Refusing to overwrite an existing registered installation")
 
-    command = [str(installer), "/S", f"/D={install}"]
-    subprocess.run(command, check=True, timeout=180)
+    command = nsis_command(installer, install)
+    subprocess.run(command, check=True, timeout=180, shell=False)
     programs = [install / name for name in ("sugarchain.exe", "sugarchain-qt.exe")]
     programs += [install / "daemon" / name for name in ("sugarchaind.exe", "sugarchain-cli.exe", "sugarchain-wallet.exe", "sugarchain-tx.exe", "sugarchain-util.exe")]
     assert all(path.is_file() for path in programs), programs
@@ -59,18 +68,16 @@ def main():
     expected_extra = extra.read_bytes()
     for path in obsolete:
         path.write_text("Obsolete launcher sentinel\n")
-    subprocess.run(command, check=True, timeout=180)
+    subprocess.run(command, check=True, timeout=180, shell=False)
     assert config.read_bytes() == expected_config
     assert extra.read_bytes() == expected_extra
     assert not any(path.exists() for path in obsolete)
 
     smoke = Path(__file__).with_name("ci-windows-smoke.py")
     subprocess.run([sys.executable, str(smoke), "--bindir", str(install), "--work-dir", str(workdir / "installed-runtime")], check=True, timeout=300)
-    # NSIS consumes the complete unquoted suffix after _?= as its directory.
     # Use no shell; all paths belong to this fresh runner-specific workspace.
     uninstaller = install / "uninstall.exe"
-    assert '"' not in str(install)
-    subprocess.run(f'"{uninstaller}" /S _?={install}', check=True, timeout=180)
+    subprocess.run(nsis_command(uninstaller, install, uninstall=True), check=True, timeout=180, shell=False)
     assert not any(path.exists() for path in programs), "Uninstaller left packaged production programs"
     assert config.read_bytes() == expected_config
     assert extra.read_bytes() == expected_extra
