@@ -17,11 +17,11 @@
 #include <primitives/block.h>
 #include <serialize.h>
 #include <streams.h>
+#include <support/allocators/pool.h>
 #include <sync.h>
 #include <uint256.h>
 #include <util/expected.h>
 #include <util/fs.h>
-#include <util/hasher.h>
 #include <util/obfuscation.h>
 
 #include <algorithm>
@@ -47,6 +47,7 @@ class BlockValidationState;
 class CBlockUndo;
 class Chainstate;
 class ChainstateManager;
+
 namespace Consensus {
 struct Params;
 }
@@ -55,6 +56,8 @@ class SignalInterrupt;
 } // namespace util
 
 namespace kernel {
+class Notifications;
+
 struct HistoricalPoWStats {
     enum State { DISABLED, RUNNING, COMPLETE, INTERRUPTED, FAILED };
     std::atomic<State> state{DISABLED};
@@ -105,13 +108,13 @@ public:
 class BlockTreeDB : public CDBWrapper
 {
     void PopulateBatch(CDBBatch& batch, const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo,
-        int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus);
+        int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
 public:
     using CDBWrapper::CDBWrapper;
-    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus = nullptr);
+    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus = nullptr) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
     /** Consume a temporary pointer vector after serialization, before DB insertion. */
-    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, std::vector<const CBlockIndex*>&& blockinfo, const Consensus::Params* consensus = nullptr);
+    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, std::vector<const CBlockIndex*>&& blockinfo, const Consensus::Params* consensus = nullptr) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
     bool HasYespowerEvidence(const CBlockHeader& header, const Consensus::Params& consensus) const;
     /** Bounded background DB scan; caller keeps this DB alive until joined. */
     std::optional<std::string> VerifyHistoricalPoW(const Consensus::Params& consensus,
@@ -123,7 +126,7 @@ public:
     void ReadReindexing(bool& fReindexing);
     void WriteFlag(const std::string& name, bool fValue);
     bool ReadFlag(const std::string& name, bool& fValue);
-    bool LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt, int pow_workers = 1, bool fast_startup = false, std::function<void(uint64_t)> reserveBlockIndex = {}, bool startup_optimizations = true)
+    bool LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt, int pow_workers = 1, bool fast_startup = false, std::function<void(uint64_t)> reserveBlockIndex = {}, bool startup_optimizations = true, kernel::Notifications* notifications = nullptr)
         EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 };
 } // namespace kernel

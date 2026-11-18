@@ -9,6 +9,7 @@ parent sends SIGKILL. Process death is not a simulation of physical power loss.
 
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import queue
@@ -20,7 +21,78 @@ import threading
 import time
 
 
-def run_child(binary, root, mode, point="", workers=8, expect_error=False):
+# Shared by all children, leaving time to reap the active child before CTest exits.
+RUN_DEADLINE = None
+
+
+def progress_key(event, mode, point):
+    """Validate the child protocol; only new structured progress resets idle time."""
+    if not isinstance(event, dict):
+        raise ValueError("crash event must be an object")
+    kind = event.get("event")
+
+    def integer(value):
+        return type(value) is int and value >= 0
+
+    def block_hash(value):
+        return isinstance(value, str) and len(value) == 64 and all(c in "0123456789abcdef" for c in value)
+
+    valid = False
+    key = (kind,)
+    if kind in ("proof", "invalid_header"):
+        valid = block_hash(event.get("hash"))
+        if kind == "proof":
+            valid = valid and type(event.get("result")) is int
+        key = (kind, event.get("hash"))
+    elif kind in ("proof_return", "write_begin", "write_committed", "wal_partial",
+                  "wal_sync_before", "wal_sync_after", "scan_start"):
+        valid = (type(event.get("ordinal")) is int and event["ordinal"] == 0 if kind == "scan_start" else
+                 integer(event.get("ordinal")) and 1 <= event["ordinal"] <= 6000)
+        key = (kind, event.get("ordinal"))
+    elif kind == "inventory":
+        expected, present = event.get("expected"), event.get("present")
+        valid = (isinstance(expected, list) and isinstance(present, list)
+                 and len(expected) == 6000 and len(present) <= len(expected)
+                 and all(block_hash(value) for value in expected + present)
+                 and len(set(expected)) == len(expected)
+                 and len(set(present)) == len(present) and set(present) <= set(expected))
+    elif kind == "scan_result":
+        valid = (type(event.get("complete")) is bool and isinstance(event.get("error"), str)
+                 and all(integer(event.get(field)) for field in ("processed", "verified", "reused")))
+    elif kind == "partial_wal_write":
+        valid = (integer(event.get("written")) and integer(event.get("requested"))
+                 and 0 < event["written"] < event["requested"])
+    elif kind == "kill_ready":
+        valid = mode == "crash" and event.get("point") == point
+    if not valid:
+        raise ValueError(f"malformed or unknown crash event: {str(kind)[:80]!r}")
+    return key
+
+
+def event_summary(event):
+    if event is None:
+        return None
+    if event["event"] == "inventory":
+        return dict(event="inventory", expected=len(event["expected"]), present=len(event["present"]))
+    return {key: value if type(value) in (int, bool) else str(value)[:160]
+            for key, value in event.items() if key in ("event", "ordinal", "hash", "complete",
+            "processed", "verified", "reused", "point", "error", "requested", "written", "result")}
+
+
+def file_tail(path, limit=2048):
+    with path.open("rb") as stream:
+        stream.seek(0, os.SEEK_END)
+        stream.seek(max(0, stream.tell() - limit))
+        return stream.read(limit).decode("utf-8", errors="replace")
+
+
+def run_child(binary, root, mode, point="", workers=8, expect_error=False, *,
+              idle_timeout=120, deadline=None):
+    started = time.monotonic()
+    if deadline is None:
+        deadline = RUN_DEADLINE if RUN_DEADLINE is not None else started + 900
+    idle_deadline = started + idle_timeout
+    seen_progress = set()
     counter = root / ".invocation-count"
     invocation = int(counter.read_text()) + 1 if counter.exists() else 1
     counter.write_text(str(invocation))
@@ -46,20 +118,29 @@ def run_child(binary, root, mode, point="", workers=8, expect_error=False):
 
         thread = threading.Thread(target=reader, daemon=True)
         thread.start()
-        deadline = time.monotonic() + 120
         killed = False
         try:
             with (root / f"{prefix}.events.jsonl").open("w") as transcript:
                 while True:
-                    remaining = deadline - time.monotonic()
-                    if remaining <= 0:
-                        raise TimeoutError(f"child timeout: {mode} {point}")
-                    line = lines.get(timeout=remaining)
+                    now = time.monotonic()
+                    if now >= deadline:
+                        raise TimeoutError("overall recovery-test timeout")
+                    if now >= idle_deadline:
+                        raise TimeoutError("child made no progress before idle timeout")
+                    try:
+                        line = lines.get(timeout=min(deadline, idle_deadline) - now)
+                    except queue.Empty as error:
+                        reason = "overall recovery-test timeout" if time.monotonic() >= deadline else "child idle timeout"
+                        raise TimeoutError(reason) from error
                     if line is None:
                         break
                     if not line.startswith("CRASH_EVENT "):
                         continue
                     event = json.loads(line.removeprefix("CRASH_EVENT "))
+                    key = progress_key(event, mode, point)
+                    if key not in seen_progress:
+                        seen_progress.add(key)
+                        idle_deadline = time.monotonic() + idle_timeout
                     events.append(event)
                     transcript.write(json.dumps(event) + "\n")
                     transcript.flush()
@@ -78,6 +159,18 @@ def run_child(binary, root, mode, point="", workers=8, expect_error=False):
                 assert not any(e["event"] == "scan_result" for e in events)
             else:
                 assert returncode == 0, (mode, returncode, errors.name)
+        except Exception as error:
+            elapsed = time.monotonic() - started
+            idle = max(0, time.monotonic() - (idle_deadline - idle_timeout))
+            counts = {kind: sum(event["event"] == kind for event in events)
+                      for kind in ("proof", "write_committed")}
+            details = dict(mode=mode, point=point, workers=workers, elapsed=round(elapsed, 3),
+                           idle=round(idle, 3), events=len(events), counts=counts,
+                           last_event=event_summary(events[-1] if events else None),
+                           transcript_tail=[event_summary(event) for event in events[-3:]],
+                           transcript=str(root / f"{prefix}.events.jsonl"), stderr=errors.name,
+                           stderr_tail=file_tail(Path(errors.name)))
+            raise RuntimeError(f"{error}; child diagnostics: {json.dumps(details)}") from error
         finally:
             if process.poll() is None:
                 process.kill()
@@ -138,6 +231,11 @@ def main():
     args = parser.parse_args()
     assert 1 <= args.repetitions <= 10
     binary = args.test_binary.resolve(strict=True)
+    budget = 60 * float(os.environ.get("TEST_RUNNER_TIMEOUT_FACTOR", "15"))
+    if not math.isfinite(budget) or budget <= 0:
+        raise ValueError("TEST_RUNNER_TIMEOUT_FACTOR must be positive and finite")
+    global RUN_DEADLINE
+    RUN_DEADLINE = time.monotonic() + budget - min(30, budget / 10)
     if args.output:
         args.output.mkdir(parents=True, exist_ok=False)
         root, temporary = args.output.resolve(), None

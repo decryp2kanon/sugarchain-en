@@ -471,8 +471,12 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney)
     BOOST_CHECK_EQUAL(ParseMoney("0.00000001 ").value(), COIN/100000000);
     BOOST_CHECK_EQUAL(ParseMoney(" 0.00000001").value(), COIN/100000000);
 
-    // Parsing amount that cannot be represented should fail
-    BOOST_CHECK(!ParseMoney("100000000.00"));
+    // Sugarchain accepts its full monetary range, including amounts above Bitcoin limits.
+    BOOST_CHECK_EQUAL(ParseMoney("100000000.00").value(), 100000000 * COIN);
+    BOOST_CHECK_EQUAL(ParseMoney("1073741824.00000000").value(), MAX_MONEY);
+    BOOST_CHECK(!ParseMoney("1073741824.00000001"));
+
+    // Amounts with more than eight fractional digits cannot be represented.
     BOOST_CHECK(!ParseMoney("0.000000001"));
 
     // Parsing empty string should fail

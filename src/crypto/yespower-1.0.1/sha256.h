@@ -24,8 +24,8 @@
  * SUCH DAMAGE.
  */
 
-#ifndef _SHA256_H_
-#define _SHA256_H_
+#ifndef BITCOIN_CRYPTO_YESPOWER_1_0_1_SHA256_H
+#define BITCOIN_CRYPTO_YESPOWER_1_0_1_SHA256_H
 
 #include <stddef.h>
 #include <stdint.h>
@@ -51,9 +51,9 @@ extern "C" {
 
 /* Context structure for SHA256 operations. */
 typedef struct {
-	uint32_t state[8];
-	uint64_t count;
-	uint8_t buf[64];
+    uint32_t state[8];
+    uint64_t count;
+    uint8_t buf[64];
 } SHA256_CTX;
 
 /**
@@ -83,8 +83,8 @@ void SHA256_Buf(const void *, size_t, uint8_t[32]);
 
 /* Context structure for HMAC-SHA256 operations. */
 typedef struct {
-	SHA256_CTX ictx;
-	SHA256_CTX octx;
+    SHA256_CTX ictx;
+    SHA256_CTX octx;
 } HMAC_SHA256_CTX;
 
 /**
@@ -126,4 +126,4 @@ void PBKDF2_SHA256(const uint8_t *, size_t, const uint8_t *, size_t,
 }
 #endif
 
-#endif /* !_SHA256_H_ */
+#endif // BITCOIN_CRYPTO_YESPOWER_1_0_1_SHA256_H

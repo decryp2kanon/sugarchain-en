@@ -45,6 +45,9 @@ def _get_header_id(header_file: str) -> str:
         string.
 
         eg: 'src/wallet/walletdb.h' -> 'BITCOIN_WALLET_WALLETDB_H'
+        Versioned directories also form valid identifiers:
+        'src/crypto/yespower-1.0.1/yespower.h' ->
+        'BITCOIN_CRYPTO_YESPOWER_1_0_1_YESPOWER_H'
 
     Args:
         header_file: Filepath to header file.
@@ -52,9 +55,9 @@ def _get_header_id(header_file: str) -> str:
     Returns:
         The header id.
     """
-    header_id_base = header_file.split('/')[1:]
+    header_id_base = header_file.removesuffix('.h').split('/')[1:]
     header_id_base = '_'.join(header_id_base)
-    header_id_base = header_id_base.replace('.h', '').replace('-', '_')
+    header_id_base = re.sub(r'[^A-Za-z0-9_]', '_', header_id_base)
     header_id_base = header_id_base.upper()
 
     header_id = f'{HEADER_ID_PREFIX}{header_id_base}{HEADER_ID_SUFFIX}'

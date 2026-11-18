@@ -2,13 +2,14 @@
 // Distributed under the MIT software license, see the accompanying file COPYING.
 // Linux/glibc diagnostics; see ../post-ibd-cache-release.md.
 // Allocation fixture only. No mainnet data or admitted synthetic PoW evidence.
-#include <pow.cpp> // Standalone fixture only; never link this into a node.
+#include <pow.h>
 #include <coins.h>
 #include <txdb.h>
 #include <random.h>
 #include <kernel/cs_main.h>
 #include <script/script.h>
 #include <sync.h>
+#include <util/strencodings.h>
 #include <util/translation.h>
 
 #include <chrono>
@@ -18,6 +19,13 @@
 #include <string>
 #include <sys/resource.h>
 #include <unistd.h>
+
+#ifndef ENABLE_YESPOWER_ALLOCATION_PROBE
+#error "Build only the standalone allocation fixture with its dedicated proof-cache object"
+#endif
+
+// This symbol exists only in the standalone fixture's separately compiled pow.cpp.
+void PopulateYespowerAllocationProbe(uint64_t proofs);
 
 const TranslateFn G_TRANSLATION_FUN{nullptr};
 using Clock = std::chrono::steady_clock;
@@ -78,9 +86,12 @@ int main(int argc, char** argv)
         return 2;
     }
     const std::string mode{argv[1]};
-    const uint64_t proofs{std::stoull(argv[3])}, count{std::stoull(argv[4])};
-    if ((mode != "none" && mode != "proof" && mode != "coins" && mode != "both") ||
-        count == 0 || proofs > UINT32_MAX || (argc == 6 && std::string{argv[5]} != "dirty")) return 2;
+    const auto parsed_proofs{ToIntegral<uint64_t>(argv[3])};
+    const auto parsed_count{ToIntegral<uint64_t>(argv[4])};
+    if (!parsed_proofs || !parsed_count ||
+        (mode != "none" && mode != "proof" && mode != "coins" && mode != "both") ||
+        *parsed_count == 0 || *parsed_proofs > UINT32_MAX || (argc == 6 && std::string{argv[5]} != "dirty")) return 2;
+    const uint64_t proofs{*parsed_proofs}, count{*parsed_count};
 
     RandomInit();
     InitYespowerVerificationCache(size_t{2048} << 20, true);
@@ -91,14 +102,7 @@ int main(int argc, char** argv)
     auto cpu{Cpu()};
     auto io{Writes()};
 
-    // Synthetic keys bypass admission only in this allocation-only fixture.
-    CBlockHeader header;
-    header.nBits = 0x1e0ffff0;
-    header.nTime = 1231006505;
-    for (uint64_t i{0}; i < proofs; ++i) {
-        header.nNonce = i;
-        VerificationCache().Insert(VerificationCache().Entry(header));
-    }
+    PopulateYespowerAllocationProbe(proofs);
     for (uint64_t i{0}; i < count; ++i) {
         coins.AddCoin(COutPoint{Txid::FromUint256(Key(i + 1)), 0},
                       Coin{CTxOut{1, CScript{} << OP_TRUE}, 1, false}, false);

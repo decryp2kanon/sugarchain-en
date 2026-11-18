@@ -103,4 +103,5 @@ endif()
 
 # Isolated state-machine cost with genuine input validation before timing.
 add_executable(bench_headers_sync headers_sync.cpp ../headerssync.cpp)
+add_windows_application_manifest(bench_headers_sync)
 target_link_libraries(bench_headers_sync core_interface bitcoin_common)

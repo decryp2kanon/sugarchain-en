@@ -15,12 +15,13 @@ import re
 import sys
 import time
 
-ROOT = Path(__file__).resolve().parents[2]
-sys.path.insert(0, str(ROOT / 'test/functional'))
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'test/functional'))
 from test_framework.messages import CBlockHeader, MAGIC_BYTES, msg_headers
 from test_framework.p2p import P2PInterface
 from test_framework.test_framework import BitcoinTestFramework
 from test_framework.util import assert_equal
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def process_cpu(pid):

@@ -310,6 +310,23 @@ struct HeaderPoWCheck {
 };
 } // namespace
 
+#ifdef ENABLE_YESPOWER_ALLOCATION_PROBE
+// Standalone allocation measurements only; no normal build defines this macro.
+// Do not expose synthetic admission through the production proof-cache API.
+void PopulateYespowerAllocationProbe(uint64_t proofs);
+void PopulateYespowerAllocationProbe(uint64_t proofs)
+{
+    // Synthetic keys bypass admission only in this allocation-only fixture.
+    CBlockHeader header;
+    header.nBits = 0x1e0ffff0;
+    header.nTime = 1231006505;
+    for (uint64_t i{0}; i < proofs; ++i) {
+        header.nNonce = i;
+        VerificationCache().Insert(VerificationCache().Entry(header));
+    }
+}
+#endif
+
 void InitYespowerVerificationCache(size_t bytes, bool grow_on_demand)
 {
     if (!bytes || bytes > MAX_YESPOWER_CACHE_BYTES) {

@@ -8,6 +8,8 @@
 
 #include <crypto/yespower-1.0.1/yespower.h>
 #include <crypto/yespower-1.0.1/sha256.h>
+#include <util/strencodings.h>
+#include <util/string.h>
 
 #include <array>
 #include <atomic>
@@ -27,11 +29,11 @@ int main(int argc, char** argv)
         if (argc < 2 || argc > 3) throw std::runtime_error("Supply the 6000-header fixture path and optional maximum workers");
         int max_workers{16};
         if (argc == 3) {
-            size_t used{0};
-            max_workers = std::stoi(argv[2], &used);
-            if (used != std::strlen(argv[2]) || max_workers < 1 || max_workers > 16) {
+            const auto workers{ToIntegral<int>(argv[2])};
+            if (!workers || *workers < 1 || *workers > 16) {
                 throw std::runtime_error("Maximum workers must be between 1 and 16");
             }
+            max_workers = *workers;
         }
         std::ifstream file(argv[1], std::ios::binary);
         if (!file) throw std::runtime_error("Cannot read header fixture");
@@ -82,7 +84,7 @@ int main(int argc, char** argv)
             if (workers == 1) reference = results;
             for (size_t i{0}; i < headers.size(); ++i) {
                 if (std::memcmp(reference[i].uc, results[i].uc, sizeof(results[i].uc))) {
-                    throw std::runtime_error("Parallel result differs at header " + std::to_string(i + 1));
+                    throw std::runtime_error("Parallel result differs at header " + util::ToString(i + 1));
                 }
             }
             SHA256_CTX context;

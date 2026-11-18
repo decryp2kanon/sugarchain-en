@@ -111,6 +111,7 @@ add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
   external_signer.cpp
   init/common.cpp
   kernel/chainparams.cpp
+  kernel/cs_main.cpp
   key.cpp
   key_io.cpp
   merkleblock.cpp
@@ -199,7 +200,6 @@ add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   kernel/checks.cpp
   kernel/coinstats.cpp
   kernel/context.cpp
-  kernel/cs_main.cpp
   kernel/disconnected_transactions.cpp
   kernel/mempool_removal_reason.cpp
   mapport.cpp

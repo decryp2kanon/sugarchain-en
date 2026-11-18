@@ -16,6 +16,7 @@
 #include <test/util/setup_common.h>
 #include <uint256.h>
 #include <util/chaintype.h>
+#include <util/string.h>
 #include <util/time.h>
 
 #include <boost/test/unit_test.hpp>
@@ -402,7 +403,7 @@ BOOST_AUTO_TEST_CASE(invalid_difficulty_with_valid_pow_in_both_passes)
                 }
                 // This diagnostic is emitted only when the difficulty helper
                 // returns false, before any REDOWNLOAD commitment comparison.
-                ASSERT_DEBUG_LOG("invalid difficulty transition at height=" + std::to_string(height) +
+                ASSERT_DEBUG_LOG("invalid difficulty transition at height=" + util::ToString(height) +
                                  (redownload ? " (redownload phase)" : " (presync phase)"));
                 const auto result{sync.ProcessNextHeaders(std::span{&bad, 1}, true)};
                 BOOST_CHECK(!result.success);

@@ -1,4 +1,4 @@
-	What is yespower?
+    What is yespower?
 
 yespower is a proof-of-work (PoW) focused fork of yescrypt.  While
 yescrypt is a password-based key derivation function (KDF) and password
@@ -18,7 +18,7 @@ defined and implemented externally to yespower) and thus isn't described
 in here any further.
 
 
-	Why or why not yespower?
+    Why or why not yespower?
 
 Different proof-of-work schemes in existence vary in many aspects,
 including in friendliness to different types of hardware.  There's
@@ -54,7 +54,7 @@ respond to known improvements in future GPUs/implementations and/or to
 ASICs with new versions of yespower that users would need to switch to.
 
 
-	yespower versions.
+    yespower versions.
 
 yespower includes optimized and specialized re-implementation of the
 obsolete yescrypt 0.5 (based off its first submission to Password
@@ -79,7 +79,7 @@ implementations (such as in preparation for a cryptocurrency hard-fork
 and/or supporting multiple cryptocurrencies in one program).
 
 
-	Parameter selection.
+    Parameter selection.
 
 For new uses of yespower, set the requested version to the highest
 supported, and set N*r to the highest you can reasonably afford in terms
@@ -100,12 +100,12 @@ support is provided mostly for compatibility with existing modifications
 of yescrypt 0.5.
 
 
-	Performance.
+    Performance.
 
 Please refer to PERFORMANCE for some benchmarks and performance tuning.
 
 
-	How to test yespower for proper operation.
+    How to test yespower for proper operation.
 
 On a Unix-like system, invoke "make check".  This will build and run a
 program called "tests", and check its output against the supplied file
@@ -116,7 +116,7 @@ We do most of our testing on Linux systems with gcc.  The supplied
 Makefile assumes that you use gcc.
 
 
-	Alternate code versions and make targets.
+    Alternate code versions and make targets.
 
 Two implementations of yespower are included: reference and optimized.
 By default, the optimized implementation is built.  Internally, the
@@ -136,7 +136,7 @@ reference implementation and have the "benchmark" program use it.
 "make clean" may need to be run between making different builds.
 
 
-	How to integrate yespower in a program.
+    How to integrate yespower in a program.
 
 Although yespower.h provides several functions, chances are that you
 will only need to use yespower_tls().  Please see the comment on this
@@ -167,7 +167,7 @@ provided as-is and without guarantee of being correct and safe to
 follow.  You're supposed to know what you're doing.
 
 
-	Credits.
+    Credits.
 
 scrypt has been designed by Colin Percival.  yescrypt and yespower have
 been designed by Solar Designer building upon scrypt.
@@ -191,7 +191,7 @@ yespower what it is:
  - Password Hashing Competition
 
 
-	Contact info.
+    Contact info.
 
 First, please check the yespower homepage for new versions, etc.:
 

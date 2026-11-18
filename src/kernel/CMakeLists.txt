@@ -84,6 +84,10 @@ add_library(bitcoinkernel
   $<TARGET_OBJECTS:crc32c>
 )
 
+# Static kernels may also be embedded in unloadable modules. Retain bounded
+# scratch ownership in the module, never in callbacks on external caller threads.
+target_compile_definitions(bitcoinkernel PRIVATE BITCOINKERNEL_YESPOWER_POOL)
+
 # Compiler warnings that apply only to the kernel and its dependencies.
 # These can be more strict and/or warnings that only apply to shared
 # libs.

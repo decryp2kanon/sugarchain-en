@@ -129,7 +129,7 @@ BOOST_FIXTURE_TEST_CASE(write_during_multiblock_activation, DiskChain100Setup)
         header.hashPrevBlock = chainstate.m_chain.Genesis()->GetBlockHash();
         ++header.nTime;
         CBlockIndex* best_header{chainstate.m_chain.Tip()};
-        const auto add_side_header = [&] {
+        const auto add_side_header = [&]() EXCLUSIVE_LOCKS_REQUIRED(cs_main) {
             do { ++header.nNonce; } while (!CheckBlockProofOfWork(header, chainman.GetConsensus()));
             const auto* index{blockman.AddToBlockIndex(header, best_header)};
             BOOST_REQUIRE_EQUAL(index->nHeight, 1);

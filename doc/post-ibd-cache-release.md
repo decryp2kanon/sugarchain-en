@@ -56,7 +56,7 @@ The functional feature_fast_startup test covers normal/fast startup, reindex-cha
 
 ## Reproducing the allocation fixture
 
-First build the node and unit target. Compile the standalone source against the same static libraries as test_bitcoin, without its test objects or yespower wrapper. It includes pow.cpp to access the internal allocation store, and is not compiled into the node. From the repository root:
+First build the node and unit target. Compile the standalone source against the same static libraries as test_bitcoin, without its test objects or yespower wrapper. Compile `src/pow.cpp` as a separate translation unit with `ENABLE_YESPOWER_ALLOCATION_PROBE` to enable its private allocation-only fixture entry point. No normal build defines that macro or exposes the helper, and the probe includes only public headers. The following example assumes a Unix Makefiles build with `link.txt` available. From the repository root:
 
 ```sh
 cmake --build build --target bitcoind test_bitcoin -j2
@@ -66,9 +66,11 @@ root = pathlib.Path.cwd()
 args = shlex.split((root / 'build/src/test/CMakeFiles/test_bitcoin.dir/link.txt').read_text())
 libs = args[args.index('-o') + 2:]
 libs = [str((root / 'build/src/test' / s).resolve()) if not s.startswith(('-', '/')) else s for s in libs]
-command = ['c++', '-O2', '-std=c++20', '-Isrc', '-Ibuild/src',
+command = ['c++', '-O2', '-std=c++20', '-DENABLE_YESPOWER_ALLOCATION_PROBE',
+           '-Isrc', '-Ibuild/src',
            '-Isrc/univalue/include', '-Isrc/secp256k1/include',
-           'doc/benchmarks/post-ibd-cache-probe.cpp', '-o', '/tmp/post-ibd-cache-probe'] + libs
+           'doc/benchmarks/post-ibd-cache-probe.cpp', 'src/pow.cpp',
+           '-o', '/tmp/post-ibd-cache-probe'] + libs
 subprocess.run(command, check=True)
 PYCODE
 # Supply a NEW, private database path for each process. Never use a node data directory.
