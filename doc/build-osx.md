@@ -173,8 +173,10 @@ Run the following in your terminal to compile Sugarchain En:
 
 ``` bash
 cmake --build build     # Append "-j N" here for N parallel jobs.
-ctest --test-dir build  # Append "-j N" for N parallel tests.
+QT_QPA_PLATFORM=cocoa ctest --test-dir build  # Append "-j N" for N parallel tests.
 ```
+
+The Cocoa platform runs the application, wallet, and address book Qt test groups, which the minimal platform skips on macOS.
 
 ### 3. Deploy (optional)
 
