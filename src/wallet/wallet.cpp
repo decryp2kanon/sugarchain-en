@@ -9,6 +9,7 @@
 #include <addresstype.h>
 #include <blockfilter.h>
 #include <chain.h>
+#include <chainparams.h>
 #include <coins.h>
 #include <common/args.h>
 #include <common/messages.h>
@@ -17,6 +18,7 @@
 #include <common/system.h>
 #include <consensus/amount.h>
 #include <consensus/consensus.h>
+#include <consensus/params.h>
 #include <consensus/validation.h>
 #include <external_signer.h>
 #include <interfaces/chain.h>
@@ -2279,7 +2281,7 @@ OutputType CWallet::TransactionChangeType(const std::optional<OutputType>& chang
         }
     }
 
-    const bool has_bech32m_spkman(GetScriptPubKeyMan(OutputType::BECH32M, /*internal=*/true));
+    const bool has_bech32m_spkman(IsOutputTypeSupported(OutputType::BECH32M) && GetScriptPubKeyMan(OutputType::BECH32M, /*internal=*/true));
     if (has_bech32m_spkman && any_tr) {
         // Currently tr is the only type supported by the BECH32M spkman
         return OutputType::BECH32M;
@@ -2598,9 +2600,21 @@ bool CWallet::TopUpKeyPool(unsigned int kpSize)
     return res;
 }
 
+bool CWallet::IsOutputTypeSupported(const OutputType type) const
+{
+    if (type != OutputType::BECH32M) return true;
+    const auto& consensus = Params().GetConsensus();
+    // Native Sugarchain has no Taproot deployment; other networks retain their existing output types.
+    return !consensus.fYespowerSugar ||
+           consensus.vDeployments[Consensus::DEPLOYMENT_TAPROOT].nStartTime != Consensus::BIP9Deployment::NEVER_ACTIVE;
+}
+
 util::Result<CTxDestination> CWallet::GetNewDestination(const OutputType type, const std::string& label)
 {
     LOCK(cs_wallet);
+    if (!IsOutputTypeSupported(type)) {
+        return util::Error{strprintf(_("Address type '%s' is not supported on this network."), FormatOutputType(type))};
+    }
     auto spk_man = GetScriptPubKeyMan(type, /*internal=*/false);
     if (!spk_man) {
         return util::Error{strprintf(_("Error: No %s addresses available."), FormatOutputType(type))};
@@ -2680,6 +2694,9 @@ std::set<std::string> CWallet::ListAddrBookLabels(const std::optional<AddressPur
 
 util::Result<CTxDestination> ReserveDestination::GetReservedDestination(bool internal)
 {
+    if (!pwallet->IsOutputTypeSupported(type)) {
+        return util::Error{strprintf(_("Address type '%s' is not supported on this network."), FormatOutputType(type))};
+    }
     m_spk_man = pwallet->GetScriptPubKeyMan(type, internal);
     if (!m_spk_man) {
         return util::Error{strprintf(_("Error: No %s addresses available."), FormatOutputType(type))};
@@ -2959,6 +2976,10 @@ bool CWallet::LoadWalletArgs(std::shared_ptr<CWallet> wallet, const WalletContex
             error = strprintf(_("Unknown address type '%s'"), args.GetArg("-addresstype", ""));
             return false;
         }
+        if (!wallet->IsOutputTypeSupported(*parsed)) {
+            error = strprintf(_("Address type '%s' is not supported on this network."), FormatOutputType(*parsed));
+            return false;
+        }
         wallet->m_default_address_type = parsed.value();
     }
 
@@ -2966,6 +2987,10 @@ bool CWallet::LoadWalletArgs(std::shared_ptr<CWallet> wallet, const WalletContex
         std::optional<OutputType> parsed = ParseOutputType(args.GetArg("-changetype", ""));
         if (!parsed) {
             error = strprintf(_("Unknown change type '%s'"), args.GetArg("-changetype", ""));
+            return false;
+        }
+        if (!wallet->IsOutputTypeSupported(*parsed)) {
+            error = strprintf(_("Change type '%s' is not supported on this network."), FormatOutputType(*parsed));
             return false;
         }
         wallet->m_default_change_type = parsed.value();
@@ -3596,6 +3621,7 @@ void CWallet::SetupDescriptorScriptPubKeyMans(WalletBatch& batch, const CExtKey&
     AssertLockHeld(cs_wallet);
     for (bool internal : {false, true}) {
         for (OutputType t : OUTPUT_TYPES) {
+            if (!IsOutputTypeSupported(t)) continue;
             SetupDescriptorScriptPubKeyMan(batch, master_key, t, internal);
         }
     }
