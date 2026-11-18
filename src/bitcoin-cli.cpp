@@ -185,7 +185,12 @@ static int AppInitRPC(int argc, char* argv[])
     }
     // Check for chain settings (BaseParams() calls are only valid after this clause)
     try {
-        SelectBaseParams(gArgs.GetChainType());
+        const auto chain{gArgs.GetChainType()};
+        if (auto error = CheckSupportedChainType(chain)) {
+            tfm::format(std::cerr, "Error: %s\n", *error);
+            return EXIT_FAILURE;
+        }
+        SelectBaseParams(chain);
     } catch (const std::exception& e) {
         tfm::format(std::cerr, "Error: %s\n", e.what());
         return EXIT_FAILURE;

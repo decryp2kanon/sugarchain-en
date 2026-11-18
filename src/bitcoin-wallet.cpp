@@ -15,6 +15,7 @@
 #include <logging.h>
 #include <pubkey.h>
 #include <tinyformat.h>
+#include <util/chaintype.h>
 #include <util/exception.h>
 #include <util/translation.h>
 #include <wallet/wallettool.h>
@@ -86,7 +87,12 @@ static std::optional<int> WalletAppInit(ArgsManager& args, int argc, char* argv[
         return EXIT_FAILURE;
     }
     // Check for chain settings (Params() calls are only valid after this clause)
-    SelectParams(args.GetChainType());
+    const auto chain{args.GetChainType()};
+    if (auto error = CheckSupportedChainType(chain)) {
+        tfm::format(std::cerr, "Error: %s\n", *error);
+        return EXIT_FAILURE;
+    }
+    SelectParams(chain);
 
     return std::nullopt;
 }
