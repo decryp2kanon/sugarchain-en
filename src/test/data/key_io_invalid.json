@@ -208,5 +208,101 @@
     ],
     [
         "TB1Q3F9WGNXE9ZMTTMDN5VKVKHYZ8Y0LCV72YV7V5LSXTJXEYHNHEHASLYL0TZ"
+    ],
+    [
+        "sugar10uexgzna2dpfk0vjt35srz6a27ps6m0l89jweznt83n2sqn2fx4hvn9ym5af8wut34sjkngxw",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar1qdsuzmn04k2z8vryw8l4dj8m5ygqk4wg7y",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar1qpu6d26mrulzetu4jqhd7rsunv9aqru26hpwjcc",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar1p702xksx4z3uqf0u2phllxkfe5cgu0adxptqs0uelx0tqt8e885sqm7j6pw",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar10lyxwnxa70l270e6fcmxr4x7dtgu2yvy7gzkurwxy4zhdvgaqrrn6pfg2flyhqzy5t5tv5mvw",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar1wc95fw",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar1qtsvlht6730n04f2mpaj5vv8hrledn5n5za3l56",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar1prklpq7tjcawg89cmwwqr3u5apwav36xa4zz56ady7crsllm6mpnqn24tvt",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar10fd889x4hd54tqu2ewg9t4hhft2wl7m6x50av4uswzw46xe6as0xmltfg7vrjfkvm457evjw3",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "sugar1qmgf8xt8xkecl79k04mma3lz34gq88rxzz",
+        "Native HRP variant; preserves the original invalid witness data and checksum syndrome"
+    ],
+    [
+        "1FsSia9rv4NeEwvJ2GvXrX7LyxYspbN2mo",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "36j4NfKv6Akva9amjWrLG6MuSQym1GuEmm",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1qvyq0cc6rahyvsazfdje0twl7ez82ndmuac2lhv",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1qyucykdlhp62tezs0hagqury402qwhk589q80tqs5myh3rxq34nwqhkdhv7",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1p83n3au0rjylefxq2nc2xh2y4jzz4pm6zxj4mw5pagdjjr2a9f36s6jjnnu",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1z2rksukkjr8",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "1FjL87pn8ky6Vbavd1ZHeChRXtoxwRGCRd",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "3BZECeAH8gSKkjrTx8PwMrNQBLG18yHpvf",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1qhxt04s5xnpy0kxw4x99n5hpdf5pmtzpqs52es2",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1qgc9ljrvdf2e0zg9rmmq86xklqwfys7r6wptjlacdgrcdc7sa6ggqu4rrxf",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1pve739yap4uxjvfk0jrey69078u0gasm2nwvv483ec6zkzulgw9xqu4w9fd",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "bc1zmjtqxkzs89",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "1G9A9j6W8TLuh6dEeVwWeyibK1Uc5MfVFV",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
+    ],
+    [
+        "33GA3ZXbw5o5HeUrBEaqkWXFYYZmdxGRRP",
+        "Bitcoin mainnet encoding is not a Sugarchain or supported test-network address"
     ]
 ]

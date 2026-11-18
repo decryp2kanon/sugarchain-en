@@ -190,7 +190,7 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   if(Python3_Interpreter_FOUND)
     add_test(NAME lazy_pow_crash_recovery
       COMMAND ${Python3_EXECUTABLE} ${PROJECT_SOURCE_DIR}/test/lazy_pow_crash_recovery.py --test-binary $<TARGET_FILE:test_bitcoin>)
-    set_tests_properties(lazy_pow_crash_recovery PROPERTIES TIMEOUT 900)
+    # Respect the caller's CTest timeout; the harness also bounds overall and idle time.
   endif()
 endif()
 

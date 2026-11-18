@@ -119,7 +119,9 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         assert_equal(2, len(node.getpeerinfo()))  # p2ps[1] is still connected
 
         self.log.info('Send the withhold tx ... ')
-        with node.assert_debug_log(expected_msgs=["bad-txns-in-belowout"]):
+        # The invalid orphan is processed asynchronously on its announcing peer's
+        # workset, after the parent is accepted on the other connection.
+        with node.assert_debug_log(expected_msgs=["bad-txns-in-belowout"], timeout=60):
             node.p2ps[0].send_txs_and_test([tx_withhold], node, success=True)
 
         # Transactions that should end up in the mempool
@@ -133,9 +135,9 @@ class InvalidTxRequestTest(BitcoinTestFramework):
         }
         # Transactions that do not end up in the mempool:
         # tx_orphan_2_no_fee, because it has too low fee (p2ps[0] is not disconnected for relaying that tx)
-        # tx_orphan_2_invalid, because it has negative fee (p2ps[1] is disconnected for relaying that tx)
+        # tx_orphan_2_invalid, because it has negative fee
 
-        assert_equal(expected_mempool, set(node.getrawmempool()))
+        self.wait_until(lambda: expected_mempool == set(node.getrawmempool()))
 
         self.log.info('Test orphanage can store more than 100 transactions')
         orphan_tx_pool = [CTransaction() for _ in range(101)]

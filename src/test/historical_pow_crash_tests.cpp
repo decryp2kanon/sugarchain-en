@@ -10,6 +10,7 @@
 #include <test/data/sugarchain_headers.raw.h>
 #include <test/util/setup_common.h>
 #include <univalue.h>
+#include <util/string.h>
 
 #include <boost/test/unit_test.hpp>
 
@@ -46,7 +47,7 @@ void Boundary(const std::string& name, unsigned ordinal)
     event.pushKV("event", name);
     event.pushKV("ordinal", ordinal);
     Event(std::move(event));
-    if (point == name + ":" + std::to_string(ordinal)) {
+    if (point == name + ":" + util::ToString(ordinal)) {
         UniValue stopped{UniValue::VOBJ};
         stopped.pushKV("event", "kill_ready");
         stopped.pushKV("point", point);
@@ -60,7 +61,7 @@ void Boundary(const std::string& name, unsigned ordinal)
 bool IsWAL(int fd)
 {
     char path[4096];
-    const auto n{readlink(("/proc/self/fd/" + std::to_string(fd)).c_str(), path, sizeof(path))};
+    const auto n{readlink(("/proc/self/fd/" + util::ToString(fd)).c_str(), path, sizeof(path))};
     if (n <= 0) return false;
     const std::string_view full{path, static_cast<size_t>(n)};
     const auto name{full.substr(full.find_last_of('/') + 1)};
@@ -106,7 +107,7 @@ extern "C" void __wrap__ZN10CDBWrapper10WriteBatchER8CDBBatchb(CDBWrapper* db, C
 }
 
 extern "C" int __real_fdatasync(int);
-extern "C" int __wrap_fdatasync(int fd)
+extern "C" __attribute__((visibility("default"))) int __wrap_fdatasync(int fd)
 {
     if (!armed.load() || !writing) return __real_fdatasync(fd);
     // Only the WAL sync belonging to this synchronous evidence write, not
@@ -119,7 +120,7 @@ extern "C" int __wrap_fdatasync(int fd)
 }
 
 extern "C" ssize_t __real_write(int, const void*, size_t);
-extern "C" ssize_t __wrap_write(int fd, const void* data, size_t size)
+extern "C" __attribute__((visibility("default"))) ssize_t __wrap_write(int fd, const void* data, size_t size)
 {
     if (armed.load() && writing == 2 && point == "wal_partial:2" && size > 1 && IsWAL(fd)) {
         // Persist a real prefix, not a fabricated successful write. Stop before
@@ -182,11 +183,11 @@ BOOST_AUTO_TEST_CASE(child)
             index.phashBlock = &hashes.back();
             index.pprev = previous;
             index.nHeight = previous->nHeight + 1;
-            index.nStatus = BLOCK_VALID_TREE;
+            WITH_LOCK(cs_main, index.nStatus = BLOCK_VALID_TREE);
             previous = &index;
             entries.push_back(&index);
         }
-        db.WriteBatchSync({}, 0, entries);
+        WITH_LOCK(cs_main, db.WriteBatchSync({}, 0, entries));
     }
     if (mode == "damage") {
         db.Write(std::make_pair(uint8_t{'y'}, headers[0].GetHash()), uint8_t{2}, true);

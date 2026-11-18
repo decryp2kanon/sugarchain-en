@@ -3,14 +3,14 @@ Sugarchain En
 
 Setup
 ---------------------
-Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet networking and consensus. Its mainnet downloads and validates Sugarchain blocks and transactions, not the Bitcoin blockchain. The current mainnet parameters are defined in [`src/kernel/chainparams.cpp`](../src/kernel/chainparams.cpp). Initial synchronization time and storage depend on the chain size, pruning settings, hardware, and network connection. The inherited non-main networks are separate test environments; do not assume that their parameters match Sugarchain mainnet.
+Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet networking and consensus. Its mainnet downloads and validates Sugarchain blocks and transactions, not the Bitcoin blockchain. The current mainnet parameters are defined in [`src/kernel/chainparams.cpp`](../src/kernel/chainparams.cpp). Initial synchronization time and storage depend on the chain size, pruning settings, hardware, and network connection. This candidate exposes mainnet and isolated regtest. Inherited testnet and Signet modes are disabled until native parameters are ported and verified.
 
 The Sugarchain homepage is https://sugarchain.org/.
 
 Current release preparation targets Linux first; Windows and macOS are deferred.
 See the [Linux candidate build/package guide](sugarchain-en-linux-release.md) and
 [En draft release notes](release-notes/sugarchain-en-draft.md). No public En release
-or download is announced by these preparation documents.
+or download is announced by these preparation documents. See the [native validation record](sugarchain-en-native-validation-2026-11-18.md) for local coverage and explicit exclusions.
 
 This directory also retains upstream Bitcoin Core technical references, BIPs,
 example transactions, and historical release notes. Their Bitcoin names,

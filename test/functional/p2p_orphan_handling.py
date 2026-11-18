@@ -251,7 +251,9 @@ class OrphanHandlingTest(BitcoinTestFramework):
 
         # parent_normal can be relayed again even though parent1_witness_stripped was rejected
         self.relay_transaction(peer1, parent_normal["tx"])
-        assert_equal(set(node.getrawmempool()), set([parent_normal["txid"], child_invalid_witness["txid"]]))
+        # Syncing peer1 does not drain the orphan work set owned by peer2.
+        expected = {parent_normal["txid"], child_invalid_witness["txid"]}
+        self.wait_until(lambda: set(node.getrawmempool()) == expected)
 
     @cleanup
     def test_orphan_multiple_parents(self):
