@@ -16,7 +16,7 @@ Priority: **3: Mandatory; 2: Required; 1: Important; 0: Optional.**
 - Linux desktop/package integration and four key-flow translations are merged in PRs #26 and #27. Strict local production builds and isolated runtime checks passed.
 - Linux prerelease metadata, candidate guidance and generated command manuals are merged in PR #28.
 - Linux is the current release target. Windows and macOS are deferred follow-up work. This execution creates validation candidates only; it does not authorize a public release.
-- Native regression coverage and bounded persistent-proof recovery are complete; see the [validation record](sugarchain-en-native-validation-2026-11-18.md). Historical full-chain evidence remains explicitly historical. Benchmark alignment remains item 11. CI stays disabled.
+- Native regression coverage and bounded persistent-proof recovery are complete; see the [validation record](sugarchain-en-native-validation-2026-11-18.md). Historical full-chain evidence remains explicitly historical. All 173 benchmark sanity cases and bounded native component measurements are complete; see the [benchmark record](sugarchain-en-native-benchmarks-2026-11-18.md). No additional optimization is proposed without a justified comparison. CI stays disabled.
 
 ## PR sequence
 
