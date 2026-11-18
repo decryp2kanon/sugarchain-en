@@ -193,7 +193,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">지갑을 암호화해도 컴퓨터를 감염시킨 악성코드에 의한 Sugarchain 코인 도난을 완전히 막을 수는 없다는 점을 기억하십시오.</translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -559,7 +559,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     </message>
     <message>
         <source>Sign messages with your Sugarchain addresses to prove you own them</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Sugarchain 주소로 메시지에 서명하여 해당 주소를 소유하고 있음을 증명합니다.</translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
