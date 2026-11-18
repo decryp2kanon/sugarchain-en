@@ -3,7 +3,7 @@
 # Distributed under the MIT software license, see the accompanying
 # file COPYING or https://opensource.org/license/mit/.
 
-"""Verify an unpacked macOS deployment on a fresh GitHub-hosted runner."""
+"""Verify a native shared-Qt macOS deployment on a fresh GitHub-hosted runner."""
 
 import argparse
 import base64
@@ -137,6 +137,10 @@ def main():
     schemes = [scheme for entry in info["CFBundleURLTypes"] for scheme in entry["CFBundleURLSchemes"]]
     require(schemes == ["sugarchain"], "Wrong URI scheme")
     gui = app / "Contents/MacOS" / info["CFBundleExecutable"]
+    linked = subprocess.check_output(["otool", "-L", str(gui)], text=True)
+    require(any(("/Qt" in line and ".framework/" in line) or "/libQt" in line
+                for line in linked.splitlines()[1:]),
+            "This helper covers native shared-Qt deployments; static depends bundles need separate native validation")
     require((app / "Contents/Resources" / info["CFBundleIconFile"]).is_file(), "Missing bundle icon")
     require((app / "Contents/PlugIns/platforms/libqminimal.dylib").is_file(), "Missing minimal Qt plugin")
     require((app / "Contents/PlugIns/platforms/libqcocoa.dylib").is_file(), "Missing Cocoa Qt plugin")

@@ -12,7 +12,7 @@ directory records the archive path for the selected build environment.
 
 ## Native runtime verification
 
-After unpacking the deployment archive, native macOS CI runs:
+After unpacking a native shared-Qt deployment archive, macOS CI runs:
 
 ```bash
 python3 contrib/macdeploy/verify-native.py \
@@ -33,8 +33,11 @@ and packaged GUI offline with explicit disposable data directories, then
 checks the installed CLI, mainnet `sugar1q` address generation, regtest mining,
 a confirmed wallet transfer, backup, normal shutdown, restart, and restoration.
 The GUI uses its packaged Cocoa Qt plugin; interactive UI actions are not
-covered. Results and logs remain in the work directory. Cross-built archives
-require this native execution check before a platform release is claimed.
+covered. Results and logs remain in the work directory. This helper checks
+shared Qt linkage before requiring deployed plugin files. It does not validate
+the statically linked Qt packages produced by depends cross builds. Those
+archives need separate native execution and signature checks before a platform
+release is claimed.
 
 ## SDK Extraction
 
