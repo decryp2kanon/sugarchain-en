@@ -107,6 +107,20 @@ def check_chain(node, chain):
     return info
 
 
+def check_version(binary, work):
+    directory = work / binary.name
+    directory.mkdir(parents=True)
+    command = [str(binary), "--version" if binary.name == "sugarchain" else "-version"]
+    if binary.name in ("sugarchaind", "sugarchain-cli", "sugarchain-wallet"):
+        command.append(f"-datadir={directory}")
+    probe = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                           text=True, errors="replace", timeout=30, check=False)
+    (directory / "version.log").write_text(probe.stdout)
+    require(probe.returncode == 0,
+            f"{binary.name} version probe failed ({probe.returncode}):\n{probe.stdout[-4096:]}")
+    require("Sugarchain En" in probe.stdout, f"Wrong version identity for {binary.name}")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--app", type=Path, required=True)
@@ -149,8 +163,7 @@ def main():
     require(platform.machine() in architectures, "The native runner architecture is missing")
     for binary in ("sugarchain", "sugarchaind", "sugarchain-cli", "sugarchain-wallet",
                    "sugarchain-tx", "sugarchain-util"):
-        subprocess.run([str(bindir / binary), "--version"], check=True,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        check_version(bindir / binary, work / "versions")
 
     results = {"platform": platform.platform(), "architectures": architectures,
                "bundle_identity": True, "bundle_signature": True,
