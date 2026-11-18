@@ -160,7 +160,7 @@ private:
     friend class ChainstateManager;
     friend class kernel::BlockTreeDB;
     friend class CDiskBlockIndex;
-    friend void CacheVerifiedBlockIndexProof(const CBlockIndex&, const Consensus::Params&);
+    friend void CacheVerifiedBlockIndexProof(const CBlockIndex&, const Consensus::Params&) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
 public:
 

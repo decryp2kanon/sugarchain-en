@@ -105,6 +105,7 @@ add_library(bitcoin_common STATIC EXCLUDE_FROM_ALL
   common/signmessage.cpp
   common/system.cpp
   common/url.cpp
+  kernel/cs_main.cpp
   compressor.cpp
   core_io.cpp
   deploymentinfo.cpp
@@ -199,7 +200,6 @@ add_library(bitcoin_node STATIC EXCLUDE_FROM_ALL
   kernel/checks.cpp
   kernel/coinstats.cpp
   kernel/context.cpp
-  kernel/cs_main.cpp
   kernel/disconnected_transactions.cpp
   kernel/mempool_removal_reason.cpp
   mapport.cpp
