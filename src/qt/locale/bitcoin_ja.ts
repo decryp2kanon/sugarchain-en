@@ -1863,7 +1863,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Connect to the Sugarchain network through a separate SOCKS5 proxy for Tor onion services.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Tor onionサービス用の別のSOCKS5プロキシを介して、Sugarchainネットワークに接続します。</translation>
     </message>
     <message>
         <source>Use separate SOCKS&amp;5 proxy to reach peers via Tor onion services:</source>
@@ -3070,7 +3070,7 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
     </message>
     <message>
         <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for Sugarchain transactions than the network can process.</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">ブロックの容量に対して取引量が少ない場合、マイナーだけでなく取引を中継するノードも最低手数料を要求することがあります。この最低手数料だけを支払っても問題ありませんが、Sugarchainの取引需要がネットワークの処理能力を上回ると、取引がいつまでも承認されない可能性があることに注意してください。</translation>
     </message>
     <message>
         <source>A too low fee might result in a never confirming transaction (read the tooltip)</source>
