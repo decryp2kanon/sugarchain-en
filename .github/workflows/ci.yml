@@ -472,6 +472,7 @@ jobs:
     env:
       DANGER_CI_ON_HOST_FOLDERS: 1
       FILE_ENV: ${{ matrix.file-env }}
+      ARMHF_PROBE_IMAGE: ${{ matrix.armhf-probe-image }}
 
     strategy:
       fail-fast: false
@@ -488,6 +489,7 @@ jobs:
             fallback-runner: 'ubuntu-24.04-arm'
             timeout-minutes: 120
             file-env: './ci/test/00_setup_env_arm.sh'
+            armhf-probe-image: mirror.gcr.io/debian:trixie-slim@sha256:ced25bc1bff26885d07c82647bc5ad766731d578e8cbc0d02b2e45b2095eaa67
             provider: 'gha'
 
           - name: 'ASan + LSan + UBSan + integer'
@@ -575,6 +577,28 @@ jobs:
         uses: ./.github/actions/cache/restore
         with:
           provider: ${{ matrix.provider || needs.runners.outputs.provider }}
+
+      - name: Probe 32-bit ARM execution
+        if: ${{ env.ARMHF_PROBE_IMAGE != '' }}
+        id: armhf
+        run: |
+          docker pull --platform linux/arm/v7 "$ARMHF_PROBE_IMAGE"
+          if ! docker run --rm --platform linux/arm/v7 "$ARMHF_PROBE_IMAGE" /usr/bin/true; then
+            echo 'emulate=true' >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Enable 32-bit ARM emulation
+        if: ${{ steps.armhf.outputs.emulate == 'true' }}
+        uses: docker/setup-qemu-action@v4
+        with:
+          platforms: arm
+          image: mirror.gcr.io/tonistiigi/binfmt:qemu-v10.2.3-68@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
+
+      - name: Check 32-bit ARM subprocesses
+        if: ${{ env.ARMHF_PROBE_IMAGE != '' }}
+        run: |
+          docker run --rm --platform linux/arm/v7 "$ARMHF_PROBE_IMAGE" \
+            /bin/sh -ec 'test "$(/usr/bin/dpkg --print-architecture)" = armhf'
 
       - name: Configure Docker
         uses: ./.github/actions/configure-docker
