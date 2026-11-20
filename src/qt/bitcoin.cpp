@@ -222,11 +222,13 @@ void BitcoinApplication::setupPlatformStyle()
 BitcoinApplication::~BitcoinApplication()
 {
     m_executor.reset();
+    qDebug() << "GUI executor released";
 
     delete window;
     window = nullptr;
     delete platformStyle;
     platformStyle = nullptr;
+    qDebug() << "GUI window and platform style released";
 }
 
 #ifdef ENABLE_WALLET

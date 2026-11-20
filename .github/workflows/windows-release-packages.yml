@@ -54,7 +54,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
         with:
-          ref: f959e72a799deeac799b13b7febca546353c8ff1
+          ref: 969e0e2d931dabcd57ae0f77972267af3b96e47a
       - name: Record commit
         id: record-commit
         run: echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
