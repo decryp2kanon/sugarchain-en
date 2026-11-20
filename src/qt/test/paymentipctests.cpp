@@ -15,13 +15,14 @@
 #include <QThread>
 
 namespace {
-void CheckDelivery(QLocalServer& server, const QStringList& names, const QString& request)
+void CheckDelivery(QLocalServer& server, const QStringList& names, const QString& request, int service_delay_ms = 0)
 {
     // A Windows named pipe can wait for its reader before completing a write.
     QString error;
     PaymentIpcResult result{PaymentIpcResult::NO_SERVER};
     std::unique_ptr<QThread> sender{QThread::create([&] { result = SendPaymentIpc(names, {request}, error); })};
     sender->start();
+    if (service_delay_ms) QTest::qSleep(service_delay_ms);
     std::unique_ptr<QLocalSocket> socket;
     if (server.hasPendingConnections() || server.waitForNewConnection(1000)) socket.reset(server.nextPendingConnection());
     QString received;
@@ -48,15 +49,23 @@ void PaymentIpcTests::namesAreScoped()
     QVERIFY(main_name != PaymentIpcServerName("/different/main"));
 }
 
+void PaymentIpcTests::preferEnOnce_data()
+{
+    QTest::addColumn<int>("service_delay_ms");
+    QTest::newRow("ready") << 0;
+    QTest::newRow("busy") << 60;
+}
+
 void PaymentIpcTests::preferEnOnce()
 {
+    QFETCH(int, service_delay_ms);
     QTemporaryDir dir;
     const QString current_name = PaymentIpcServerName(dir.path());
     const QString old_name = PaymentIpcServerName(dir.path(), true);
     QLocalServer current, old;
     QVERIFY(current.listen(current_name));
     QVERIFY(old.listen(old_name));
-    CheckDelivery(current, {current_name, old_name}, "sugarchain:test-only?label=En");
+    CheckDelivery(current, {current_name, old_name}, "sugarchain:test-only?label=En", service_delay_ms);
     QVERIFY(!current.waitForNewConnection(10));
     QVERIFY(!old.waitForNewConnection(10));
 }
