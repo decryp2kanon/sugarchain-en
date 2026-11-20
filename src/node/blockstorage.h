@@ -34,7 +34,6 @@
 #include <limits>
 #include <map>
 #include <memory>
-#include <memory_resource>
 #include <optional>
 #include <set>
 #include <span>
@@ -321,33 +320,37 @@ private:
 protected:
     std::vector<CBlockFileInfo> m_blockfile_info;
 
-    // Preserve std::set ordering and uniqueness while pooling its small nodes.
-    // The resource address remains stable when the empty set releases its pool.
-    class DirtyBlockIndexMemoryResource final : public std::pmr::memory_resource {
-        std::unique_ptr<PoolResource<64, 8>> m_pool;
+    /** Dirty indexes and their node storage are released together after each batch. */
+    class DirtyBlockIndexSet {
+        using Allocator = PoolAllocator<CBlockIndex*, 64, 8>;
+        struct Storage {
+            PoolResource<64, 8> pool;
+            // Destroy the set first: an empty MSVC tree still owns an allocated sentinel.
+            std::set<CBlockIndex*, std::less<CBlockIndex*>, Allocator> indexes;
 
-        void* do_allocate(size_t bytes, size_t alignment) override
-        {
-            if (!m_pool) m_pool = std::make_unique<PoolResource<64, 8>>();
-            return m_pool->Allocate(bytes, alignment);
-        }
-        void do_deallocate(void* pointer, size_t bytes, size_t alignment) override
-        {
-            m_pool->Deallocate(pointer, bytes, alignment);
-        }
-        bool do_is_equal(const std::pmr::memory_resource& other) const noexcept override
-        {
-            return this == &other;
-        }
+            Storage() : indexes(Allocator{&pool}) {}
+        };
+        std::optional<Storage> m_storage;
 
     public:
-        // Call only after all set nodes have been erased.
-        void Release() noexcept { m_pool.reset(); }
-    };
-    DirtyBlockIndexMemoryResource m_dirty_blockindex_resource;
+        void insert(CBlockIndex* index)
+        {
+            if (!m_storage) m_storage.emplace();
+            m_storage->indexes.insert(index);
+        }
+        size_t size() const { return m_storage ? m_storage->indexes.size() : 0; }
+        bool empty() const { return size() == 0; }
+        void clear() { m_storage.reset(); }
 
-    /** Dirty block index entries. Destroy the set before its resource. */
-    std::pmr::set<CBlockIndex*> m_dirty_blockindex{&m_dirty_blockindex_resource};
+        std::vector<const CBlockIndex*> Take()
+        {
+            if (!m_storage) return {};
+            std::vector<const CBlockIndex*> indexes(m_storage->indexes.begin(), m_storage->indexes.end());
+            clear();
+            return indexes;
+        }
+    };
+    DirtyBlockIndexSet m_dirty_blockindex;
 
     /** Dirty block file entries. */
     std::set<int> m_dirty_fileinfo;
