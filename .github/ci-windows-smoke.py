@@ -118,26 +118,43 @@ def shutdown_detail(log_path):
 
 
 def windows_fault_module(process):
-    # Read the recent Application Error event for this executable and PID, if Windows recorded it.
-    name = PureWindowsPath(process.args[0]).name
+    executable = PureWindowsPath(process.args[0])
     query = ("*[System[Provider[@Name='Application Error'] and EventID=1000 and "
-             "TimeCreated[timediff(@SystemTime) <= 120000]] and "
-             f"EventData[Data[@Name='AppName']='{name}']]")
-    try:
-        result = subprocess.run(
-            ["wevtutil", "qe", "Application", f"/q:{query}", "/rd:true", "/c:4", "/f:xml", "/e:Events"],
-            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True, timeout=5,
-        )
-        for event in ET.fromstring(result.stdout).findall(".//{*}Event"):
-            fields = {field.get("Name"): field.text or "" for field in event.findall("./{*}EventData/{*}Data")}
+             "TimeCreated[timediff(@SystemTime) <= 120000]]]")
+    # Windows can publish the event after the child process has already exited.
+    for delay in (0, 1, 2, 4):
+        if delay:
+            time.sleep(delay)
+        try:
+            result = subprocess.run(
+                ["wevtutil", "qe", "Application", f"/q:{query}", "/rd:true", "/c:20", "/f:xml", "/e:Events"],
+                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True, timeout=5,
+            )
+            if not result.stdout.strip():
+                continue
+            events = ET.fromstring(result.stdout).findall(".//{*}Event")
+        except (OSError, subprocess.SubprocessError, ET.ParseError, ValueError):
+            return ""
+        for event in events:
+            data = event.findall("./{*}EventData/{*}Data")
+            fields = {field.get("Name"): field.text or "" for field in data}
+            if len(data) >= 9 and all(field.get("Name") is None for field in data):
+                # Classic Application Error records use the provider's positional fields.
+                fields = {"AppName": data[0].text or "", "ModuleName": data[3].text or "",
+                          "ProcessId": data[8].text or ""}
+                if len(data) > 10:
+                    fields["AppPath"] = data[10].text or ""
             try:
                 pid = int(fields.get("ProcessId", ""), 0)
             except ValueError:
                 continue
-            if pid == process.pid and fields.get("AppName", "").lower() == name.lower():
-                return PureWindowsPath(fields.get("ModuleName", "")).name
-    except (OSError, subprocess.SubprocessError, ET.ParseError, ValueError):
-        pass
+            if pid != process.pid or fields.get("AppName", "").casefold() != executable.name.casefold():
+                continue
+            if fields.get("AppPath") and PureWindowsPath(fields["AppPath"]) != executable:
+                continue
+            module = PureWindowsPath(fields.get("ModuleName", "")).name
+            if module:
+                return module
     return ""
 
 
@@ -219,7 +236,8 @@ class Node:
                     raise
             if self.process.returncode != 0:
                 detail = shutdown_detail(self.cookie.parent / "debug.log")
-                if os.name == "nt" and (module := windows_fault_module(self.process)):
+                if os.name == "nt":
+                    module = windows_fault_module(self.process) or "unavailable"
                     detail += f", Windows faulting module {module}"
                 code = self.process.returncode
                 raise RuntimeError(
