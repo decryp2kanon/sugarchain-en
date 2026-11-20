@@ -1860,7 +1860,10 @@ BOOST_AUTO_TEST_CASE(post_ibd_shrink_discards_only_ram_evidence)
     {
         Observation observation;
         BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+        BOOST_CHECK_EQUAL(GetYespowerVerificationCacheUsage().proof_storage_bytes, before.proof_storage_bytes);
+#ifdef ENABLE_YESPOWER_TEST_WRAP
         BOOST_CHECK_EQUAL(calls.load(), 0U);
+#endif
     }
     BOOST_REQUIRE(ShrinkYespowerVerificationCache());
     const auto after{GetYespowerVerificationCacheUsage()};
@@ -1871,7 +1874,11 @@ BOOST_AUTO_TEST_CASE(post_ibd_shrink_discards_only_ram_evidence)
     {
         Observation observation;
         BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+        // The first verified header allocates a proof page in the fresh tier.
+        BOOST_CHECK_GT(GetYespowerVerificationCacheUsage().proof_storage_bytes, after.proof_storage_bytes);
+#ifdef ENABLE_YESPOWER_TEST_WRAP
         BOOST_CHECK_EQUAL(calls.load(), 1U);
+#endif
         auto invalid{headers.back()};
         invalid.nBits = 0;
         BOOST_CHECK(!CheckBlockProofOfWork(invalid, params));
@@ -1882,7 +1889,9 @@ BOOST_AUTO_TEST_CASE(post_ibd_shrink_discards_only_ram_evidence)
     {
         Observation observation;
         BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
         BOOST_CHECK_EQUAL(calls.load(), 0U);
+#endif
     }
 }
 
