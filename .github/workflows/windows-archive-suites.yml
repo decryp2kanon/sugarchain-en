@@ -1,4 +1,4 @@
-name: Windows suites for published archives
+name: Windows extended functional suites for published archives
 on:
   push:
     branches: [qa/windows-archive-suites-20261120]
@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         runtime: [msvcrt, ucrt]
-        suite: [unit, functional]
+        suite: [functional]
         include:
           - runtime: msvcrt
             artifact: x86_64-w64-mingw32-executables-44696531551
@@ -38,29 +38,7 @@ jobs:
       - name: Prepare Windows test environment
         id: prepare
         run: py -3 .github/ci-windows-cross.py prepare_tests
-      - name: Qt unit tests
-        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
-        env:
-          QT_FORCE_STDERR_LOGGING: "1"
-        run: ./bin/test_bitcoin-qt.exe
-      - name: Core unit tests
-        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
-        run: ./bin/test_bitcoin.exe -l test_suite
-      - name: secp256k1 exhaustive unit tests
-        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
-        run: ./src/secp256k1/bin/exhaustive_tests.exe
-      - name: secp256k1 noverify unit tests
-        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
-        run: ./src/secp256k1/bin/noverify_tests.exe
-      - name: secp256k1 unit tests
-        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
-        run: ./src/secp256k1/bin/tests.exe
-      - name: UniValue object tests
-        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
-        run: ./src/univalue/object.exe
-      - name: UniValue unit tests
-        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
-        run: ./src/univalue/unitester.exe
       - name: Functional tests
-        if: matrix.suite == 'functional'
+        env:
+          TEST_RUNNER_EXTRA: "--timeout-factor=${{ env.TEST_RUNNER_TIMEOUT_FACTOR }} --extended"
         run: py -3 .github/ci-windows-cross.py run_functional_tests
