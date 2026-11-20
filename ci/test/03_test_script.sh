@@ -152,6 +152,9 @@ if [[ "$CI_OS_NAME" == "macos" && " ${GOAL} " == *" deploy "* ]]; then
     --app "${BASE_BUILD_DIR}/deploy/Sugarchain En.app" \
     --bindir "${BASE_OUTDIR}/bin" \
     --work-dir "${RUNNER_TEMP}/en-macos-app-smoke"
+elif [[ "$HOST" == *-apple-darwin* && " ${GOAL} " == *" deploy "* ]]; then
+  macos_archive=$(cat "${BASE_BUILD_DIR}/macos-archive-path.txt")
+  python3 contrib/macdeploy/verify_bundle.py "${macos_archive}" "${HOST%%-*}"
 fi
 
 if [ "$RUN_UNIT_TESTS" = "true" ]; then

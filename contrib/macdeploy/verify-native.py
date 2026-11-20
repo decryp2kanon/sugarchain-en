@@ -18,10 +18,7 @@ import subprocess
 import sys
 import time
 
-
-def require(condition, message):
-    if not condition:
-        raise RuntimeError(message)
+from verify_bundle import check_metadata, require
 
 
 class Node:
@@ -154,12 +151,7 @@ def main():
     bindir = args.bindir.resolve()
     with (app / "Contents/Info.plist").open("rb") as source:
         info = plistlib.load(source)
-    require(info["CFBundleName"] == "Sugarchain En", "Wrong application name")
-    require(info["CFBundleIdentifier"] == "org.sugarchain.SugarchainEn", "Wrong bundle identity")
-    require(info["CFBundleExecutable"] == "Sugarchain-Qt", "Wrong bundle executable")
-    require("LSArchitecturePriority" not in info, "Bundle must use the host's native architecture")
-    schemes = [scheme for entry in info["CFBundleURLTypes"] for scheme in entry["CFBundleURLSchemes"]]
-    require(schemes == ["sugarchain"], "Wrong URI scheme")
+    check_metadata(info)
     gui = app / "Contents/MacOS" / info["CFBundleExecutable"]
     linked = subprocess.check_output(["otool", "-L", str(gui)], text=True)
     require(any(("/Qt" in line and ".framework/" in line) or "/libQt" in line
