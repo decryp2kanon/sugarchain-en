@@ -493,6 +493,7 @@ jobs:
       DANGER_CI_ON_HOST_FOLDERS: 1
       FILE_ENV: ${{ matrix.file-env }}
       ARMHF_PROBE_IMAGE: ${{ matrix.armhf-probe-image }}
+      FUZZ_TESTS_CONFIG: ${{ matrix.replay-args }}
 
     strategy:
       fail-fast: false
@@ -547,6 +548,16 @@ jobs:
             fallback-runner: 'ubuntu-latest'
             timeout-minutes: 360
             file-env: './ci/test/00_setup_env_native_fuzz.sh'
+            replay-args: '--exclude=p2p_headers_presync'
+
+          # Start the longest group as soon as its runner finishes building.
+          - name: 'fuzzer,address,undefined,integer (header pre-sync)'
+            warp-runner: 'warp-ubuntu-latest-x64-16x'
+            fallback-runner: 'ubuntu-latest'
+            timeout-minutes: 360
+            file-env: './ci/test/00_setup_env_native_fuzz.sh'
+            replay-args: 'p2p_headers_presync'
+            cache-restore-only: true
 
           - name: 'Sugarchain legacy wallet compatibility'
             warp-runner: 'warp-ubuntu-latest-x64-8x'
@@ -644,6 +655,7 @@ jobs:
         run: ./ci/test_run_all.sh
 
       - name: Save caches
+        if: ${{ !matrix.cache-restore-only }}
         uses: ./.github/actions/cache/save
         with:
           provider: ${{ matrix.provider || needs.runners.outputs.provider }}
