@@ -96,6 +96,10 @@ ccache --zero-stats
 BASE_BUILD_DIR=${BASE_BUILD_DIR:-$BASE_SCRATCH_DIR/build-$HOST}
 
 BITCOIN_CONFIG_ALL="$BITCOIN_CONFIG_ALL -DCMAKE_INSTALL_PREFIX=$BASE_OUTDIR -Werror=dev"
+# CMake 4.5 reports directory-wide build directives under -Werror=dev.
+if cmake --help-diagnostic CMD_NON_TARGET_DIRECTIVE >/dev/null 2>&1; then
+  BITCOIN_CONFIG_ALL="$BITCOIN_CONFIG_ALL -Wno-error=non-target-directive"
+fi
 
 if [[ "${RUN_IWYU}" == true || "${RUN_TIDY}" == true ]]; then
   BITCOIN_CONFIG_ALL="$BITCOIN_CONFIG_ALL -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
