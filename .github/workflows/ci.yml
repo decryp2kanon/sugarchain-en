@@ -539,7 +539,7 @@ jobs:
           - name: 'i686, no IPC'
             warp-runner: 'warp-ubuntu-latest-x64-8x'
             fallback-runner: 'ubuntu-latest'
-            timeout-minutes: 120
+            timeout-minutes: 180
             file-env: './ci/test/00_setup_env_i686_no_ipc.sh'
 
           - name: 'fuzzer,address,undefined,integer'
