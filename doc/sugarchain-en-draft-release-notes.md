@@ -17,7 +17,7 @@ The current client metadata is 31.1.0, based on Bitcoin Core 31.1 (`CLIENT_VERSI
 
 ## Linux candidate scope
 
-The [Linux candidate guide](../sugarchain-en-linux-release.md) defines the production build recipe and required package manifest. The current validated Linux configuration is monolithic (`ENABLE_IPC=OFF`) with seven installed executables. IPC-enabled packaging is not validated by that candidate; the product default is unchanged. Candidate integration includes the Sugarchain executable names, application/URI entry and AppStream ID `org.sugarchain.SugarchainEn`, installed icons, and project/bundled-asset notices under `share/doc/SugarchainEn`.
+The [Linux candidate guide](sugarchain-en-linux-release.md) defines the production build recipe and required package manifest. The current validated Linux configuration is monolithic (`ENABLE_IPC=OFF`) with seven installed executables. IPC-enabled packaging is not validated by that candidate; the product default is unchanged. Candidate integration includes the Sugarchain executable names, application/URI entry and AppStream ID `org.sugarchain.SugarchainEn`, installed icons, and project/bundled-asset notices under `share/doc/SugarchainEn`.
 
 Four Korean/Japanese translation gaps in the encryption, address-signing, Tor-proxy, and fee explanations are filled. Autostart setup rejects executable paths containing `%` or `=`.
 
@@ -33,4 +33,4 @@ Host-built Linux candidates may require matching shared libraries and Qt platfor
 - Record exact source/environment/options, inspected package contents, and private candidate checksums after validation.
 - Keep CI disabled until a separate explicit instruction. Obtain public release approval separately from local build/merge approval.
 
-Upstream [Bitcoin Core 31.1 release notes](../release-notes.md) are preserved as history. Their download links, external infrastructure, supported platforms, and upgrade claims are not an En release announcement.
+Upstream [Bitcoin Core 31.1 release notes](release-notes.md) are preserved as history. Their download links, external infrastructure, supported platforms, and upgrade claims are not an En release announcement.

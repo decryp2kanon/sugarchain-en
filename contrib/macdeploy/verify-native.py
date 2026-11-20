@@ -69,19 +69,29 @@ class Node:
         finally:
             connection.close()
 
+    def startup_error(self, message):
+        with (self.directory / "process.log").open("rb") as process_log:
+            process_log.seek(0, os.SEEK_END)
+            process_log.seek(max(0, process_log.tell() - 4096))
+            output = process_log.read(4096).decode("utf-8", errors="replace")
+        return RuntimeError(f"{message}; see {self.directory}\n{output}")
+
     def __enter__(self):
         deadline = time.monotonic() + 90
         while time.monotonic() < deadline:
             if self.process.poll() is not None:
                 self.log.close()
-                raise RuntimeError(f"Node exited before RPC; see {self.directory}")
+                raise self.startup_error("Node exited before RPC")
             try:
                 self.rpc("getblockcount")
                 return self
             except (OSError, ValueError, RuntimeError, http.client.HTTPException):
                 time.sleep(0.1)
-        self.close()
-        raise RuntimeError(f"RPC startup timed out; see {self.directory}")
+        try:
+            self.close()
+        except (OSError, RuntimeError, subprocess.TimeoutExpired) as cleanup_error:
+            raise self.startup_error("RPC startup timed out") from cleanup_error
+        raise self.startup_error("RPC startup timed out")
 
     def close(self):
         if self.process.poll() is None:
@@ -105,6 +115,20 @@ def check_chain(node, chain):
     require(network["networkactive"] is False and network["connections"] == 0,
             "Runtime verification must remain offline")
     return info
+
+
+def check_version(binary, work):
+    directory = work / binary.name
+    directory.mkdir(parents=True)
+    command = [str(binary), "--version" if binary.name == "sugarchain" else "-version"]
+    if binary.name in ("sugarchaind", "sugarchain-cli", "sugarchain-wallet"):
+        command.append(f"-datadir={directory}")
+    probe = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                           text=True, errors="replace", timeout=30, check=False)
+    (directory / "version.log").write_text(probe.stdout)
+    require(probe.returncode == 0,
+            f"{binary.name} version probe failed ({probe.returncode}):\n{probe.stdout[-4096:]}")
+    require("Sugarchain En" in probe.stdout, f"Wrong version identity for {binary.name}")
 
 
 def main():
@@ -149,8 +173,7 @@ def main():
     require(platform.machine() in architectures, "The native runner architecture is missing")
     for binary in ("sugarchain", "sugarchaind", "sugarchain-cli", "sugarchain-wallet",
                    "sugarchain-tx", "sugarchain-util"):
-        subprocess.run([str(bindir / binary), "--version"], check=True,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+        check_version(bindir / binary, work / "versions")
 
     results = {"platform": platform.platform(), "architectures": architectures,
                "bundle_identity": True, "bundle_signature": True,

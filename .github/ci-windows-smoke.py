@@ -33,6 +33,37 @@ def runtime_environment(datadir, platform=None):
     return env
 
 
+def check_version(binary, program, datadir, env, platform=None):
+    platform = os.name if platform is None else platform
+    windows_gui = platform == "nt" and program == "sugarchain-qt"
+    if windows_gui:
+        # Windows displays -version in a modal dialog. Read its version resource
+        # with the stock .NET API; the GUI still undergoes the runtime RPC check.
+        script = (
+            "$ErrorActionPreference='Stop'; "
+            "$v=[System.Diagnostics.FileVersionInfo]::GetVersionInfo($env:SUGARCHAIN_CI_GUI_BINARY); "
+            "@{ProductName=$v.ProductName; FileVersion=$v.FileVersion} | ConvertTo-Json -Compress"
+        )
+        command = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script]
+        env = env | {"SUGARCHAIN_CI_GUI_BINARY": str(binary)}
+    else:
+        command = [str(binary)]
+        # The daemon reads configuration before handling -version. CI guards the
+        # default data directory with a file, so keep this probe private too.
+        if program == "sugarchaind":
+            command.append(f"-datadir={datadir}")
+        command.append("--version" if program == "sugarchain" else "-version")
+    result = subprocess.run(command, capture_output=True, text=True, timeout=30, env=env)
+    if result.returncode != 0:
+        raise RuntimeError(f"{program} version probe exited {result.returncode}:\n{result.stdout}{result.stderr}")
+    if windows_gui:
+        version = json.loads(result.stdout)
+        assert version.get("ProductName") == "Sugarchain En", version
+        assert isinstance(version.get("FileVersion"), str) and version["FileVersion"].strip(), version
+    else:
+        assert "Sugarchain En" in result.stdout, (program, result.stdout, result.stderr)
+
+
 class Node:
     def __init__(self, binary, datadir, chain, gui=False):
         self.datadir = datadir
@@ -167,14 +198,15 @@ def main():
     suffix = ".exe" if os.name == "nt" else ""
     programs = ["sugarchain", "sugarchaind", "sugarchain-cli", "sugarchain-qt", "sugarchain-wallet", "sugarchain-tx", "sugarchain-util"]
     binaries = {}
+    version_datadir = workdir / "version-data"
+    version_datadir.mkdir()
     version_env = runtime_environment(workdir / "version-env")
     for program in programs:
         candidates = [bindir / f"{program}{suffix}", bindir / "daemon" / f"{program}{suffix}"]
         binary = next((path for path in candidates if path.is_file()), candidates[0])
         assert binary.is_file(), binary
         binaries[program] = binary
-        version = subprocess.check_output([str(binary), "--version" if program == "sugarchain" else "-version"], text=True, timeout=30, env=version_env)
-        assert "Sugarchain En" in version, (program, version)
+        check_version(binary, program, version_datadir, version_env)
     daemon = binaries["sugarchaind"]
     cli = binaries["sugarchain-cli"]
     results = [

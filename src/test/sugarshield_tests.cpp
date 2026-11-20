@@ -186,7 +186,7 @@ BOOST_AUTO_TEST_CASE(target_division_matches_generic_arithmetic)
                 adjusted = std::clamp(adjusted, rules.MinActualTimespan(), rules.MaxActualTimespan());
                 arith_uint256 reference{total / arith_uint256{uint64_t(window)}};
                 reference /= arith_uint256{uint64_t(expected_span)};
-                reference *= adjusted;
+                reference *= arith_uint256{uint64_t(adjusted)};
                 if (reference > UintToArith256(limit)) reference = UintToArith256(limit);
                 BOOST_CHECK_EQUAL(CalculateSugarShieldWorkRequired(total, span, rules), reference.GetCompact());
             };
