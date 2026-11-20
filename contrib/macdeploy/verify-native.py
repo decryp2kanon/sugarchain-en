@@ -87,7 +87,10 @@ class Node:
                 return self
             except (OSError, ValueError, RuntimeError, http.client.HTTPException):
                 time.sleep(0.1)
-        self.close()
+        try:
+            self.close()
+        except (OSError, RuntimeError, subprocess.TimeoutExpired) as cleanup_error:
+            raise self.startup_error("RPC startup timed out") from cleanup_error
         raise self.startup_error("RPC startup timed out")
 
     def close(self):
