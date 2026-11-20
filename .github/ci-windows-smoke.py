@@ -82,6 +82,8 @@ def shutdown_detail(log_path):
             b"[qt] GUI: Shutdown finished": "GUI executor returned from core shutdown",
             b"[qt] GUI: ~InitExecutor : Stopping thread": "GUI joining executor thread",
             b"[qt] GUI: ~InitExecutor : Stopped thread": "GUI executor thread joined",
+            b"[qt] GUI: GUI executor released": "GUI executor released",
+            b"[qt] GUI: GUI window and platform style released": "GUI window and platform style released",
         }
         last_qt_phase = None
         for line in reversed(progress.splitlines()):
