@@ -128,7 +128,25 @@ class Node:
                     self.process.terminate()
                     self.process.wait(timeout=15)
                     raise
-            assert self.process.returncode == 0, self.process.returncode
+            if self.process.returncode != 0:
+                # Report shutdown progress without publishing the contents of the wallet test log.
+                try:
+                    with self.cookie.with_name("debug.log").open("rb") as log:
+                        log.seek(0, os.SEEK_END)
+                        log.seek(max(0, log.tell() - 64 * 1024))
+                        tail = log.read()
+                    if b"Shutdown done" in tail:
+                        detail = "application logged shutdown completion"
+                    elif b"Shutdown in progress" in tail:
+                        detail = "application logged shutdown start only"
+                    else:
+                        detail = "no shutdown marker in recent application log"
+                except OSError:
+                    detail = "application log unavailable"
+                code = self.process.returncode
+                raise RuntimeError(
+                    f"{Path(self.process.args[0]).name} ({self.chain}) exited with {code} ({code:#x}), {detail}"
+                )
         finally:
             self.log.close()
 
