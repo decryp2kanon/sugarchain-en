@@ -13,6 +13,7 @@ import os
 from pathlib import Path, PureWindowsPath
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.error
@@ -145,6 +146,17 @@ class Node:
         self.log = (datadir / "process.log").open("wb")
         self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, env=runtime_environment(datadir))
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        try:
+            self.close()
+        except Exception as cleanup_error:
+            if exc_type is None:
+                raise
+            print(f"Additional node cleanup error: {cleanup_error}", file=sys.stderr)
+
     def rpc(self, method, *params):
         auth = base64.b64encode(self.cookie.read_bytes().strip()).decode()
         wallet_path = f"/wallet/{urllib.parse.quote(self.wallet, safe='')}" if self.wallet else "/"
@@ -199,8 +211,7 @@ class Node:
 
 
 def check_node(binary, cli, datadir, chain, gui=False):
-    node = Node(binary, datadir, chain, gui)
-    try:
+    with Node(binary, datadir, chain, gui) as node:
         info = node.wait()
         assert info["chain"] == chain and info["blocks"] == 0, info
         expected_genesis = {
@@ -248,8 +259,6 @@ def check_node(binary, cli, datadir, chain, gui=False):
             node.wallet = "restored"
             assert node.rpc("getaddressinfo", address)["ismine"]
         return {"chain": chain, "gui": gui, "height": node.rpc("getblockcount"), "wallet": "passed"}
-    finally:
-        node.close()
 
 
 def main():
