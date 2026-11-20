@@ -12,18 +12,28 @@
 #include <QLockFile>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QThread>
 
 namespace {
-QString ReceiveRequest(QLocalServer& server)
+void CheckDelivery(QLocalServer& server, const QStringList& names, const QString& request)
 {
-    if (!server.hasPendingConnections() && !server.waitForNewConnection(1000)) return {};
-    std::unique_ptr<QLocalSocket> socket(server.nextPendingConnection());
-    if (!socket || (socket->bytesAvailable() == 0 && !socket->waitForReadyRead(1000))) return {};
-    QDataStream in(socket.get());
-    in.setVersion(QDataStream::Qt_4_0);
-    QString request;
-    in >> request;
-    return request;
+    // A Windows named pipe can wait for its reader before completing a write.
+    QString error;
+    PaymentIpcResult result{PaymentIpcResult::NO_SERVER};
+    std::unique_ptr<QThread> sender{QThread::create([&] { result = SendPaymentIpc(names, {request}, error); })};
+    sender->start();
+    std::unique_ptr<QLocalSocket> socket;
+    if (server.hasPendingConnections() || server.waitForNewConnection(1000)) socket.reset(server.nextPendingConnection());
+    QString received;
+    if (socket && (socket->bytesAvailable() > 0 || socket->waitForReadyRead(1000))) {
+        QDataStream in(socket.get());
+        in.setVersion(QDataStream::Qt_4_0);
+        in >> received;
+    }
+    sender->wait();
+    QVERIFY2(error.isEmpty(), qPrintable(error));
+    QCOMPARE(result, PaymentIpcResult::SENT);
+    QCOMPARE(received, request);
 }
 } // namespace
 
@@ -46,13 +56,9 @@ void PaymentIpcTests::preferEnOnce()
     QLocalServer current, old;
     QVERIFY(current.listen(current_name));
     QVERIFY(old.listen(old_name));
-    const QString request{"sugarchain:test-only?label=En"};
-    QString error;
-    QCOMPARE(SendPaymentIpc({current_name, old_name}, {request}, error), PaymentIpcResult::SENT);
-    QCOMPARE(ReceiveRequest(current), request);
+    CheckDelivery(current, {current_name, old_name}, "sugarchain:test-only?label=En");
     QVERIFY(!current.waitForNewConnection(10));
     QVERIFY(!old.waitForNewConnection(10));
-    QVERIFY(error.isEmpty());
 }
 
 void PaymentIpcTests::legacyFallbackOnce()
@@ -61,12 +67,8 @@ void PaymentIpcTests::legacyFallbackOnce()
     const QString old_name = PaymentIpcServerName(dir.path(), true);
     QLocalServer old;
     QVERIFY(old.listen(old_name));
-    const QString request{"sugarchain:test-only?label=Legacy"};
-    QString error;
-    QCOMPARE(SendPaymentIpc({PaymentIpcServerName(dir.path()), old_name}, {request}, error), PaymentIpcResult::SENT);
-    QCOMPARE(ReceiveRequest(old), request);
+    CheckDelivery(old, {PaymentIpcServerName(dir.path()), old_name}, "sugarchain:test-only?label=Legacy");
     QVERIFY(!old.waitForNewConnection(10));
-    QVERIFY(error.isEmpty());
 }
 
 void PaymentIpcTests::noListener()
@@ -90,8 +92,7 @@ void PaymentIpcTests::concurrentStartupClaim()
     QVERIFY(!error.isEmpty());
     QVERIFY(first.isListening());
     error.clear();
-    QCOMPARE(SendPaymentIpc({name}, {"sugarchain:first-still-running"}, error), PaymentIpcResult::SENT);
-    QCOMPARE(ReceiveRequest(first), QString("sugarchain:first-still-running"));
+    CheckDelivery(first, {name}, "sugarchain:first-still-running");
     first.close();
     first_claim.reset();
     QVERIFY(ListenPaymentIpc(second, name, lock_path, second_claim, error));
