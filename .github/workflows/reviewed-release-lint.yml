@@ -1,0 +1,35 @@
+name: Reviewed integration lint
+'on':
+  push:
+    branches:
+    - qa/integration-lint-20261120
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CONTAINER_NAME: bitcoin-linter
+    steps:
+    - name: Annotate with pull request number
+      run: "if [ \"${{ github.event_name }}\" = \"pull_request\" ]; then\n  echo \"::notice title=debug_pull_request_number_str::${{ github.event.number }}\"\nfi\n"
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        ref: 79e8d3a1df9f6aabbe41cdaeca1f96f4f940d863
+        fetch-depth: 0
+    - name: Configure Docker
+      uses: ./.github/actions/configure-docker
+      with:
+        provider: gha
+    - name: CI script
+      run: 'git worktree add ../lint-worktree HEAD
+
+        ../lint-worktree/ci/lint.py
+
+        '
