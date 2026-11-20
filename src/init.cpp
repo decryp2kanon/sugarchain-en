@@ -294,6 +294,7 @@ void Shutdown(NodeContext& node)
     if (!lock_shutdown) return;
     LogInfo("Shutdown in progress...");
     Assert(node.args);
+    LogInfo("QA shutdown stage args");
 
     /// Note: Shutdown() must be able to handle cases in which initialization failed part of the way,
     /// for example if the data directory was found to be locked.
@@ -303,9 +304,13 @@ void Shutdown(NodeContext& node)
     if (node.mempool) node.mempool->AddTransactionsUpdated(1);
 
     StopHTTPRPC();
+    LogInfo("QA shutdown stage http-rpc");
     StopREST();
+    LogInfo("QA shutdown stage rest");
     StopRPC();
+    LogInfo("QA shutdown stage rpc");
     StopHTTPServer();
+    LogInfo("QA shutdown stage http-server");
     for (auto& client : node.chain_clients) {
         try {
             client->stop();
@@ -315,20 +320,26 @@ void Shutdown(NodeContext& node)
         }
     }
     StopMapPort();
+    LogInfo("QA shutdown stage wallet-clients-and-port-mapping");
 
     // Because these depend on each-other, we make sure that neither can be
     // using the other before destroying them.
     if (node.peerman && node.validation_signals) node.validation_signals->UnregisterValidationInterface(node.peerman.get());
     if (node.connman) node.connman->Stop();
+    LogInfo("QA shutdown stage network");
 
     StopTorControl();
+    LogInfo("QA shutdown stage tor-control");
 
     if (node.background_init_thread.joinable()) node.background_init_thread.join();
+    LogInfo("QA shutdown stage background-init");
     if (node.historical_pow_thread.joinable()) node.historical_pow_thread.join();
+    LogInfo("QA shutdown stage historical-proof");
     // After everything has been shut down, but before things get flushed, stop the
     // the scheduler. After this point, SyncWithValidationInterfaceQueue() should not be called anymore
     // as this would prevent the shutdown from completing.
     if (node.scheduler) node.scheduler->stop();
+    LogInfo("QA shutdown stage scheduler");
 
     // After the threads that potentially access these pointers have been stopped,
     // destruct and reset all to nullptr.
@@ -337,11 +348,13 @@ void Shutdown(NodeContext& node)
     node.banman.reset();
     node.addrman.reset();
     node.netgroupman.reset();
+    LogInfo("QA shutdown stage network-owners");
 
     if (node.mempool && node.mempool->GetLoadTried() && ShouldPersistMempool(*node.args)) {
         DumpMempool(*node.mempool, MempoolPath(*node.args));
     }
 
+    LogInfo("QA shutdown stage mempool-dump");
     // Drop transactions we were still watching, record fee estimations and unregister
     // fee estimator from validation interface.
     if (node.fee_estimator) {
@@ -361,9 +374,11 @@ void Shutdown(NodeContext& node)
         }
     }
 
+    LogInfo("QA shutdown stage chainstate-flush");
     // After there are no more peers/RPC left to give us new data which may generate
     // CValidationInterface callbacks, flush them...
     if (node.validation_signals) node.validation_signals->FlushBackgroundCallbacks();
+    LogInfo("QA shutdown stage callbacks");
 
     // Stop and delete all indexes only after flushing background callbacks.
     for (auto* index : node.indexes) index->Stop();
@@ -372,6 +387,7 @@ void Shutdown(NodeContext& node)
     if (g_coin_stats_index) g_coin_stats_index.reset();
     DestroyAllBlockFilterIndexes();
     node.indexes.clear(); // all instances are nullptr now
+    LogInfo("QA shutdown stage indexes");
 
     // Any future callbacks will be dropped. This should absolutely be safe - if
     // missing a callback results in an unrecoverable situation, unclean shutdown
@@ -389,6 +405,7 @@ void Shutdown(NodeContext& node)
         }
     }
 
+    LogInfo("QA shutdown stage coins-views");
     // If any -ipcbind clients are still connected, disconnect them now so they
     // do not block shutdown.
     if (interfaces::Ipc* ipc = node.init->ipc()) {
@@ -403,18 +420,27 @@ void Shutdown(NodeContext& node)
 #endif
 
     node.chain_clients.clear();
+    LogInfo("QA shutdown stage wallet-owners");
     if (node.validation_signals) {
         node.validation_signals->UnregisterAllValidationInterfaces();
     }
     node.mempool.reset();
+    LogInfo("QA shutdown stage mempool-owner");
     node.fee_estimator.reset();
+    LogInfo("QA shutdown stage fee-estimator");
     node.chainman.reset();
+    LogInfo("QA shutdown stage chain-manager");
     node.validation_signals.reset();
+    LogInfo("QA shutdown stage validation-signals");
     node.scheduler.reset();
+    LogInfo("QA shutdown stage scheduler-owner");
     node.ecc_context.reset();
+    LogInfo("QA shutdown stage ecc");
     node.kernel.reset();
+    LogInfo("QA shutdown stage kernel");
 
     RemovePidFile(*node.args);
+    LogInfo("QA shutdown stage pid-file");
 
     LogInfo("Shutdown done");
 }

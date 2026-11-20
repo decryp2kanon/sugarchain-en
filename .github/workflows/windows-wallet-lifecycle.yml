@@ -1,0 +1,86 @@
+name: Windows wallet lifecycle check
+on:
+  push:
+    branches: [qa/windows-wallet-shutdown-20261120]
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  windows-native-dll:
+    name: Windows native wallet shutdown
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 120
+    env:
+      PYTHONUTF8: 1
+    steps:
+      - uses: actions/checkout@v6
+      - name: Import Visual Studio env vars
+        run: py -3 .github/ci-windows.py "standard" github_import_vs_env
+
+      - name: Get tool information
+        run: |
+          set -o errexit -o pipefail -o xtrace -o nounset
+
+          cmake -version | tee cmake_version
+          echo '---'
+          msbuild.exe -version | tee msbuild_version
+          echo "${VCToolsVersion-}" | tee toolset_version
+          py -3 --version
+          bash --version
+
+      - name: Using vcpkg with MSBuild
+        run: |
+          echo "set(VCPKG_BUILD_TYPE release)" >> "${VCPKG_INSTALLATION_ROOT}/triplets/x64-windows.cmake"
+          # Workaround for libevent, which requires CMake 3.1 but is incompatible with CMake >= 4.0.
+          sed -i '1s/^/set(ENV{CMAKE_POLICY_VERSION_MINIMUM} 3.5)\n/' "${VCPKG_INSTALLATION_ROOT}/scripts/ports.cmake"
+
+      - name: Set VCPKG_ROOT
+        run: |
+          echo "VCPKG_ROOT=${VCPKG_INSTALLATION_ROOT}" >> "$GITHUB_ENV"
+
+      - name: Restore vcpkg tools cache
+        id: vcpkg-tools-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: C:/vcpkg/downloads/tools
+          key: ${{ github.job }}-vcpkg-tools-${{ github.run_id }}
+          restore-keys: ${{ github.job }}-vcpkg-tools-
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache/restore@v5
+        id: vcpkg-binary-cache
+        with:
+          path: ~/AppData/Local/vcpkg/archives
+          key: ${{ github.job }}-vcpkg-binary-${{ hashFiles('cmake_version', 'msbuild_version', 'toolset_version', 'vcpkg.json') }}
+
+      - name: Generate build system
+        run: |
+          py -3 .github/ci-windows.py standard generate
+
+      - name: Build daemon and CLI
+        run: cmake --build build --config Release --target bitcoind bitcoin-cli --parallel 4
+      - name: Run mainnet wallet lifecycle
+        shell: python
+        run: |
+          import importlib.util
+          import os
+          from pathlib import Path
+          spec = importlib.util.spec_from_file_location("smoke", ".github/ci-windows-smoke.py")
+          smoke = importlib.util.module_from_spec(spec)
+          spec.loader.exec_module(smoke)
+          binaries = Path("build/bin/Release").resolve()
+          dest = Path(os.environ["RUNNER_TEMP"]) / "en-wallet-diagnostics"
+          print(smoke.check_node(binaries / "sugarchaind.exe", binaries / "sugarchain-cli.exe", dest, "main"))
+      - name: Record completed shutdown stages
+        if: ${{ !cancelled() }}
+        shell: python
+        run: |
+          import os
+          import re
+          from pathlib import Path
+          path = Path(os.environ["RUNNER_TEMP"]) / "en-wallet-diagnostics" / "debug.log"
+          if path.is_file():
+              rows = re.findall(r"QA shutdown stage ([a-z-]+)", path.read_text(errors="replace"))
+              print("Completed shutdown stages", ", ".join(rows) or "(no checkpoint)")
