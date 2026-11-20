@@ -13,6 +13,7 @@ import os
 from pathlib import Path, PureWindowsPath
 import socket
 import subprocess
+import sys
 import tempfile
 import time
 import urllib.error
@@ -76,6 +77,21 @@ def shutdown_detail(log_path):
 
     _, started, progress = tail.rpartition(b"Shutdown in progress")
     if b"Shutdown done" in progress:
+        # The GUI executor and Qt application outlive core shutdown.
+        qt_phases = {
+            b"[qt] GUI: Shutdown finished": "GUI executor returned from core shutdown",
+            b"[qt] GUI: ~InitExecutor : Stopping thread": "GUI joining executor thread",
+            b"[qt] GUI: ~InitExecutor : Stopped thread": "GUI executor thread joined",
+        }
+        last_qt_phase = None
+        for line in reversed(progress.splitlines()):
+            record = line.partition(b" ")[2] if line[:1].isdigit() else line
+            if record == b"Shutdown done":
+                if last_qt_phase:
+                    return f"application logged shutdown completion, {last_qt_phase}"
+                break
+            if last_qt_phase is None:
+                last_qt_phase = qt_phases.get(record)
         return "application logged shutdown completion"
     if not started:
         return "no shutdown marker in recent application log"
@@ -140,10 +156,21 @@ class Node:
         if chain == "regtest":
             command.append("-regtest")
         if gui:
-            command += ["-splash=0", "-min"]
+            command += ["-splash=0", "-min", "-debug=qt"]
         self.cookie = datadir / ("regtest/.cookie" if chain == "regtest" else ".cookie")
         self.log = (datadir / "process.log").open("wb")
         self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, env=runtime_environment(datadir))
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc, traceback):
+        try:
+            self.close()
+        except Exception as cleanup_error:
+            if exc_type is None:
+                raise
+            print(f"Additional node cleanup error: {cleanup_error}", file=sys.stderr)
 
     def rpc(self, method, *params):
         auth = base64.b64encode(self.cookie.read_bytes().strip()).decode()
@@ -199,8 +226,7 @@ class Node:
 
 
 def check_node(binary, cli, datadir, chain, gui=False):
-    node = Node(binary, datadir, chain, gui)
-    try:
+    with Node(binary, datadir, chain, gui) as node:
         info = node.wait()
         assert info["chain"] == chain and info["blocks"] == 0, info
         expected_genesis = {
@@ -248,8 +274,6 @@ def check_node(binary, cli, datadir, chain, gui=False):
             node.wallet = "restored"
             assert node.rpc("getaddressinfo", address)["ismine"]
         return {"chain": chain, "gui": gui, "height": node.rpc("getblockcount"), "wallet": "passed"}
-    finally:
-        node.close()
 
 
 def main():
