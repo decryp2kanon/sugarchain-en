@@ -1,6 +1,6 @@
 # Sugarchain En draft release notes
 
-Status: draft for Linux-first release preparation. This document does not announce a public release, tag, date, download, or supported Linux distribution/architecture matrix. Windows and macOS are deferred follow-up targets.
+Linux is the first distribution target. This draft records candidate validation for Linux, Windows and macOS. Publication and the supported Linux distribution and architecture matrix require separate approval.
 
 ## Version
 
@@ -23,7 +23,19 @@ Four Korean/Japanese translation gaps in the encryption, address-signing, Tor-pr
 
 GUI settings migration retains the previous Komorebi profile and avoids overwriting an existing En profile. Wallet-format migration is separate. Packaging and message work must be reviewed at the integrated candidate revision before these notes become final.
 
-Host-built Linux candidates may require matching shared libraries and Qt platform plugins. No universal/static/portable Linux binary claim is made. Windows installer/native-runtime validation and macOS application/signing/native-runtime validation remain deferred.
+Host-built Linux candidates may require matching shared libraries and Qt platform plugins.
+
+## Windows and macOS package checks
+
+The following candidate files were built from `20f63ff768a8`. On Windows Server 2022, both installers passed installation, in-place upgrade, installed Qt wallet startup and shutdown, and uninstall with user files preserved. On Apple Silicon, the packaged Qt application started with Cocoa, backed up a wallet and passed the bundle signature check.
+
+| Candidate file | SHA-256 | Native validation |
+| --- | --- | --- |
+| Windows x86_64 MSVCRT installer | `dc8f423565b552c5f1ef0749ed6ebddae1806c3d7e11559276a693b562b94121` | [Windows job](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44790544547/job/136521017767) |
+| Windows x86_64 UCRT installer | `ffe2924588f742ad705bfdfb9cbb609b44befb83ca1d1816043551c612732328` | [Windows job](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44790544547/job/136521017725) |
+| macOS arm64 application ZIP | `d2f89a4df5d946aaf25582d65f33dc4168580790423acf9f20f3606e43ad7ea1` | [macOS job](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44790812935/job/136477657681) |
+
+The Intel macOS cross-build at `4d16aa069e09` verified the archive layout and x86_64 executable on Linux. The native macOS results above cover Apple Silicon. [Intel cross-build](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44753835460/job/136348360337)
 
 ## Validation and publication gates
 
@@ -31,6 +43,6 @@ Host-built Linux candidates may require matching shared libraries and Qt platfor
 - Adapt and run broad native regression coverage against the finished core; closed PR #20 is reference material, not a completed validation result for the final source.
 - Reuse earlier IBD/startup evidence only where its source and scope still apply; repeat affected mainnet-scale and performance measurements separately. No new speedup or throughput figure is announced here.
 - Record exact source/environment/options, inspected package contents, and private candidate checksums after validation.
-- Keep CI disabled until a separate explicit instruction. Obtain public release approval separately from local build/merge approval.
+- Require `CI` and `En Linux Qt` to pass on the integrated source and on the final `en` commit. Tagging and publication require separate approval.
 
 Upstream [Bitcoin Core 31.1 release notes](release-notes.md) are preserved as history. Their download links, external infrastructure, supported platforms, and upgrade claims are not an En release announcement.
