@@ -1,4 +1,4 @@
-name: Windows extended functional suites for published archives
+name: Windows MSVCRT unit and functional suites for the release package
 on:
   push:
     branches: [qa/windows-archive-suites-20261120]
@@ -16,29 +16,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        runtime: [msvcrt, ucrt]
-        suite: [functional]
+        runtime: [msvcrt]
+        suite: [unit, functional]
         include:
           - runtime: msvcrt
-            artifact: x86_64-w64-mingw32-executables-44696531551
-          - runtime: ucrt
-            artifact: x86_64-w64-mingw32ucrt-executables-44696531551
+            artifact: x86_64-w64-mingw32-executables-44728789430
     env:
       PYTHONUTF8: 1
       TEST_RUNNER_TIMEOUT_FACTOR: 40
       DIR_UNIT_TEST_DATA: ${{ github.workspace }}/unit_test_data
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: 76b59e2eba8674fb7b0524fa52d5eb222d6b7546
       - name: Download published Windows programs
         uses: actions/download-artifact@v8
         with:
           github-token: ${{ github.token }}
-          run-id: 44696531551
+          run-id: 44728789430
           name: ${{ matrix.artifact }}
       - name: Prepare Windows test environment
         id: prepare
         run: py -3 .github/ci-windows-cross.py prepare_tests
+      - name: Run unit tests
+        if: matrix.suite == 'unit'
+        run: py -3 .github/ci-windows-cross.py run_unit_tests
       - name: Functional tests
+        if: matrix.suite == 'functional'
         env:
           TEST_RUNNER_EXTRA: "--timeout-factor=${{ env.TEST_RUNNER_TIMEOUT_FACTOR }} --extended"
         run: py -3 .github/ci-windows-cross.py run_functional_tests
