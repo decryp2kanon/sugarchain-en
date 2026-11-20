@@ -12,6 +12,7 @@
 #include <streams.h>
 #include <test/data/sugarchain_headers.raw.h>
 #include <test/util/logging.h>
+#include <test/util/pow.h>
 #include <test/util/random.h>
 #include <test/util/setup_common.h>
 #include <uint256.h>
@@ -182,13 +183,8 @@ BOOST_AUTO_TEST_CASE(target_division_matches_generic_arithmetic)
             rules.powLimit = limit;
             const int64_t expected_span{rules.AveragingWindowTimespan()};
             const auto check = [&](const arith_uint256& total, int64_t span) {
-                int64_t adjusted{expected_span + (span - expected_span) / 4};
-                adjusted = std::clamp(adjusted, rules.MinActualTimespan(), rules.MaxActualTimespan());
-                arith_uint256 reference{total / arith_uint256{uint64_t(window)}};
-                reference /= arith_uint256{uint64_t(expected_span)};
-                reference *= arith_uint256{uint64_t(adjusted)};
-                if (reference > UintToArith256(limit)) reference = UintToArith256(limit);
-                BOOST_CHECK_EQUAL(CalculateSugarShieldWorkRequired(total, span, rules), reference.GetCompact());
+                BOOST_CHECK_EQUAL(CalculateSugarShieldWorkRequired(total, span, rules),
+                                  ReferenceSugarShieldWorkRequired(total, span, rules));
             };
             for (int64_t span : {-expected_span, int64_t{0}, expected_span, 5 * expected_span}) {
                 check(arith_uint256{0}, span);
