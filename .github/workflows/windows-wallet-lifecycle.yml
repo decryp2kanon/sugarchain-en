@@ -91,3 +91,8 @@ jobs:
               _, started, shutdown = path.read_text(errors="replace").rpartition("Shutdown in progress...")
               rows = re.findall(r"QA shutdown stage ([a-z-]+)", shutdown)[-100:] if started else []
               print("Completed shutdown stages", ", ".join(rows) or "(no checkpoint)")
+
+      - name: Build Windows wallet applications
+        run: cmake --build build --config Release --target bitcoin bitcoin-qt bitcoin-wallet bitcoin-tx bitcoin-util --parallel 4
+      - name: Check Windows daemon and Qt wallet lifecycle
+        run: py -3 .github/ci-windows-smoke.py --bindir build/bin/Release --work-dir "${RUNNER_TEMP}/en-confirmed-wallets"
