@@ -164,7 +164,7 @@ class Node:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc, traceback):
+    def __exit__(self, exc_type, _exc_value, _traceback):
         try:
             self.close()
         except Exception as cleanup_error:
