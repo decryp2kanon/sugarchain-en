@@ -543,7 +543,7 @@ jobs:
           - name: 'Alpine (musl)'
             warp-runner: 'warp-ubuntu-latest-x64-8x'
             fallback-runner: 'ubuntu-latest'
-            timeout-minutes: 120
+            timeout-minutes: 150
             file-env: './ci/test/00_setup_env_native_alpine_musl.sh'
 
           - name: 'tidy'
