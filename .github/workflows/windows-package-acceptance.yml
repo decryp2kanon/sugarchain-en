@@ -1,0 +1,48 @@
+name: Windows published application checks
+on:
+  push:
+    branches: [qa/windows-package-acceptance-20261120]
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  checks:
+    name: Windows published application checks, ${{ matrix.runtime }}
+    runs-on: windows-2025-vs2026
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runtime: ucrt
+            artifact: x86_64-w64-mingw32ucrt-executables-44696531551
+          - runtime: msvcrt
+            artifact: x86_64-w64-mingw32-executables-44696531551
+    env:
+      PYTHONUTF8: 1
+      TEST_RUNNER_TIMEOUT_FACTOR: 40
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download the previously built Windows applications
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ matrix.artifact }}
+          github-token: ${{ github.token }}
+          run-id: 44696531551
+      - name: Prepare the unit test data
+        run: py -3 .github/ci-windows-cross.py prepare_tests
+      - name: Run published Qt unit tests on the native Windows desktop
+        id: qt
+        run: py -3 .github/ci-windows-qt-artifact-check.py
+      - name: Preserve individual Qt unit results
+        if: always() && steps.qt.outcome != 'skipped'
+        uses: actions/upload-artifact@v7
+        with:
+          name: qt-unit-results-${{ matrix.runtime }}-${{ github.run_id }}
+          path: ${{ runner.temp }}/sugarchain-qt-artifact-result
+      - name: Run native network, GUI and wallet smoke checks
+        if: success() || steps.qt.outcome == 'failure'
+        run: py -3 .github/ci-windows-smoke.py --bindir bin --work-dir "${RUNNER_TEMP}/en-native-published-${{ matrix.runtime }}"

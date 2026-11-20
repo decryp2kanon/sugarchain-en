@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - '**'
+      - '!qa/windows-package-acceptance-20261120'
     tags-ignore:
       - '**'
 
