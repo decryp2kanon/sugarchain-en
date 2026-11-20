@@ -55,6 +55,7 @@
 #include <QLibraryInfo>
 #include <QLocale>
 #include <QMessageBox>
+#include <QScopeGuard>
 #include <QSettings>
 #include <QThread>
 #include <QTimer>
@@ -224,6 +225,10 @@ BitcoinApplication::~BitcoinApplication()
     m_executor.reset();
     qDebug() << "GUI executor released";
 
+#ifdef ENABLE_WALLET
+    // Keep the URI claim through core shutdown, then close its listener while Qt is active.
+    delete paymentServer;
+#endif
     delete window;
     window = nullptr;
     delete platformStyle;
@@ -425,7 +430,7 @@ void BitcoinApplication::initializeResult(bool success, interfaces::BlockAndHead
     if (paymentServer) {
         connect(paymentServer, &PaymentServer::receivedPaymentRequest, window, &BitcoinGUI::handlePaymentRequest);
         connect(window, &BitcoinGUI::receivedURI, paymentServer, &PaymentServer::handleURIOrFile);
-        connect(paymentServer, &PaymentServer::message, [this](const QString& title, const QString& message, unsigned int style) {
+        connect(paymentServer, &PaymentServer::message, window, [this](const QString& title, const QString& message, unsigned int style) {
             window->message(title, message, style);
         });
         QTimer::singleShot(100ms, paymentServer, &PaymentServer::uiReady);
@@ -505,6 +510,9 @@ int GuiMain(int argc, char* argv[])
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 #endif
 
+    const auto log_app_destroyed = qScopeGuard([] {
+        LogDebug(BCLog::QT, "GUI: Qt application destroyed\n");
+    });
     BitcoinApplication app;
     GUIUtil::LoadFont(QStringLiteral(":/fonts/monospace"));
 
@@ -660,7 +668,8 @@ int GuiMain(int argc, char* argv[])
     // Note: it is safe to call app.node() in the lambda below despite the fact
     // that app.createNode() hasn't been called yet, because native events will
     // not be processed until the Qt event loop is executed.
-    qApp->installNativeEventFilter(new WinShutdownMonitor([&app] { app.node().startShutdown(); }));
+    WinShutdownMonitor shutdown_monitor{[&app] { app.node().startShutdown(); }};
+    app.installNativeEventFilter(&shutdown_monitor);
 #endif
     // Install qDebug() message handler to route to debug.log
     qInstallMessageHandler(DebugMessageHandler);
