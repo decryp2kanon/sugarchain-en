@@ -38,7 +38,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v6
       with:
-        ref: 514a721dea3362d604f52cf6021d15027d21195c
+        ref: 969e0e2d931dabcd57ae0f77972267af3b96e47a
     - name: Clang version
       run: |
         # Use the latest Xcode supported by the version of macOS denoted in
@@ -83,7 +83,7 @@ jobs:
     - name: Preserve the verified Apple Silicon application archive
       uses: actions/upload-artifact@v7
       with:
-        name: apple-silicon-app-514a721dea33
+        name: apple-silicon-app-969e0e2d931d
         path: repo_archive/ci/scratch/build-*/Sugarchain-En-*-macos.zip
         if-no-files-found: error
         retention-days: 3

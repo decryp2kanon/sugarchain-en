@@ -77,6 +77,23 @@ def shutdown_detail(log_path):
 
     _, started, progress = tail.rpartition(b"Shutdown in progress")
     if b"Shutdown done" in progress:
+        # The GUI executor and Qt application outlive core shutdown.
+        qt_phases = {
+            b"[qt] GUI: Shutdown finished": "GUI executor returned from core shutdown",
+            b"[qt] GUI: ~InitExecutor : Stopping thread": "GUI joining executor thread",
+            b"[qt] GUI: ~InitExecutor : Stopped thread": "GUI executor thread joined",
+            b"[qt] GUI: GUI executor released": "GUI executor released",
+            b"[qt] GUI: GUI window and platform style released": "GUI window and platform style released",
+        }
+        last_qt_phase = None
+        for line in reversed(progress.splitlines()):
+            record = line.partition(b" ")[2] if line[:1].isdigit() else line
+            if record == b"Shutdown done":
+                if last_qt_phase:
+                    return f"application logged shutdown completion, {last_qt_phase}"
+                break
+            if last_qt_phase is None:
+                last_qt_phase = qt_phases.get(record)
         return "application logged shutdown completion"
     if not started:
         return "no shutdown marker in recent application log"
@@ -141,7 +158,7 @@ class Node:
         if chain == "regtest":
             command.append("-regtest")
         if gui:
-            command += ["-splash=0", "-min"]
+            command += ["-splash=0", "-min", "-debug=qt"]
         self.cookie = datadir / ("regtest/.cookie" if chain == "regtest" else ".cookie")
         self.log = (datadir / "process.log").open("wb")
         self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, env=runtime_environment(datadir))
@@ -149,7 +166,7 @@ class Node:
     def __enter__(self):
         return self
 
-    def __exit__(self, exc_type, exc, traceback):
+    def __exit__(self, exc_type, _exc_value, _traceback):
         try:
             self.close()
         except Exception as cleanup_error:

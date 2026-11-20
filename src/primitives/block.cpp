@@ -19,6 +19,9 @@
 
 #ifdef WIN32
 #include <windows.h>
+#ifdef SUGARCHAIN_WINDOWS_KERNEL_DLL
+#include <atomic>
+#endif
 #else
 #include <pthread.h>
 #endif
@@ -46,23 +49,24 @@ void FreeYespowerLocal(void* value)
     delete static_cast<YespowerLocal*>(value);
 }
 
+#ifdef SUGARCHAIN_WINDOWS_KERNEL_DLL
+// A host can unload the shared kernel while the threads that used it still exist.
+constinit std::atomic<DWORD> g_kernel_fls_key{FLS_OUT_OF_INDEXES};
+#endif
+
 YespowerLocal& GetYespowerLocal()
 {
 #ifdef WIN32
-    // Keep the cleanup callback registered until module teardown. FlsFree
-    // visits every populated slot before a dynamically loaded kernel unloads.
-    struct FlsKey {
+    // Keep the callback registered for the lifetime of the executable. Worker
+    // threads release their own scratch when they exit.
+    static const DWORD key{[] {
         const DWORD index{FlsAlloc(FreeYespowerLocal)};
-        FlsKey()
-        {
-            if (index == FLS_OUT_OF_INDEXES) throw std::runtime_error("YespowerSugar: failed to create scratch key");
-        }
-        ~FlsKey() { FlsFree(index); }
-        FlsKey(const FlsKey&) = delete;
-        FlsKey& operator=(const FlsKey&) = delete;
-    };
-    static const FlsKey slot;
-    const DWORD key{slot.index};
+        if (index == FLS_OUT_OF_INDEXES) throw std::runtime_error("YespowerSugar: failed to create scratch key");
+#ifdef SUGARCHAIN_WINDOWS_KERNEL_DLL
+        g_kernel_fls_key.store(index, std::memory_order_relaxed);
+#endif
+        return index;
+    }()};
     auto* value{static_cast<YespowerLocal*>(FlsGetValue(key))};
 #else
     // A POSIX key must remain available to workers until their thread exit.
@@ -83,6 +87,19 @@ YespowerLocal& GetYespowerLocal()
     return *local.release();
 }
 } // namespace
+
+#ifdef SUGARCHAIN_WINDOWS_KERNEL_DLL
+extern "C" BOOL WINAPI DllMain(HINSTANCE, DWORD reason, LPVOID reserved)
+{
+    if (reason == DLL_PROCESS_DETACH && reserved == nullptr) {
+        // FreeLibrary: release populated slots before the callback code unloads.
+        // At process termination Windows reclaims the entire address space.
+        const DWORD index{g_kernel_fls_key.load(std::memory_order_relaxed)};
+        if (index != FLS_OUT_OF_INDEXES) FlsFree(index);
+    }
+    return TRUE;
+}
+#endif
 
 uint256 CBlockHeader::GetHash() const
 {
