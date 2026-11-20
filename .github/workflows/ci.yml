@@ -37,6 +37,7 @@ jobs:
     runs-on: ubuntu-slim
     outputs:
       provider: ${{ steps.runners.outputs.provider }}
+      ancestor-batches: ${{ steps.ancestors.outputs.batches }}
     steps:
       - &ANNOTATION_PR_NUMBER
         name: Annotate with pull request number
@@ -57,6 +58,19 @@ jobs:
             echo "provider=gha" >> "$GITHUB_OUTPUT"
             echo "::notice title=Runner Selection::Using GitHub-hosted runners"
           fi
+      - name: Size ancestor test batches
+        id: ancestors
+        env:
+          PR_COMMITS: ${{ github.event.pull_request.commits || 0 }}
+          MIN_BATCHES: ${{ github.event.pull_request.commits > 8 && 4 || github.event.pull_request.commits > 4 && 2 || 1 }}
+        run: |
+          # The main matrix tests the head. Target six earlier revisions per job to leave time for a cold build.
+          commits_per_job=6
+          ancestors=$(( PR_COMMITS > 0 ? PR_COMMITS - 1 : 0 ))
+          batches=$(( (ancestors + commits_per_job - 1) / commits_per_job ))
+          if (( batches < MIN_BATCHES )); then batches=$MIN_BATCHES; fi
+          if (( batches > 256 )); then batches=256; fi
+          printf 'batches=[%s]\n' "$(seq -s, "$batches")" >> "$GITHUB_OUTPUT"
 
   test-ancestor-batch:
     name: test ancestor commits (batch ${{ matrix.batch }})
@@ -65,7 +79,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        batch: ${{ fromJSON(github.event.pull_request.commits > 8 && '[1,2,3,4]' || github.event.pull_request.commits > 4 && '[1,2]' || '[1]') }}
+        batch: ${{ fromJSON(needs.runners.outputs.ancestor-batches) }}
     env:
       BASE_COMMIT: ${{ github.event.pull_request.base.sha }}
       TEST_RUNNER_TIMEOUT_FACTOR: 40
