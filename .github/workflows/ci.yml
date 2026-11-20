@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - '**'
+      - '!qa/macos-native-bundle-20261120'
     tags-ignore:
       - '**'
 
