@@ -24,6 +24,15 @@ part of the listen backlog was created.
      listener->handle = CreateNamedPipe(
                   reinterpret_cast<const wchar_t *>(fullServerName.utf16()), // pipe name
                   PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED,       // read/write access
+@@ -179,7 +178,7 @@
+             return false;
+         }
+     } else {
+-        Q_ASSERT_X(false, "QLocalServerPrivate::addListener", "The impossible happened");
++        listener->connected = true;
+         SetEvent(eventHandle);
+     }
+     return true;
 @@ -216,12 +215,18 @@
      // The idea is that listener events are rare, so polling all listeners once in a while is
      // cheap compared to waiting for N additional events in each iteration of the main loop.
