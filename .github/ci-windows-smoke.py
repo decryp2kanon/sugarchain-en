@@ -84,6 +84,8 @@ def shutdown_detail(log_path):
             b"[qt] GUI: ~InitExecutor : Stopped thread": "GUI executor thread joined",
             b"[qt] GUI: GUI executor released": "GUI executor released",
             b"[qt] GUI: GUI window and platform style released": "GUI window and platform style released",
+            b"[qt] GUI: Qt application destroyed": "Qt application destroyed",
+            b"[qt] GUI: GuiMain returned": "GuiMain returned",
         }
         last_qt_phase = None
         for line in reversed(progress.splitlines()):
