@@ -1,0 +1,120 @@
+name: Native Windows standard release validation
+'on':
+  push:
+    branches:
+    - qa/windows-native-standard-20261120
+permissions:
+  contents: read
+env:
+  CI_FAILFAST_TEST_LEAVE_DANGLING: 1
+  REPO_USE_WARP_RUNNERS: bitcoin/bitcoin
+defaults:
+  run:
+    shell: bash
+jobs:
+  windows-native-standard:
+    name: ${{ matrix.job-name }}
+    runs-on: windows-2025-vs2026
+    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+    env:
+      PYTHONUTF8: 1
+      TEST_RUNNER_TIMEOUT_FACTOR: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        job-type:
+        - standard
+        include:
+        - job-type: standard
+          job-name: Windows native, VS
+    steps:
+    - name: Annotate with pull request number
+      run: "if [ \"${{ github.event_name }}\" = \"pull_request\" ]; then\n  echo \"::notice title=debug_pull_request_number_str::${{ github.event.number\
+        \ }}\"\nfi\n"
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        ref: 7198358576326db1cc51db2eb13bc5c1b4a7e8b7
+    - name: Import Visual Studio env vars
+      run: py -3 .github/ci-windows.py "standard" github_import_vs_env
+    - name: Get tool information
+      run: 'set -o errexit -o pipefail -o xtrace -o nounset
+
+
+        cmake -version | tee cmake_version
+
+        echo ''---''
+
+        msbuild.exe -version | tee msbuild_version
+
+        echo "${VCToolsVersion-}" | tee toolset_version
+
+        py -3 --version
+
+        bash --version
+
+        '
+    - name: Using vcpkg with MSBuild
+      run: 'echo "set(VCPKG_BUILD_TYPE release)" >> "${VCPKG_INSTALLATION_ROOT}/triplets/x64-windows.cmake"
+
+        # Workaround for libevent, which requires CMake 3.1 but is incompatible with CMake >= 4.0.
+
+        sed -i ''1s/^/set(ENV{CMAKE_POLICY_VERSION_MINIMUM} 3.5)\n/'' "${VCPKG_INSTALLATION_ROOT}/scripts/ports.cmake"
+
+        '
+    - name: Set VCPKG_ROOT
+      run: 'echo "VCPKG_ROOT=${VCPKG_INSTALLATION_ROOT}" >> "$GITHUB_ENV"
+
+        '
+    - name: Restore vcpkg tools cache
+      id: vcpkg-tools-cache
+      uses: actions/cache/restore@v5
+      with:
+        path: C:/vcpkg/downloads/tools
+        key: ${{ github.job }}-vcpkg-tools-${{ github.run_id }}
+        restore-keys: ${{ github.job }}-vcpkg-tools-
+    - name: Restore vcpkg binary cache
+      uses: actions/cache/restore@v5
+      id: vcpkg-binary-cache
+      with:
+        path: ~/AppData/Local/vcpkg/archives
+        key: ${{ github.job }}-vcpkg-binary-${{ hashFiles('cmake_version', 'msbuild_version', 'toolset_version', 'vcpkg.json') }}
+    - name: Generate build system
+      run: 'py -3 .github/ci-windows.py ${{ matrix.job-type }} generate
+
+        '
+    - name: Save vcpkg binary cache
+      uses: actions/cache/save@v5
+      if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch && steps.vcpkg-binary-cache.outputs.cache-hit
+        != 'true' && matrix.job-type == 'standard'
+      with:
+        path: ~/AppData/Local/vcpkg/archives
+        key: ${{ github.job }}-vcpkg-binary-${{ hashFiles('cmake_version', 'msbuild_version', 'toolset_version', 'vcpkg.json') }}
+    - name: Save vcpkg tools cache
+      uses: actions/cache/save@v5
+      if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch && steps.vcpkg-tools-cache.outputs.cache-hit
+        != 'true' && matrix.job-type == 'standard'
+      with:
+        path: C:/vcpkg/downloads/tools
+        key: ${{ github.job }}-vcpkg-tools-${{ github.run_id }}
+    - name: Build
+      run: 'py -3 .github/ci-windows.py ${{ matrix.job-type }} build
+
+        '
+    - name: Check executable manifests
+      run: 'py -3 .github/ci-windows.py ${{ matrix.job-type }} check_manifests
+
+        '
+    - name: Prepare tests
+      run: 'py -3 .github/ci-windows.py ${{ matrix.job-type }} prepare_tests
+
+        '
+    - name: Run native network, GUI and wallet smoke checks
+      if: matrix.job-type == 'standard'
+      run: py -3 .github/ci-windows-smoke.py --bindir build/bin/Release --work-dir "${RUNNER_TEMP}/en-native-smoke"
+    - name: Run tests
+      env:
+        TEST_RUNNER_EXTRA: --timeout-factor=${{ env.TEST_RUNNER_TIMEOUT_FACTOR }} ${{ case(github.event_name == 'pull_request', '', '--extended') }}
+      run: 'py -3 .github/ci-windows.py ${{ matrix.job-type }} run_tests
+
+        '
