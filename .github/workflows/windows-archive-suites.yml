@@ -1,0 +1,66 @@
+name: Windows suites for published archives
+on:
+  push:
+    branches: [qa/windows-archive-suites-20261120]
+permissions:
+  contents: read
+  actions: read
+defaults:
+  run:
+    shell: bash
+jobs:
+  archive:
+    name: Windows archive suites, ${{ matrix.runtime }}, ${{ matrix.suite }}
+    runs-on: windows-2022
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        runtime: [msvcrt, ucrt]
+        suite: [unit, functional]
+        include:
+          - runtime: msvcrt
+            artifact: x86_64-w64-mingw32-executables-44696531551
+          - runtime: ucrt
+            artifact: x86_64-w64-mingw32ucrt-executables-44696531551
+    env:
+      PYTHONUTF8: 1
+      TEST_RUNNER_TIMEOUT_FACTOR: 40
+      DIR_UNIT_TEST_DATA: ${{ github.workspace }}/unit_test_data
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download published Windows programs
+        uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          run-id: 44696531551
+          name: ${{ matrix.artifact }}
+      - name: Prepare Windows test environment
+        id: prepare
+        run: py -3 .github/ci-windows-cross.py prepare_tests
+      - name: Qt unit tests
+        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
+        env:
+          QT_FORCE_STDERR_LOGGING: "1"
+        run: ./bin/test_bitcoin-qt.exe
+      - name: Core unit tests
+        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
+        run: ./bin/test_bitcoin.exe -l test_suite
+      - name: secp256k1 exhaustive unit tests
+        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
+        run: ./src/secp256k1/bin/exhaustive_tests.exe
+      - name: secp256k1 noverify unit tests
+        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
+        run: ./src/secp256k1/bin/noverify_tests.exe
+      - name: secp256k1 unit tests
+        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
+        run: ./src/secp256k1/bin/tests.exe
+      - name: UniValue object tests
+        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
+        run: ./src/univalue/object.exe
+      - name: UniValue unit tests
+        if: "!cancelled() && steps.prepare.outcome == 'success' && matrix.suite == 'unit'"
+        run: ./src/univalue/unitester.exe
+      - name: Functional tests
+        if: matrix.suite == 'functional'
+        run: py -3 .github/ci-windows-cross.py run_functional_tests

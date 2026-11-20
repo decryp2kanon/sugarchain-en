@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - '**'
+      - '!qa/windows-archive-suites-20261120'
     tags-ignore:
       - '**'
 
