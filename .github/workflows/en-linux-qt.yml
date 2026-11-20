@@ -80,6 +80,7 @@ jobs:
 
       - name: Run all unit, IPC, recovery and Qt tests
         env:
+          DIR_UNIT_TEST_DATA: ${{ runner.temp }}/en-qt/unit-test-data
           XDG_CONFIG_HOME: ${{ runner.temp }}/en-qt/config
           XDG_DATA_HOME: ${{ runner.temp }}/en-qt/data
           XDG_CACHE_HOME: ${{ runner.temp }}/en-qt/cache
@@ -87,8 +88,19 @@ jobs:
         run: |
           mkdir -p "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" "$XDG_CACHE_HOME"
           install -d -m 700 "$XDG_RUNTIME_DIR"
+          mkdir -p "$DIR_UNIT_TEST_DATA"
+          curl --fail --location --silent --show-error --retry 3 \
+            --output "$DIR_UNIT_TEST_DATA/script_assets_test.json" \
+            https://raw.githubusercontent.com/bitcoin-core/qa-assets/2e9ddaf8b12b11485104d9b09eac0540ca6c0914/unit_test_data/script_assets_test.json
           ctest --test-dir build --output-on-failure --no-tests=error \
             --parallel 2 --timeout 2400 --output-junit native-test-results.xml
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          cases = ET.parse("build/native-test-results.xml").iter("testcase")
+          skipped = [case.attrib["name"] for case in cases if case.find("skipped") is not None or case.get("status") in {"notrun", "disabled"}]
+          if skipped:
+              raise SystemExit("CTest did not execute " + ", ".join(skipped))
+          PY
 
       - name: Upload failure diagnostics
         if: failure()
