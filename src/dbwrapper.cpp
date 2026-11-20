@@ -324,15 +324,21 @@ CDBWrapper::CDBWrapper(const DBParams& params)
 
 CDBWrapper::~CDBWrapper()
 {
+    LogInfo("QA shutdown stage leveldb-wrapper-start");
     delete DBContext().pdb;
+    LogInfo("QA shutdown stage leveldb-database-finished");
     DBContext().pdb = nullptr;
     delete DBContext().options.filter_policy;
+    LogInfo("QA shutdown stage leveldb-filter-finished");
     DBContext().options.filter_policy = nullptr;
     delete DBContext().options.info_log;
+    LogInfo("QA shutdown stage leveldb-logger-finished");
     DBContext().options.info_log = nullptr;
     delete DBContext().options.block_cache;
+    LogInfo("QA shutdown stage leveldb-block-cache-finished");
     DBContext().options.block_cache = nullptr;
     delete DBContext().penv;
+    LogInfo("QA shutdown stage leveldb-env-finished");
     DBContext().options.env = nullptr;
 }
 

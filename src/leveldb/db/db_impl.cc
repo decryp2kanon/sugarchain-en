@@ -153,24 +153,32 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
 
 DBImpl::~DBImpl() {
   // Wait for background work to finish.
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-start");
   mutex_.Lock();
   shutting_down_.store(true, std::memory_order_release);
   while (background_compaction_scheduled_) {
     background_work_finished_signal_.Wait();
   }
   mutex_.Unlock();
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-background-finished");
 
   if (db_lock_ != nullptr) {
     env_->UnlockFile(db_lock_);
   }
 
   delete versions_;
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-versions-finished");
   if (mem_ != nullptr) mem_->Unref();
   if (imm_ != nullptr) imm_->Unref();
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-memtable-finished");
   delete tmp_batch_;
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-batch-finished");
   delete log_;
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-log-finished");
   delete logfile_;
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-file-finished");
   delete table_cache_;
+  Log(options_.info_log, "QA shutdown stage leveldb-impl-table-cache-finished");
 
   if (owns_info_log_) {
     delete options_.info_log;

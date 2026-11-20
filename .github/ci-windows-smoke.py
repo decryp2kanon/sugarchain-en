@@ -133,7 +133,7 @@ class Node:
         command = [
             str(binary), f"-datadir={datadir}", f"-rpcport={self.port}",
             "-server=1", "-listen=0", "-connect=0", "-dnsseed=0", "-discover=0",
-            "-debug=http", "-debug=rpc", "-debug=coindb",
+            "-debug=http", "-debug=rpc", "-debug=coindb", "-debug=leveldb",
             "-networkactive=0", "-maxconnections=0", "-keypool=10",
             "-fallbackfee=0.0002", "-printtoconsole=0",
         ]

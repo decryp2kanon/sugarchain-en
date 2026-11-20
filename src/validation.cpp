@@ -1862,6 +1862,20 @@ CoinsViews::CoinsViews(DBParams db_params, CoinsViewOptions options)
     : m_dbview{std::move(db_params), std::move(options)},
       m_catcherview(&m_dbview) {}
 
+void Chainstate::ResetCoinsViews()
+{
+    if (m_coins_views) {
+        AssertLockHeld(cs_main);
+        LogInfo("QA shutdown stage coins-overlay-start");
+        m_coins_views->m_connect_block_view.reset();
+        LogInfo("QA shutdown stage coins-overlay-finished");
+        m_coins_views->m_cacheview.reset();
+        LogInfo("QA shutdown stage coins-cache-finished");
+    }
+    m_coins_views.reset();
+    LogInfo("QA shutdown stage coins-db-finished");
+}
+
 void CoinsViews::InitCache()
 {
     AssertLockHeld(::cs_main);

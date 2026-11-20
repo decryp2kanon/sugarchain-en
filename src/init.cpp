@@ -399,7 +399,9 @@ void Shutdown(NodeContext& node)
         LOCK(cs_main);
         for (const auto& chainstate : node.chainman->m_chainstates) {
             if (chainstate->CanFlushToDisk()) {
+                LogInfo("QA shutdown stage coins-second-flush-start");
                 chainstate->ForceFlushStateToDisk();
+                LogInfo("QA shutdown stage coins-second-flush-finished");
                 chainstate->ResetCoinsViews();
             }
         }

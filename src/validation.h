@@ -712,7 +712,7 @@ public:
     }
 
     //! Destructs all objects related to accessing the UTXO set.
-    void ResetCoinsViews() { m_coins_views.reset(); }
+    void ResetCoinsViews() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
     //! The cache size of the on-disk coins view.
     size_t m_coinsdb_cache_size_bytes{0};

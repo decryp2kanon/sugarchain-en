@@ -3,6 +3,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <coins.h>
+#include <logging.h>
 
 #include <consensus/consensus.h>
 #include <random.h>
@@ -343,9 +344,13 @@ void CCoinsViewCache::ReallocateCache()
     // Cache should be empty when we're calling this.
     assert(cacheCoins.size() == 0);
     cacheCoins.~CCoinsMap();
+    LogInfo("QA shutdown stage coins-map-released");
     m_cache_coins_memory_resource.~CCoinsMapMemoryResource();
+    LogInfo("QA shutdown stage coins-pool-released");
     ::new (&m_cache_coins_memory_resource) CCoinsMapMemoryResource{};
+    LogInfo("QA shutdown stage coins-pool-constructed");
     ::new (&cacheCoins) CCoinsMap{0, SaltedOutpointHasher{/*deterministic=*/m_deterministic}, CCoinsMap::key_equal{}, &m_cache_coins_memory_resource};
+    LogInfo("QA shutdown stage coins-map-constructed");
 }
 
 void CCoinsViewCache::SanityCheck() const

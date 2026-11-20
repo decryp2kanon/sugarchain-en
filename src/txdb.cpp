@@ -61,12 +61,14 @@ CCoinsViewDB::CCoinsViewDB(DBParams db_params, CoinsViewOptions options) :
 
 CCoinsViewDB::~CCoinsViewDB()
 {
+    LogInfo("QA shutdown stage coins-db-destructor");
     if (m_compaction.valid()) {
         if (m_compaction.wait_for(std::chrono::seconds{0}) != std::future_status::ready) {
             LogInfo("Waiting for background chainstate compaction of %s", fs::PathToString(m_db_params.path));
         }
         m_compaction.wait();
     }
+    LogInfo("QA shutdown stage coins-compaction-finished");
 }
 
 void CCoinsViewDB::ResizeCache(size_t new_cache_size)

@@ -59,6 +59,12 @@ jobs:
         run: |
           py -3 .github/ci-windows.py standard generate
 
+      - name: Save private diagnostics dependency cache
+        uses: actions/cache/save@v5
+        if: steps.vcpkg-binary-cache.outputs.cache-hit != 'true'
+        with:
+          path: ~/AppData/Local/vcpkg/archives
+          key: ${{ steps.vcpkg-binary-cache.outputs.cache-primary-key }}
       - name: Build daemon and CLI
         run: cmake --build build --config Release --target bitcoind bitcoin-cli --parallel 4
       - name: Run mainnet wallet lifecycle
@@ -82,5 +88,6 @@ jobs:
           from pathlib import Path
           path = Path(os.environ["RUNNER_TEMP"]) / "en-wallet-diagnostics" / "debug.log"
           if path.is_file():
-              rows = re.findall(r"QA shutdown stage ([a-z-]+)", path.read_text(errors="replace"))
+              _, started, shutdown = path.read_text(errors="replace").rpartition("Shutdown in progress...")
+              rows = re.findall(r"QA shutdown stage ([a-z-]+)", shutdown)[-100:] if started else []
               print("Completed shutdown stages", ", ".join(rows) or "(no checkpoint)")
