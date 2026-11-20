@@ -1,0 +1,96 @@
+name: Reviewed 32-bit ARM release check
+'on':
+  push:
+    branches:
+    - qa/release-arm32-20261121
+permissions:
+  contents: read
+env:
+  CI_FAILFAST_TEST_LEAVE_DANGLING: 1
+  REPO_USE_WARP_RUNNERS: bitcoin/bitcoin
+defaults:
+  run:
+    shell: bash
+jobs:
+  runners:
+    name: '[meta] determine runners'
+    runs-on: ubuntu-slim
+    outputs:
+      provider: ${{ steps.runners.outputs.provider }}
+    steps:
+    - name: Annotate with pull request number
+      run: "if [ \"${{ github.event_name }}\" = \"pull_request\" ]; then\n  echo \"::notice title=debug_pull_request_number_str::${{ github.event.number\
+        \ }}\"\nfi\n"
+    - id: runners
+      run: "if [[ \"${REPO_USE_WARP_RUNNERS}\" == \"${{ github.repository }}\" ]]; then\n  echo \"provider=warp\" >> \"$GITHUB_OUTPUT\"\n  echo \"::notice\
+        \ title=Runner Selection::Using Warp Runners\"\nelse\n  echo \"provider=gha\" >> \"$GITHUB_OUTPUT\"\n  echo \"::notice title=Runner Selection::Using\
+        \ GitHub-hosted runners\"\nfi\n"
+  ci-matrix:
+    name: ${{ matrix.name }}
+    needs: runners
+    runs-on: ${{ needs.runners.outputs.provider == 'warp' && matrix.warp-runner || matrix.fallback-runner }}
+    if: ${{ vars.SKIP_BRANCH_PUSH != 'true' || github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch' }}
+    timeout-minutes: ${{ matrix.timeout-minutes }}
+    env:
+      DANGER_CI_ON_HOST_FOLDERS: 1
+      FILE_ENV: ${{ matrix.file-env }}
+      ARMHF_PROBE_IMAGE: ${{ matrix.armhf-probe-image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - name: 32 bit ARM
+          warp-runner: ubuntu-24.04-arm
+          fallback-runner: ubuntu-24.04-arm
+          timeout-minutes: 120
+          file-env: ./ci/test/00_setup_env_arm.sh
+          armhf-probe-image: mirror.gcr.io/debian:trixie-slim@sha256:ced25bc1bff26885d07c82647bc5ad766731d578e8cbc0d02b2e45b2095eaa67
+          provider: gha
+    steps:
+    - name: Annotate with pull request number
+      run: "if [ \"${{ github.event_name }}\" = \"pull_request\" ]; then\n  echo \"::notice title=debug_pull_request_number_str::${{ github.event.number\
+        \ }}\"\nfi\n"
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        ref: 1f9e1abf50deb24f3e86fe56ec167793296aec7f
+    - name: Configure environment
+      uses: ./.github/actions/configure-environment
+    - name: Restore caches
+      id: restore-cache
+      uses: ./.github/actions/cache/restore
+      with:
+        provider: ${{ matrix.provider || needs.runners.outputs.provider }}
+    - name: Probe 32-bit ARM execution
+      if: ${{ env.ARMHF_PROBE_IMAGE != '' }}
+      id: armhf
+      run: "docker pull --platform linux/arm/v7 \"$ARMHF_PROBE_IMAGE\"\nif ! docker run --rm --platform linux/arm/v7 \"$ARMHF_PROBE_IMAGE\" /usr/bin/true;\
+        \ then\n  echo 'emulate=true' >> \"$GITHUB_OUTPUT\"\nfi\n"
+    - name: Enable 32-bit ARM emulation
+      if: ${{ steps.armhf.outputs.emulate == 'true' }}
+      uses: docker/setup-qemu-action@v4
+      with:
+        platforms: arm
+        image: mirror.gcr.io/tonistiigi/binfmt:qemu-v10.2.3-68@sha256:400a4873b838d1b89194d982c45e5fb3cda4593fbfd7e08a02e76b03b21166f0
+    - name: Check 32-bit ARM subprocesses
+      if: ${{ env.ARMHF_PROBE_IMAGE != '' }}
+      run: "docker run --rm --platform linux/arm/v7 \"$ARMHF_PROBE_IMAGE\" \\\n  /bin/sh -ec 'test \"$(/usr/bin/dpkg --print-architecture)\" = armhf'\n"
+    - name: Configure Docker
+      uses: ./.github/actions/configure-docker
+      with:
+        provider: ${{ matrix.provider || needs.runners.outputs.provider }}
+    - name: Clear unnecessary files
+      if: ${{ needs.runners.outputs.provider == 'gha' && true || false }}
+      uses: ./.github/actions/clear-files
+    - name: Enable bpfcc script
+      if: ${{ env.CONTAINER_NAME == 'ci_native_asan' }}
+      run: sed -i "s|\${INSTALL_BCC_TRACING_TOOLS}|true|g" ./ci/test/00_setup_env_native_asan.sh
+    - name: Set mmap_rnd_bits
+      if: ${{ env.CONTAINER_NAME == 'ci_native_tsan' || env.CONTAINER_NAME == 'ci_native_msan' || env.CONTAINER_NAME == 'ci_native_fuzz_msan' }}
+      run: sudo sysctl -w vm.mmap_rnd_bits=28
+    - name: CI script
+      run: ./ci/test_run_all.sh
+    - name: Save caches
+      uses: ./.github/actions/cache/save
+      with:
+        provider: ${{ matrix.provider || needs.runners.outputs.provider }}
