@@ -48,18 +48,24 @@ void FreeYespowerLocal(void* value)
 
 YespowerLocal& GetYespowerLocal()
 {
-    // Native TLS cleanup preserves scratch reuse and thread-exit reclamation
-    // without relying on non-trivial C++ thread_local destructors. The key has
-    // process lifetime: deleting it while verification workers exist would
-    // prevent their cleanup callbacks from reclaiming the scratch allocation.
 #ifdef WIN32
-    static const DWORD key{[] {
-        const DWORD created{FlsAlloc(FreeYespowerLocal)};
-        if (created == FLS_OUT_OF_INDEXES) throw std::runtime_error("YespowerSugar: failed to create scratch key");
-        return created;
-    }()};
+    // Keep the cleanup callback registered until module teardown. FlsFree
+    // visits every populated slot before a dynamically loaded kernel unloads.
+    struct FlsKey {
+        const DWORD index{FlsAlloc(FreeYespowerLocal)};
+        FlsKey()
+        {
+            if (index == FLS_OUT_OF_INDEXES) throw std::runtime_error("YespowerSugar: failed to create scratch key");
+        }
+        ~FlsKey() { FlsFree(index); }
+        FlsKey(const FlsKey&) = delete;
+        FlsKey& operator=(const FlsKey&) = delete;
+    };
+    static const FlsKey slot;
+    const DWORD key{slot.index};
     auto* value{static_cast<YespowerLocal*>(FlsGetValue(key))};
 #else
+    // A POSIX key must remain available to workers until their thread exit.
     static const pthread_key_t key{[] {
         pthread_key_t created;
         if (pthread_key_create(&created, FreeYespowerLocal)) throw std::runtime_error("YespowerSugar: failed to create scratch key");
