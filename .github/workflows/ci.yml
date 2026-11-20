@@ -110,10 +110,12 @@ jobs:
         run: |
           git config user.email "ci@example.com"
           git config user.name "CI"
+          # Keep the PR head's test driver while building and testing each ancestor's sources.
+          cp .github/ci-test-each-commit-exec.py "$RUNNER_TEMP/ci-test-each-commit-exec.py"
           while read -r revision; do
             git checkout --detach "$revision"
             git merge --no-commit --no-ff "$BASE_COMMIT"
-            python3 ./.github/ci-test-each-commit-exec.py
+            python3 "$RUNNER_TEMP/ci-test-each-commit-exec.py"
             if git rev-parse --verify -q MERGE_HEAD >/dev/null; then
               git merge --abort
             fi
