@@ -48,6 +48,7 @@
 #include <boost/signals2/connection.hpp>
 #include <chrono>
 #include <memory>
+#include <optional>
 
 #include <QApplication>
 #include <QDebug>
@@ -510,7 +511,10 @@ int GuiMain(int argc, char* argv[])
     QApplication::setAttribute(Qt::AA_DontUseNativeDialogs);
 #endif
 
-    const auto log_app_destroyed = qScopeGuard([] {
+    // Keep the GUI log handler installed through QApplication destruction.
+    std::optional<QtMessageHandler> previous_message_handler;
+    const auto finish_gui_logging = qScopeGuard([&] {
+        if (previous_message_handler) qInstallMessageHandler(*previous_message_handler);
         LogDebug(BCLog::QT, "GUI: Qt application destroyed\n");
     });
     BitcoinApplication app;
@@ -672,7 +676,7 @@ int GuiMain(int argc, char* argv[])
     app.installNativeEventFilter(&shutdown_monitor);
 #endif
     // Install qDebug() message handler to route to debug.log
-    qInstallMessageHandler(DebugMessageHandler);
+    previous_message_handler = qInstallMessageHandler(DebugMessageHandler);
     // Allow parameter interaction before we create the options model
     app.parameterSetup();
     GUIUtil::LogQtInfo();
