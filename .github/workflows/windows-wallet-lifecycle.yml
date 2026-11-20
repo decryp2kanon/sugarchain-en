@@ -93,6 +93,34 @@ jobs:
               print("Completed shutdown stages", ", ".join(rows) or "(no checkpoint)")
 
       - name: Build Windows wallet applications
+        id: applications
         run: cmake --build build --config Release --target bitcoin bitcoin-qt bitcoin-wallet bitcoin-tx bitcoin-util --parallel 4
       - name: Check Windows daemon and Qt wallet lifecycle
+        id: wallet-smoke
+        env:
+          QT_DEBUG_PLUGINS: 1
+          QT_FORCE_STDERR_LOGGING: 1
         run: py -3 .github/ci-windows-smoke.py --bindir build/bin/Release --work-dir "${RUNNER_TEMP}/en-confirmed-wallets"
+
+      - name: Record native Qt deployment and startup files
+        if: ${{ !cancelled() && steps.applications.outcome == 'success' }}
+        run: py -3 .github/ci-msvc-qt-runtime-report.py
+
+      - name: Check GUI with the installed Windows platform module
+        if: ${{ !cancelled() && steps.wallet-smoke.outcome == 'failure' }}
+        env:
+          QT_DEBUG_PLUGINS: 1
+          QT_FORCE_STDERR_LOGGING: 1
+        run: py -3 .github/ci-msvc-qt-runtime-report.py --use-installed-plugin
+
+      - name: Preserve the test application binaries on failure
+        if: ${{ failure() && steps.applications.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: msvc-qt-runtime-${{ github.run_id }}
+          retention-days: 1
+          path: |
+            build/bin/Release/sugarchain*.exe
+            build/bin/Release/*.dll
+            build/bin/Release/platforms/*.dll
+            build/bin/Release/qt.conf
