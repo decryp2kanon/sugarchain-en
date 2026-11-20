@@ -108,7 +108,7 @@ Section -post SEC0001
     ClearErrors
     WriteUninstaller $INSTDIR\uninstall.exe
     IfErrors 0 +3
-        MessageBox MB_OK|MB_ICONSTOP "Could not write the Sugarchain En uninstaller. Existing registration has been retained."
+        MessageBox MB_OK|MB_ICONSTOP "Could not write the Sugarchain En uninstaller. Existing registration has been retained." /SD IDOK
         Abort
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory $SMPROGRAMS\$StartMenuGroup
@@ -223,7 +223,7 @@ Function .onInit
       ; disable registry redirection (enable access to 64-bit portion of registry)
       SetRegView 64
     ${Else}
-      MessageBox MB_OK|MB_ICONSTOP "Cannot install 64-bit version on a 32-bit system."
+      MessageBox MB_OK|MB_ICONSTOP "Cannot install 64-bit version on a 32-bit system." /SD IDOK
       Abort
     ${EndIf}
     # InstallDirRegKey is evaluated before the explicit 64-bit registry view.
@@ -241,9 +241,10 @@ Function .onInit
     ${EndIf}
     ${If} $LegacyInstallDir != ""
         GetFullPathName $LegacyInstallDir $LegacyInstallDir
+        StrCmp $LegacyInstallDir "" invalid_legacy
         ${If} $R1 != ""
         ${AndIf} $R1 != $LegacyInstallDir
-            MessageBox MB_OK|MB_ICONSTOP "Separate Sugarchain En and Komorebi installations are registered. Uninstall the old product normally before upgrading En. No files have been changed."
+            MessageBox MB_OK|MB_ICONSTOP "Separate Sugarchain En and Komorebi installations are registered. Uninstall the old product normally before upgrading En. No files have been changed." /SD IDOK
             Abort
         ${EndIf}
         IfFileExists "$LegacyInstallDir\uninstall.exe" 0 invalid_legacy
@@ -259,16 +260,23 @@ Function .onInit
     ${EndIf}
     Goto done
 invalid_legacy:
-    MessageBox MB_OK|MB_ICONSTOP "The registered Sugarchain Komorebi installation is incomplete. Repair or uninstall it normally before installing Sugarchain En. No files have been changed."
+    MessageBox MB_OK|MB_ICONSTOP "The registered Sugarchain Komorebi installation is incomplete. Repair or uninstall it normally before installing Sugarchain En. No files have been changed." /SD IDOK
     Abort
 done:
 FunctionEnd
 
 Function CheckInstallDirectory
-    GetFullPathName $INSTDIR $INSTDIR
+    # GetFullPathName returns an empty string for a directory that does not
+    # exist yet. SetOutPath will create it on a fresh install.
+    GetFullPathName $0 $INSTDIR
+    ${If} $0 != ""
+        StrCpy $INSTDIR $0
+    ${Else}
+        ClearErrors
+    ${EndIf}
     ${If} $LegacyInstallDir != ""
-    ${AndIf} $LegacyInstallDir != $INSTDIR
-        MessageBox MB_OK|MB_ICONSTOP "Upgrade Sugarchain Komorebi in its existing folder, or uninstall it normally before selecting a new folder."
+    ${AndIf} $LegacyInstallDir != $0
+        MessageBox MB_OK|MB_ICONSTOP "Upgrade Sugarchain Komorebi in its existing folder, or uninstall it normally before selecting a new folder." /SD IDOK
         Abort
     ${EndIf}
 FunctionEnd
@@ -279,7 +287,7 @@ Function un.onInit
     # Bind the uninstaller to its own installation, not a stale registry path.
     ReadRegStr $R0 HKCU "${REGKEY}" Path
     ${If} $R0 != $INSTDIR
-        MessageBox MB_OK|MB_ICONSTOP "This uninstaller no longer matches the registered Sugarchain En installation. No files have been removed."
+        MessageBox MB_OK|MB_ICONSTOP "This uninstaller no longer matches the registered Sugarchain En installation. No files have been removed." /SD IDOK
         Abort
     ${EndIf}
     !insertmacro MUI_STARTMENU_GETFOLDER Application $StartMenuGroup
