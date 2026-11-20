@@ -20,7 +20,7 @@ jobs:
         suite: [unit, functional]
         include:
           - runtime: msvcrt
-            artifact: x86_64-w64-mingw32-executables-44728789430
+            artifact: x86_64-w64-mingw32-executables-44814542060
     env:
       PYTHONUTF8: 1
       TEST_RUNNER_TIMEOUT_FACTOR: 40
@@ -28,12 +28,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: 76b59e2eba8674fb7b0524fa52d5eb222d6b7546
+          ref: 9dd2c2b19d89ad9f0b914d3e6797ba7643905ece
       - name: Download published Windows programs
         uses: actions/download-artifact@v8
         with:
           github-token: ${{ github.token }}
-          run-id: 44728789430
+          run-id: 44814542060
           name: ${{ matrix.artifact }}
       - name: Prepare Windows test environment
         id: prepare
