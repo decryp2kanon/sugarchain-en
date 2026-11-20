@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - '**'
+      - '!qa/macos-wallet-close-20261121'
     tags-ignore:
       - '**'
 
