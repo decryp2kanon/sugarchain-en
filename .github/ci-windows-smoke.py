@@ -10,7 +10,7 @@ import base64
 import contextlib
 import json
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 import socket
 import subprocess
 import tempfile
@@ -18,6 +18,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import xml.etree.ElementTree as ET
 
 
 def runtime_environment(datadir, platform=None):
@@ -64,6 +65,62 @@ def check_version(binary, program, datadir, env, platform=None):
         assert "Sugarchain En" in result.stdout, (program, result.stdout, result.stderr)
 
 
+def shutdown_detail(log_path):
+    try:
+        with log_path.open("rb") as log:
+            log.seek(0, os.SEEK_END)
+            log.seek(max(0, log.tell() - 64 * 1024))
+            tail = log.read()
+    except OSError:
+        return "application log unavailable"
+
+    _, started, progress = tail.rpartition(b"Shutdown in progress")
+    if b"Shutdown done" in progress:
+        return "application logged shutdown completion"
+    if not started:
+        return "no shutdown marker in recent application log"
+
+    # Only report fixed lifecycle messages from this launch, without wallet or RPC data.
+    phases = (
+        (b"Stopping HTTP RPC server", "stopping HTTP RPC"),
+        (b"Stopping RPC", "stopping RPC"),
+        (b"RPC stopped.", "RPC stopped"),
+        (b"Stopping HTTP server", "stopping HTTP"),
+        (b"Stopped HTTP server", "HTTP stopped"),
+        (b"Releasing wallet", "releasing wallet"),
+        (b"scheduler thread exit", "scheduler stopped"),
+        (b"Dumped mempool", "mempool saved"),
+        (b"Writing final batch", "writing chainstate"),
+        (b"changed transaction outputs", "chainstate written"),
+    )
+    offset, name = max((progress.rfind(marker), label) for marker, label in phases)
+    return f"last shutdown phase: {name}" if offset >= 0 else "application logged shutdown start only"
+
+
+def windows_fault_module(process):
+    # Read the recent Application Error event for this executable and PID, if Windows recorded it.
+    name = PureWindowsPath(process.args[0]).name
+    query = ("*[System[Provider[@Name='Application Error'] and EventID=1000 and "
+             "TimeCreated[timediff(@SystemTime) <= 120000]] and "
+             f"EventData[Data[@Name='AppName']='{name}']]")
+    try:
+        result = subprocess.run(
+            ["wevtutil", "qe", "Application", f"/q:{query}", "/rd:true", "/c:4", "/f:xml", "/e:Events"],
+            stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True, timeout=5,
+        )
+        for event in ET.fromstring(result.stdout).findall(".//{*}Event"):
+            fields = {field.get("Name"): field.text or "" for field in event.findall("./{*}EventData/{*}Data")}
+            try:
+                pid = int(fields.get("ProcessId", ""), 0)
+            except ValueError:
+                continue
+            if pid == process.pid and fields.get("AppName", "").lower() == name.lower():
+                return PureWindowsPath(fields.get("ModuleName", "")).name
+    except (OSError, subprocess.SubprocessError, ET.ParseError, ValueError):
+        pass
+    return ""
+
+
 class Node:
     def __init__(self, binary, datadir, chain, gui=False):
         self.datadir = datadir
@@ -76,6 +133,7 @@ class Node:
         command = [
             str(binary), f"-datadir={datadir}", f"-rpcport={self.port}",
             "-server=1", "-listen=0", "-connect=0", "-dnsseed=0", "-discover=0",
+            "-debug=http", "-debug=rpc", "-debug=coindb",
             "-networkactive=0", "-maxconnections=0", "-keypool=10",
             "-fallbackfee=0.0002", "-printtoconsole=0",
         ]
@@ -129,20 +187,9 @@ class Node:
                     self.process.wait(timeout=15)
                     raise
             if self.process.returncode != 0:
-                # Report shutdown progress without publishing the contents of the wallet test log.
-                try:
-                    with self.cookie.with_name("debug.log").open("rb") as log:
-                        log.seek(0, os.SEEK_END)
-                        log.seek(max(0, log.tell() - 64 * 1024))
-                        tail = log.read()
-                    if b"Shutdown done" in tail:
-                        detail = "application logged shutdown completion"
-                    elif b"Shutdown in progress" in tail:
-                        detail = "application logged shutdown start only"
-                    else:
-                        detail = "no shutdown marker in recent application log"
-                except OSError:
-                    detail = "application log unavailable"
+                detail = shutdown_detail(self.cookie.parent / "debug.log")
+                if os.name == "nt" and (module := windows_fault_module(self.process)):
+                    detail += f", Windows faulting module {module}"
                 code = self.process.returncode
                 raise RuntimeError(
                     f"{Path(self.process.args[0]).name} ({self.chain}) exited with {code} ({code:#x}), {detail}"
