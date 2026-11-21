@@ -11,6 +11,7 @@ on:
   push:
     branches:
       - '**'
+      - '!qa/windows-wallet-worker-20261121'
     tags-ignore:
       - '**'
 
