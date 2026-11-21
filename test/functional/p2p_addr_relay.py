@@ -338,6 +338,8 @@ class AddrTest(BitcoinTestFramework):
         addr_source = self.nodes[0].add_p2p_connection(P2PInterface())
         msg = self.setup_addr_msg(2)
         self.send_addr_msg(addr_source, msg, [full_outbound_peer])
+        # The peer can receive the pong before the queued addresses.
+        full_outbound_peer.wait_until(lambda: full_outbound_peer.num_ipv4_received >= len(msg.addrs))
         assert_equal(full_outbound_peer.num_ipv4_received, 2)
 
         self.nodes[0].disconnect_p2ps()

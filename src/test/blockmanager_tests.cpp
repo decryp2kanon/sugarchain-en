@@ -149,6 +149,7 @@ BOOST_AUTO_TEST_CASE(startup_height_sort_preserves_repeated_pointers)
     std::array<CBlockIndex, 17> storage;
     for (size_t i = 0; i < storage.size(); ++i) storage[i].nHeight = static_cast<int>(i) - 8;
     std::vector<CBlockIndex*> indexes;
+    indexes.reserve(4096);
     for (size_t i = 0; i < 4096; ++i) indexes.push_back(&storage[(i * 11) % storage.size()]);
     const std::multiset<CBlockIndex*> expected{indexes.begin(), indexes.end()};
     node::SortBlockIndicesByHeight(indexes);
@@ -607,6 +608,9 @@ BOOST_AUTO_TEST_CASE(blockmanager_flush_block_file)
             saved.emplace_back(header.GetHash(), index);
         }
         BOOST_CHECK_EQUAL(blockman.m_dirty_blockindex.size(), 1000U);
+        blockman.WriteBlockIndexDB();
+        BOOST_CHECK(blockman.m_dirty_blockindex.empty());
+        // Shutdown can flush the index twice without any intervening changes.
         blockman.WriteBlockIndexDB();
         BOOST_CHECK(blockman.m_dirty_blockindex.empty());
         blockman.WriteBlockIndexDB(); // Releasing an already-empty pool is safe.

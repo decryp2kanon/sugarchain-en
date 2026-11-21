@@ -7,6 +7,7 @@
 #include <node/interface_ui.h>
 #include <node/startup_progress.h>
 #include <kernel/chainparams.h>
+#include <kernel/notifications_interface.h>
 #include <pow.h>
 #include <primitives/block.h>
 #include <streams.h>
@@ -42,6 +43,14 @@
 #include <deque>
 
 namespace {
+class StartupUINotifications final : public kernel::Notifications {
+public:
+    void startupMessage(const std::string& message, bool log) override
+    {
+        uiInterface.InitMessage(message, log);
+    }
+};
+
 // Older C++20 libraries need portable automatic thread joining.
 class JoiningThread {
     std::function<void()> m_cancel;
@@ -107,6 +116,7 @@ struct CacheBudget {
 };
 
 struct HeaderPoWSetup : BasicTestingSetup {
+    StartupUINotifications notifications;
     const std::unique_ptr<const CChainParams> main{CChainParams::Main()};
     Consensus::Params params{main->GetConsensus()};
 
@@ -175,7 +185,7 @@ struct HeaderPoWSetup : BasicTestingSetup {
             ++reserve_calls;
             loaded.reserve(count);
         };
-        const bool valid{WITH_LOCK(cs_main, return db.LoadBlockIndexGuts(params, insert, interrupt, workers, fast_startup, reserve, startup_optimizations))};
+        const bool valid{WITH_LOCK(cs_main, return db.LoadBlockIndexGuts(params, insert, interrupt, workers, fast_startup, reserve, startup_optimizations, &notifications))};
         BOOST_CHECK_EQUAL(reserve_calls, cancel_before || !startup_optimizations ? 0U : 1U);
         if (valid) {
             BOOST_CHECK_EQUAL(loaded.size(), headers.size());
@@ -339,6 +349,7 @@ BOOST_FIXTURE_TEST_CASE(historical_scan_survives_invalid_headers_flood, TestingS
 
     constexpr unsigned peers{64};
     std::vector<CBlockHeader> forged;
+    forged.reserve(peers);
     for (unsigned i{0}; i < peers; ++i) {
         auto bad{forged.empty() ? headers.back() : forged.back()};
         do { ++bad.nNonce; } while (CheckProofOfWorkImpl(bad.GetPoWHash(), bad.nBits, consensus));
@@ -637,6 +648,7 @@ BOOST_AUTO_TEST_CASE(mainnet_hashes_match_legacy_tls_bit_for_bit)
     static constexpr uint8_t personal[]{"Satoshi Nakamoto 31/Oct/2008 Proof-of-work is essentially one-CPU-one-vote"};
     const yespower_params_t official{YESPOWER_1_0, 2048, 32, personal, sizeof(personal) - 1};
     std::vector<uint256> expected, actual(headers.size());
+    expected.reserve(headers.size());
     for (const auto& header : headers) {
         DataStream serialized;
         serialized << header;
@@ -1368,6 +1380,23 @@ BOOST_AUTO_TEST_CASE(local_worker_failure_reaches_caller_without_poisoning_queue
 }
 #endif
 
+BOOST_AUTO_TEST_CASE(startup_progress_supports_kernel_consumers_without_node_ui)
+{
+    struct ProgressNotifications final : kernel::Notifications {
+        std::vector<std::string> messages;
+        void startupMessage(const std::string& message, bool) override { messages.push_back(message); }
+    } kernel_notifications;
+    unsigned gui_calls{0};
+    boost::signals2::scoped_connection connection{uiInterface.InitMessage_connect(
+        [&](const std::string&) { ++gui_calls; })};
+    node::StartupProgress progress{kernel_notifications, "Loading block index", 3};
+    for (unsigned i{0}; i < 3; ++i) progress.Advance();
+    progress.Finish();
+    BOOST_REQUIRE_EQUAL(kernel_notifications.messages.size(), 4U);
+    BOOST_CHECK_EQUAL(kernel_notifications.messages.back(), "Loading block index: 3 / 3 (100%)");
+    BOOST_CHECK_EQUAL(gui_calls, 0U);
+}
+
 BOOST_AUTO_TEST_CASE(startup_phase_progress_reports_real_work_and_opaque_sort)
 {
     std::vector<std::string> messages;
@@ -1375,7 +1404,7 @@ BOOST_AUTO_TEST_CASE(startup_phase_progress_reports_real_work_and_opaque_sort)
     boost::signals2::scoped_connection connection{uiInterface.InitMessageWithLog_connect(
         [&](const std::string& message, bool log) { messages.push_back(message); if (log) logged.push_back(message); })};
     {
-        node::StartupProgress progress{"Linking block index", 10000};
+        node::StartupProgress progress{notifications, "Linking block index", 10000};
         for (unsigned i = 0; i < 10000; ++i) progress.Advance();
         BOOST_REQUIRE_EQUAL(messages.size(), 100U); // Start plus 1..99, not premature 100.
         progress.Finish();
@@ -1391,7 +1420,7 @@ BOOST_AUTO_TEST_CASE(startup_phase_progress_reports_real_work_and_opaque_sort)
     for (const auto& message : messages) BOOST_CHECK(message.find("elapsed") == std::string::npos);
     messages.clear();
     {
-        node::StartupProgress progress{"Checking block files", 3};
+        node::StartupProgress progress{notifications, "Checking block files", 3};
         progress.Advance();
         progress.Finish(); // Incomplete work cannot publish 100.
     }
@@ -1399,7 +1428,7 @@ BOOST_AUTO_TEST_CASE(startup_phase_progress_reports_real_work_and_opaque_sort)
     BOOST_CHECK(messages.back().find("(33%)") != std::string::npos);
     messages.clear();
     {
-        node::StartupProgress sorting{"Sorting block headers", 44782474, false};
+        node::StartupProgress sorting{notifications, "Sorting block headers", 44782474, false};
         sorting.FinishSort();
     }
     BOOST_REQUIRE_EQUAL(messages.size(), 2U);
@@ -1410,7 +1439,7 @@ BOOST_AUTO_TEST_CASE(startup_phase_progress_reports_real_work_and_opaque_sort)
         BOOST_CHECK(message.find("ETA") == std::string::npos);
     }
     messages.clear();
-    node::StartupProgress empty{"Linking block index", 0};
+    node::StartupProgress empty{notifications, "Linking block index", 0};
     empty.Finish();
     BOOST_CHECK(messages.back().find("0 / 0 (100%)") != std::string::npos);
 }
@@ -1425,7 +1454,7 @@ BOOST_AUTO_TEST_CASE(startup_progress_gui_updates_are_not_all_logged)
     std::vector<std::string> gui;
     boost::signals2::scoped_connection connection{uiInterface.InitMessage_connect(
         [&](const std::string& message) { gui.push_back(message); })};
-    node::StartupProgress progress{"Checking block files", 170};
+    node::StartupProgress progress{notifications, "Checking block files", 170};
     for (unsigned i{0}; i < 170; ++i) progress.Advance();
     BOOST_REQUIRE_EQUAL(logged.size(), 4U); // Start + 25/50/75, no premature completion.
     progress.Finish();
@@ -1833,7 +1862,10 @@ BOOST_AUTO_TEST_CASE(post_ibd_shrink_discards_only_ram_evidence)
     {
         Observation observation;
         BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+        BOOST_CHECK_EQUAL(GetYespowerVerificationCacheUsage().proof_storage_bytes, before.proof_storage_bytes);
+#ifdef ENABLE_YESPOWER_TEST_WRAP
         BOOST_CHECK_EQUAL(calls.load(), 0U);
+#endif
     }
     BOOST_REQUIRE(ShrinkYespowerVerificationCache());
     const auto after{GetYespowerVerificationCacheUsage()};
@@ -1844,7 +1876,11 @@ BOOST_AUTO_TEST_CASE(post_ibd_shrink_discards_only_ram_evidence)
     {
         Observation observation;
         BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+        // The first verified header allocates a proof page in the fresh tier.
+        BOOST_CHECK_GT(GetYespowerVerificationCacheUsage().proof_storage_bytes, after.proof_storage_bytes);
+#ifdef ENABLE_YESPOWER_TEST_WRAP
         BOOST_CHECK_EQUAL(calls.load(), 1U);
+#endif
         auto invalid{headers.back()};
         invalid.nBits = 0;
         BOOST_CHECK(!CheckBlockProofOfWork(invalid, params));
@@ -1855,7 +1891,9 @@ BOOST_AUTO_TEST_CASE(post_ibd_shrink_discards_only_ram_evidence)
     {
         Observation observation;
         BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
         BOOST_CHECK_EQUAL(calls.load(), 0U);
+#endif
     }
 }
 
