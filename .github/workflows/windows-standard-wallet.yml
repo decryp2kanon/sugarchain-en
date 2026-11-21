@@ -13,51 +13,74 @@ defaults:
 
 jobs:
   windows:
-    name: Windows, msvcrt, test cross-built (published mainnet GUI source observation)
+    name: Windows, msvcrt, published installer and native wallet exit
     runs-on: windows-2022
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          fetch-depth: 4
           persist-credentials: false
 
-      - name: Check the published package and test revision
+      - name: Verify the published archive and the acceptance scripts
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $source = '267f3688ff72c275ebdae46ec9668033eba9579a'
-          git merge-base --is-ancestor $source HEAD
-          if ($LASTEXITCODE) { throw "Expected product source revision" }
-          git diff --exit-code $source HEAD -- src .github/ci-windows-smoke.py .github/ci-windows-installer.py
-          if ($LASTEXITCODE) { throw "Application or acceptance source changed" }
-          $archive = gh api repos/decryp2kanon/sugarchain-en/actions/artifacts/14695848178 | ConvertFrom-Json
-          if ($LASTEXITCODE -or $archive.expired -or $archive.workflow_run.id -ne 44864273197 -or
-              $archive.digest -ne 'sha256:bdc20953f24bde5ba4d51d3d7eccf5aab1c73fabab7622c697dc660ac07994e9') {
-            throw "Unexpected archive identity"
+          $archive = gh api repos/decryp2kanon/sugarchain-en/actions/artifacts/14719886885 | ConvertFrom-Json
+          if ($LASTEXITCODE -or $archive.expired -or $archive.workflow_run.id -ne 44910557035 -or
+              $archive.workflow_run.head_sha -ne 'fa5d59b3b15a0fe4f7a9d61b3264510441ad9a5b' -or
+              $archive.digest -ne 'sha256:797518768d05d28f6053d67a55889b04990f1c901065751829206390f9cdc724') {
+            throw "Unexpected published package"
+          }
+          $scripts = @{
+            '.github/ci-windows-smoke.py' = '4548497086d5b0a73f4119839bb595d2e3c5859b'
+            '.github/ci-windows-installer.py' = '1fb49e31a506b5d782300528cc82be1871395d3f'
+          }
+          foreach ($item in $scripts.GetEnumerator()) {
+            if ((git rev-parse "HEAD:$($item.Key)") -ne $item.Value) { throw "Acceptance source changed" }
           }
 
-      - name: Download built executables
+      - name: Download the published MSVCRT package
         uses: actions/download-artifact@v8
         with:
-          name: x86_64-w64-mingw32-executables-44864273197
+          name: x86_64-w64-mingw32-executables-44910557035
           github-token: ${{ github.token }}
-          run-id: 44864273197
+          run-id: 44910557035
           path: distribution
 
-      - name: Locate the native source tool
+      - name: Check the installer and enable local Qt exit reports
         run: |
-          $candidates = @('C:\mingw64\bin\gdb.exe', 'C:\msys64\ucrt64\bin\gdb.exe', 'C:\msys64\mingw64\bin\gdb.exe')
-          $tool = $candidates | Where-Object { Test-Path $_ -PathType Leaf } | Select-Object -First 1
-          if (!$tool) {
-            & 'C:\msys64\usr\bin\bash.exe' -lc 'pacman -Sy --needed --noconfirm mingw-w64-ucrt-x86_64-gdb'
-            if ($LASTEXITCODE) { throw "The native debugging tools could not be installed" }
-            $tool = 'C:\msys64\ucrt64\bin\gdb.exe'
+          $installer = 'distribution/Sugarchain-En-31.1.0-win64-setup.exe'
+          if ((Get-FileHash $installer).Hash -ne '7f9d0268a412fc710a67643b3c6f9b53e237cebc47ab3e9d59757f3cbbddfa5d') {
+            throw "The installer differs from the file tested by the pull request"
           }
-          if (!(Test-Path $tool -PathType Leaf)) { throw "The native debugging tool is missing" }
-          & $tool --version
-          if ($LASTEXITCODE) { throw "The native debugging tool could not start" }
-          "WALLET_SOURCE_GDB=$tool" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          $reports = New-Item -ItemType Directory (Join-Path $env:RUNNER_TEMP 'qt-local-exit-reports')
+          $key = 'HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\sugarchain-qt.exe'
+          if (Test-Path -LiteralPath $key) { throw "Application report settings already exist" }
+          New-Item -Path $key -Force | Out-Null
+          New-ItemProperty -LiteralPath $key -Name DumpFolder -Value $reports.FullName -PropertyType ExpandString | Out-Null
+          New-ItemProperty -LiteralPath $key -Name DumpCount -Value 1 -PropertyType DWord | Out-Null
+          New-ItemProperty -LiteralPath $key -Name DumpType -Value 1 -PropertyType DWord | Out-Null
 
-      - name: Observe the normal mainnet Qt wallet lifecycle
-        run: py -3 .github/ci-windows-wallet-frames.py
+      - name: Run native daemon and wallet acceptance
+        run: |
+          py -3 .github/ci-windows-smoke.py --bindir distribution/bin --work-dir "$env:RUNNER_TEMP/raw-wallet-runtime"
+          exit $LASTEXITCODE
+
+      - name: Verify fresh install, upgrade, wallet shutdown and uninstall
+        run: |
+          py -3 .github/ci-windows-installer.py --installer distribution/Sugarchain-En-31.1.0-win64-setup.exe --work-dir "$env:RUNNER_TEMP/installed-wallet-runtime"
+          exit $LASTEXITCODE
+
+      - name: Read the local exception location
+        if: failure()
+        run: |
+          $download = Join-Path $env:RUNNER_TEMP 'qt-local-exit-reports'
+          if (!(Test-Path $download)) { Write-Output 'The report directory was not created.'; exit 0 }
+          $dump = Get-ChildItem -LiteralPath $download -Filter '*.dmp' | Select-Object -First 1
+          if (!$dump) { Write-Output 'Windows did not write a Qt exception report.'; exit 0 }
+          py -3 .github/ci-windows-minidump-summary.py $dump.FullName
+          if ($LASTEXITCODE) { throw "Windows exception summary could not be read" }
+          $cdb = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\Debuggers\x64\cdb.exe'
+          if (Test-Path $cdb) {
+            & $cdb -sins -z $dump.FullName -c '.ecxr; kn 12; q'
+          }
