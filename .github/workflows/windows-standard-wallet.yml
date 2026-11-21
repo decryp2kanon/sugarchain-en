@@ -13,22 +13,23 @@ defaults:
 
 jobs:
   windows:
-    name: Windows, msvcrt, test cross-built (published package, native shell)
+    name: Windows, msvcrt, test cross-built (published mainnet GUI source observation)
     runs-on: windows-2022
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
-          fetch-depth: 2
+          fetch-depth: 4
           persist-credentials: false
 
       - name: Check the published package and test revision
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $parent = git rev-parse 'HEAD^'
-          if ($parent -ne '267f3688ff72c275ebdae46ec9668033eba9579a') { throw "Unexpected source revision" }
-          git diff --exit-code $parent HEAD -- src .github/ci-windows-smoke.py .github/ci-windows-installer.py
+          $source = '267f3688ff72c275ebdae46ec9668033eba9579a'
+          git merge-base --is-ancestor $source HEAD
+          if ($LASTEXITCODE) { throw "Expected product source revision" }
+          git diff --exit-code $source HEAD -- src .github/ci-windows-smoke.py .github/ci-windows-installer.py
           if ($LASTEXITCODE) { throw "Application or acceptance source changed" }
           $archive = gh api repos/decryp2kanon/sugarchain-en/actions/artifacts/14695848178 | ConvertFrom-Json
           if ($LASTEXITCODE -or $archive.expired -or $archive.workflow_run.id -ne 44864273197 -or
@@ -44,39 +45,19 @@ jobs:
           run-id: 44864273197
           path: distribution
 
-      - name: Record the child error mode from Git Bash
-        shell: bash
-        run: py -3 -c 'import ctypes; print("Git Bash child error mode = %#x" % ctypes.windll.kernel32.GetErrorMode())'
-
-      - name: Run native network, GUI and wallet smoke checks
+      - name: Locate the native source tool
         run: |
-          py -3 .github/ci-windows-normal-report.py .github/ci-windows-smoke.py --bindir distribution/bin --work-dir "${env:RUNNER_TEMP}/raw-wallet"
-
-      - name: Verify installed applications and installer lifecycle
-        run: |
-          $installer = @(Get-ChildItem distribution -Filter '*-win64-setup.exe')
-          if ($installer.Count -ne 1) { throw "Expected one installer" }
-          py -3 .github/ci-windows-normal-report.py .github/ci-windows-installer.py --installer ($installer[0].FullName) --work-dir "${env:RUNNER_TEMP}/installed-wallet"
-
-      - name: Read the Windows application event after a failed wallet check
-        if: failure()
-        run: |
-          $since = (Get-Date).AddMinutes(-25)
-          for ($i=0; $i -lt 6; $i++) {
-            $records = Get-WinEvent -FilterHashtable @{LogName='Application'; Id=1000,1001; StartTime=$since} -ErrorAction SilentlyContinue
-            foreach ($entry in $records) {
-              $data = ([xml]$entry.ToXml()).Event.EventData.Data
-              $fields = @{}
-              foreach ($d in $data) { if ($d.Name) { $fields[$d.Name] = $d.'#text' } }
-              if ($fields['AppName'] -eq 'sugarchain-qt.exe') {
-                Write-Output ("Windows application event {0}: module {1}, exception {2}, offset {3}" -f $entry.Id, $fields['ModuleName'], $fields['ExceptionCode'], $fields['FaultingOffset'])
-                return
-              }
-              if ($fields['EventName'] -eq 'APPCRASH' -and $fields['P1'] -eq 'sugarchain-qt.exe') {
-                Write-Output ("Windows application report {0}: module {1}, exception {2}, offset {3}" -f $entry.Id, $fields['P4'], $fields['P7'], $fields['P8'])
-                return
-              }
-            }
-            Start-Sleep -Seconds 5
+          $candidates = @('C:\mingw64\bin\gdb.exe', 'C:\msys64\ucrt64\bin\gdb.exe', 'C:\msys64\mingw64\bin\gdb.exe')
+          $tool = $candidates | Where-Object { Test-Path $_ -PathType Leaf } | Select-Object -First 1
+          if (!$tool) {
+            & 'C:\msys64\usr\bin\bash.exe' -lc 'pacman -Sy --needed --noconfirm mingw-w64-ucrt-x86_64-gdb'
+            if ($LASTEXITCODE) { throw "The native debugging tools could not be installed" }
+            $tool = 'C:\msys64\ucrt64\bin\gdb.exe'
           }
-          Write-Output "No matching Windows application event was published."
+          if (!(Test-Path $tool -PathType Leaf)) { throw "The native debugging tool is missing" }
+          & $tool --version
+          if ($LASTEXITCODE) { throw "The native debugging tool could not start" }
+          "WALLET_SOURCE_GDB=$tool" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Observe the normal mainnet Qt wallet lifecycle
+        run: py -3 .github/ci-windows-wallet-frames.py
