@@ -117,7 +117,55 @@ def shutdown_detail(log_path):
     return f"last shutdown phase: {name}" if offset >= 0 else "application logged shutdown start only"
 
 
-def windows_fault_module(process):
+def fault_location(module, offset=""):
+    name = PureWindowsPath(module).name
+    digits = offset.lower().removeprefix("0x")
+    if name and digits and len(digits) <= 16 and all(c in "0123456789abcdef" for c in digits):
+        return f"{name}+0x{int(digits, 16):x}"
+    return name
+
+
+def queued_windows_fault(executable, process, started_ns):
+    # The hosted image queues WER reports. Only read the summary of a report
+    # matching this binary, this launch interval and this exit status.
+    for folder in ("ProgramData", "LOCALAPPDATA"):
+        if folder not in os.environ:
+            continue
+        root = Path(os.environ[folder]) / "Microsoft/Windows/WER"
+        for store in ("ReportQueue", "ReportArchive"):
+            try:
+                reports = list((root / store).glob(f"AppCrash_{executable.stem}*/Report.wer"))
+            except OSError:
+                continue
+            for report in reports:
+                try:
+                    with report.open("rb") as stream:
+                        raw = stream.read(256 * 1024)
+                    if raw.startswith((b"\xff\xfe", b"\xfe\xff")):
+                        encoding = "utf-16"
+                    else:
+                        encoding = "utf-16-le" if raw[1:2] == b"\0" else "utf-8-sig"
+                    values = dict(line.split("=", 1) for line in raw.decode(encoding).splitlines() if "=" in line)
+                    if values.get("EventType") != "APPCRASH" or PureWindowsPath(values["AppPath"]) != executable:
+                        continue
+                    # EventTime is a FILETIME in 100 ns ticks since 1601.
+                    event_ns = (int(values["EventTime"]) - 116444736000000000) * 100
+                    if not started_ns <= event_ns <= time.time_ns():
+                        continue
+                    if "ProcessId" in values and int(values["ProcessId"], 0) != process.pid:
+                        continue
+                    signature = {value: values.get(k.removesuffix(".Name") + ".Value", "")
+                                 for k, value in values.items() if k.startswith("Sig[") and k.endswith(".Name")}
+                    if int(signature["Exception Code"], 16) == (process.returncode & 0xffffffff):
+                        location = fault_location(signature["Fault Module Name"], signature.get("Exception Offset", ""))
+                        if location:
+                            return location
+                except (OSError, UnicodeError, ValueError, KeyError):
+                    continue
+    return ""
+
+
+def windows_fault_module(process, started_ns):
     executable = PureWindowsPath(process.args[0])
     query = ("*[System[Provider[@Name='Application Error'] and EventID=1000 and "
              "TimeCreated[timediff(@SystemTime) <= 120000]]]")
@@ -130,18 +178,16 @@ def windows_fault_module(process):
                 ["wevtutil", "qe", "Application", f"/q:{query}", "/rd:true", "/c:20", "/f:xml", "/e:Events"],
                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, check=True, timeout=5,
             )
-            if not result.stdout.strip():
-                continue
-            events = ET.fromstring(result.stdout).findall(".//{*}Event")
+            events = ET.fromstring(result.stdout).findall(".//{*}Event") if result.stdout.strip() else []
         except (OSError, subprocess.SubprocessError, ET.ParseError, ValueError):
-            return ""
+            events = []
         for event in events:
             data = event.findall("./{*}EventData/{*}Data")
             fields = {field.get("Name"): field.text or "" for field in data}
             if len(data) >= 9 and all(field.get("Name") is None for field in data):
                 # Classic Application Error records use the provider's positional fields.
                 fields = {"AppName": data[0].text or "", "ModuleName": data[3].text or "",
-                          "ProcessId": data[8].text or ""}
+                          "FaultingOffset": data[7].text or "", "ProcessId": data[8].text or ""}
                 if len(data) > 10:
                     fields["AppPath"] = data[10].text or ""
             try:
@@ -152,9 +198,12 @@ def windows_fault_module(process):
                 continue
             if fields.get("AppPath") and PureWindowsPath(fields["AppPath"]) != executable:
                 continue
-            module = PureWindowsPath(fields.get("ModuleName", "")).name
+            module = fault_location(fields.get("ModuleName", ""), fields.get("FaultingOffset", ""))
             if module:
                 return module
+        queued = queued_windows_fault(executable, process, started_ns)
+        if queued:
+            return queued
     return ""
 
 
@@ -180,6 +229,7 @@ class Node:
             command += ["-splash=0", "-min", "-debug=qt"]
         self.cookie = datadir / ("regtest/.cookie" if chain == "regtest" else ".cookie")
         self.log = (datadir / "process.log").open("wb")
+        self.started_ns = time.time_ns()
         self.process = subprocess.Popen(command, stdout=self.log, stderr=subprocess.STDOUT, env=runtime_environment(datadir))
 
     def __enter__(self):
@@ -237,7 +287,7 @@ class Node:
             if self.process.returncode != 0:
                 detail = shutdown_detail(self.cookie.parent / "debug.log")
                 if os.name == "nt":
-                    module = windows_fault_module(self.process) or "unavailable"
+                    module = windows_fault_module(self.process, self.started_ns) or "unavailable"
                     detail += f", Windows faulting module {module}"
                 code = self.process.returncode
                 raise RuntimeError(
