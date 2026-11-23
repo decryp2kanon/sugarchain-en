@@ -780,6 +780,9 @@ public:
      */
     void MarkDestinationsDirty(const std::set<CTxDestination>& destinations) EXCLUSIVE_LOCKS_REQUIRED(cs_wallet);
 
+    /** Whether the selected network supports generating new destinations of this type. */
+    bool IsOutputTypeSupported(OutputType type) const;
+
     util::Result<CTxDestination> GetNewDestination(OutputType type, const std::string& label);
     util::Result<CTxDestination> GetNewChangeDestination(OutputType type);
 
