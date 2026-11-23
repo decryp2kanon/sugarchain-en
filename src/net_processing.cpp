@@ -32,6 +32,7 @@
 #include <netmessagemaker.h>
 #include <node/blockstorage.h>
 #include <node/connection_types.h>
+#include <node/ibd_download.h>
 #include <node/protocol_version.h>
 #include <node/timeoffsets.h>
 #include <node/txdownloadman.h>
@@ -456,6 +457,7 @@ struct CNodeState {
     std::list<QueuedBlock> vBlocksInFlight;
     //! When the first entry in vBlocksInFlight started downloading. Don't care when vBlocksInFlight is empty.
     std::chrono::microseconds m_downloading_since{0us};
+    node::IBDBlockDelivery m_ibd_delivery;
     //! Whether we consider this a preferred download peer.
     bool fPreferredDownload{false};
     /** Whether this peer wants invs or cmpctblocks (when possible) for block announcements. */
@@ -1262,6 +1264,7 @@ bool PeerManagerImpl::BlockRequested(NodeId nodeid, const CBlockIndex& block, st
     if (state->vBlocksInFlight.size() == 1) {
         // We're starting a block download (batch) from this peer.
         state->m_downloading_since = GetTime<std::chrono::microseconds>();
+        state->m_ibd_delivery.Started(state->m_downloading_since.count());
         m_peers_downloading_from++;
     }
     auto itInFlight = mapBlocksInFlight.insert(std::make_pair(hash, std::make_pair(nodeid, it)));
@@ -4904,6 +4907,14 @@ void PeerManagerImpl::ProcessMessage(Peer& peer, CNode& pfrom, const std::string
             // Always process the block if we requested it, since we may
             // need it even when it's not a candidate for a new best tip.
             forceProcessing = IsBlockRequested(hash);
+            if (m_opts.ibd_block_request_limit > MAX_BLOCKS_IN_TRANSIT_PER_PEER && m_chainman.IsInitialBlockDownload()) {
+                const auto range{mapBlocksInFlight.equal_range(hash)};
+                if (std::any_of(range.first, range.second, [&](const auto& request) { return request.second.first == pfrom.GetId(); })) {
+                    auto& state{*Assert(State(pfrom.GetId()))};
+                    // Sample consumption, not socket timestamps shared by coalesced messages.
+                    state.m_ibd_delivery.Received(GetTime<std::chrono::microseconds>().count(), state.vBlocksInFlight.size() > 1);
+                }
+            }
             RemoveBlockRequest(hash, pfrom.GetId());
             // mapBlockSource is only used for punishing peers and setting
             // which peers send us compact blocks, so the race between here and
@@ -6180,11 +6191,12 @@ bool PeerManagerImpl::SendMessages(CNode& node)
         // Message: getdata (blocks)
         //
         std::vector<CInv> vGetData;
-        if (CanServeBlocks(peer) && ((sync_blocks_and_headers_from_peer && !IsLimitedPeer(peer)) || !m_chainman.IsInitialBlockDownload()) && state.vBlocksInFlight.size() < MAX_BLOCKS_IN_TRANSIT_PER_PEER) {
+        const int inflight_limit{m_chainman.IsInitialBlockDownload() ? state.m_ibd_delivery.Limit(MAX_BLOCKS_IN_TRANSIT_PER_PEER, std::clamp(m_opts.ibd_block_request_limit, MAX_BLOCKS_IN_TRANSIT_PER_PEER, MAX_IBD_BLOCK_REQUEST_LIMIT)) : MAX_BLOCKS_IN_TRANSIT_PER_PEER};
+        if (CanServeBlocks(peer) && ((sync_blocks_and_headers_from_peer && !IsLimitedPeer(peer)) || !m_chainman.IsInitialBlockDownload()) && state.vBlocksInFlight.size() < size_t(inflight_limit)) {
             std::vector<const CBlockIndex*> vToDownload;
             NodeId staller = -1;
-            auto get_inflight_budget = [&state]() {
-                return std::max(0, MAX_BLOCKS_IN_TRANSIT_PER_PEER - static_cast<int>(state.vBlocksInFlight.size()));
+            auto get_inflight_budget = [&state, inflight_limit]() {
+                return std::max(0, inflight_limit - static_cast<int>(state.vBlocksInFlight.size()));
             };
 
             // If there are multiple chainstates, download blocks for the
