@@ -87,6 +87,7 @@ struct Params {
     uint256 hashGenesisBlock;
     int nSubsidyHalvingInterval;
     CAmount nInitialSubsidy{50 * COIN};
+    bool enforce_taproot_on_all_blocks{true};
     /**
      * Hashes of blocks that
      * - are known to be consensus valid, and
