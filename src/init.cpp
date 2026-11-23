@@ -511,6 +511,10 @@ void SetupServerArgs(ArgsManager& argsman, bool can_listen_ipc)
     argsman.AddArg("-allowignoredconf", strprintf("For backwards compatibility, treat an unused %s file in the datadir as a warning, not an error.", BITCOIN_CONF_FILENAME), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-loadblock=<file>", "Imports blocks from external file on startup", ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-maxmempool=<n>", strprintf("Keep the transaction memory pool below <n> megabytes (default: %u)", DEFAULT_MAX_MEMPOOL_SIZE_MB), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-parpow=<n>", strprintf("Maximum concurrent Yespower header verification tasks (1-%d, default: %d)", MAX_HEADER_POW_WORKERS, DEFAULT_HEADER_POW_WORKERS), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
+    argsman.AddArg("-fast-startup=<0|1>", "Start by trusting eligible historical indexes, then verify missing local Yespower evidence in the background (default: 0). Both modes use shared startup optimizations. With 0, perform the full historical PoW recheck, ignoring disk evidence. New headers are still verified. Historical trust remains until background verification completes. Incompatible with -reindex", ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION, OptionsCategory::OPTIONS);
+    argsman.AddArg("-background-pow-pause=<ms>", "Pause between computed historical DB batches of at most 512 entries (0-1000 ms, default: 0). Previously this pause applied per header. Does not delay warm evidence reuse or foreground verification", ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION, OptionsCategory::OPTIONS);
+    argsman.AddArg("-background-pow-workers=<n>", "Historical Yespower worker count (1-8, default: -parpow). Uses a separate background pool; lower this to leave CPU capacity for foreground validation", ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION, OptionsCategory::OPTIONS);
     argsman.AddArg("-mempoolexpiry=<n>", strprintf("Do not keep transactions in the mempool longer than <n> hours (default: %u)", DEFAULT_MEMPOOL_EXPIRY_HOURS), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-minimumchainwork=<hex>", strprintf("Minimum work assumed to exist on a valid chain in hex (default: %s, testnet3: %s, testnet4: %s, signet: %s)", defaultChainParams->GetConsensus().nMinimumChainWork.GetHex(), testnetChainParams->GetConsensus().nMinimumChainWork.GetHex(), testnet4ChainParams->GetConsensus().nMinimumChainWork.GetHex(), signetChainParams->GetConsensus().nMinimumChainWork.GetHex()), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::OPTIONS);
     argsman.AddArg("-par=<n>", strprintf("Set the number of script verification threads (0 = auto, up to %d, <0 = leave that many cores free, default: %d)",
@@ -663,7 +667,6 @@ void SetupServerArgs(ArgsManager& argsman, bool can_listen_ipc)
     argsman.AddArg("-capturemessages", "Capture all P2P messages to disk", ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-mocktime=<n>", "Replace actual time with " + UNIX_EPOCH_TIME + " (default: 0)", ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
     argsman.AddArg("-maxsigcachesize=<n>", strprintf("Limit sum of signature cache and script execution cache sizes to <n> MiB (default: %u)", DEFAULT_VALIDATION_CACHE_BYTES >> 20), ArgsManager::ALLOW_ANY | ArgsManager::DEBUG_ONLY, OptionsCategory::DEBUG_TEST);
-    argsman.AddArg("-parpow=<n>", strprintf("Maximum concurrent Yespower header verification tasks (1-%d, default: %d)", MAX_HEADER_POW_WORKERS, DEFAULT_HEADER_POW_WORKERS), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-maxpowcache=<n>", strprintf("Verified Yespower header cache entry budget in MiB, plus metadata (1-2048, default: %u)", DEFAULT_YESPOWER_CACHE_BYTES >> 20), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-maxtipage=<n>",
                    strprintf("Maximum tip age in seconds to consider node in initial block download (default: %u)",
@@ -927,6 +930,20 @@ bool AppInitParameterInteraction(const ArgsManager& args)
     // ********************************************************* Step 2: parameter interactions
 
     // also see: InitParameterInteraction()
+
+    const std::string fast_startup{args.GetArg("-fast-startup", "0")};
+    if (args.IsArgSet("-background-pow-workers") && (args.GetIntArg("-background-pow-workers", 0) < 1 || args.GetIntArg("-background-pow-workers", 0) > MAX_HEADER_POW_WORKERS)) {
+        return InitError(Untranslated("-background-pow-workers must be between 1 and 8"));
+    }
+    if (args.GetIntArg("-background-pow-pause", 0) < 0 || args.GetIntArg("-background-pow-pause", 0) > 1000) {
+        return InitError(Untranslated("-background-pow-pause must be between 0 and 1000 milliseconds"));
+    }
+    if (fast_startup != "0" && fast_startup != "1") {
+        return InitError(Untranslated("-fast-startup must be 0 or 1"));
+    }
+    if (fast_startup == "1" && args.GetBoolArg("-reindex", false)) {
+        return InitError(Untranslated("-fast-startup=1 cannot be used with -reindex. Disable -fast-startup or remove -reindex."));
+    }
 
     // We removed checkpoints but keep the option to warn users who still have it in their config.
     if (args.IsArgSet("-checkpoints")) {
@@ -1350,6 +1367,8 @@ static ChainstateLoadResult InitAndLoadChainstate(
         },
     };
     Assert(ApplyArgsManOptions(args, blockman_opts)); // no error can happen, already checked in AppInitParameterInteraction
+    // A GUI recovery retry wipes the old index; it must verify every rebuilt entry.
+    if (do_reindex) blockman_opts.fast_startup = false;
 
     // Creating the chainstate manager internally creates a BlockManager, opens
     // the blocks tree db, and wipes existing block files in case of a reindex.
@@ -1841,8 +1860,13 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
         return InitError(Untranslated("-maxpowcache must be between 1 and 2048 MiB"));
     }
     if (chainparams.GetConsensus().fYespowerSugar) {
-        InitYespowerVerificationCache(size_t(pow_cache_mib) << 20);
-        LogInfo("* Using %i MiB plus metadata for verified Yespower headers", pow_cache_mib);
+        const bool grow_pow_cache{true};
+        InitYespowerVerificationCache(size_t(pow_cache_mib) << 20, grow_pow_cache);
+        if (grow_pow_cache) {
+            LogInfo("* Using up to %i MiB plus metadata for verified Yespower headers (grows on demand)", pow_cache_mib);
+        } else {
+            LogInfo("* Using %i MiB plus metadata for verified Yespower headers", pow_cache_mib);
+        }
     }
     LogInfo("* Using %.1f MiB for block index database", kernel_cache_sizes.block_tree_db * (1.0 / 1024 / 1024));
     if (args.GetBoolArg("-txindex", DEFAULT_TXINDEX)) {

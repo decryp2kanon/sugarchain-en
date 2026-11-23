@@ -12,6 +12,7 @@
 #include <primitives/block.h>
 #include <streams.h>
 #include <test/data/sugarchain_headers.raw.h>
+#include <test/historical_pow_crash.h>
 #include <test/util/setup_common.h>
 #include <test/util/net.h>
 #include <test/util/logging.h>
@@ -213,6 +214,7 @@ extern "C" int __wrap_yespower(yespower_local_t* local, const uint8_t* input, si
 {
     if (!observing.load()) {
         const int result{__real_yespower(local, input, size, params, output)};
+        HistoricalPoWCrashProof(input, size, result);
         return result;
     }
     const auto ordinal{++calls};
@@ -787,6 +789,115 @@ BOOST_AUTO_TEST_CASE(startup_block_index_load_checks_every_header)
     Invalidate(invalid[8]);
     BOOST_CHECK(!LoadStartupHeaders(invalid, 1));
     BOOST_CHECK(!LoadStartupHeaders(invalid, 8));
+}
+
+BOOST_AUTO_TEST_CASE(fast_startup_trusts_only_eligible_disk_headers)
+{
+    const auto valid{Headers(304, 4)};
+    for (const int workers : {1, 8}) {
+        CacheBudget budget{1 << 20};
+        {
+            Observation observation;
+            BOOST_CHECK(LoadStartupHeaders(valid, workers, false, false, BLOCK_VALID_TREE));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+            BOOST_CHECK_EQUAL(calls.load(), valid.size());
+#endif
+        }
+        InitYespowerVerificationCache(1 << 20);
+        {
+            Observation observation;
+            BOOST_CHECK(LoadStartupHeaders(valid, workers, false, true, BLOCK_VALID_TREE));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+            BOOST_CHECK_EQUAL(calls.load(), 0U);
+#endif
+        }
+        InitYespowerVerificationCache(1 << 20);
+        {
+            Observation observation;
+            BOOST_CHECK(LoadStartupHeaders(valid, workers, false, true, BLOCK_VALID_UNKNOWN));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+            BOOST_CHECK_EQUAL(calls.load(), valid.size());
+#endif
+        }
+        InitYespowerVerificationCache(1 << 20);
+        {
+            Observation observation;
+            BOOST_CHECK(LoadStartupHeaders(valid, workers, false, true, BLOCK_VALID_TREE | BLOCK_FAILED_VALID));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+            BOOST_CHECK_EQUAL(calls.load(), valid.size());
+#endif
+        }
+        InitYespowerVerificationCache(1 << 20);
+        {
+            Observation observation;
+            BOOST_CHECK(LoadStartupHeaders(valid, workers, false, true, BLOCK_VALID_TREE | BLOCK_FAILED_CHILD));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+            BOOST_CHECK_EQUAL(calls.load(), valid.size());
+#endif
+        }
+    }
+
+    auto invalid{valid};
+    Invalidate(invalid[0]);
+    InitYespowerVerificationCache(1 << 20);
+    BOOST_CHECK(!LoadStartupHeaders(invalid, 8, false, false, BLOCK_VALID_TREE));
+    // This acceptance is the explicit opt-in disk-trust trade-off.
+    BOOST_CHECK(LoadStartupHeaders(invalid, 8, false, true, BLOCK_VALID_TREE));
+    BOOST_CHECK(!LoadStartupHeaders(invalid, 8, false, true, BLOCK_VALID_UNKNOWN));
+    invalid[0].nBits = 0;
+    BOOST_CHECK(!LoadStartupHeaders(invalid, 8, false, true, BLOCK_VALID_TREE));
+    BOOST_CHECK(!LoadStartupHeaders(valid, 8, true, true, BLOCK_VALID_TREE));
+}
+
+BOOST_AUTO_TEST_CASE(fast_startup_never_promotes_disk_trust_to_live_proof_cache)
+{
+    CacheBudget budget{1 << 20};
+    const auto header{Headers(305, 1)};
+    BOOST_REQUIRE(LoadStartupHeaders(header, 8, false, true, BLOCK_VALID_TREE, true));
+    {
+        Observation observation;
+        BOOST_CHECK(CheckBlockProofOfWork(header.front(), params));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+        BOOST_CHECK_EQUAL(calls.load(), 1U);
+#endif
+    }
+
+    // Later network batches still validate previously unseen headers.
+    HeaderPoWVerifier verifier{8};
+    const auto fresh{Headers(307, 2)};
+    {
+        Observation observation;
+        BOOST_CHECK(verifier.Check(fresh, params));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+        BOOST_CHECK_EQUAL(calls.load(), fresh.size());
+#endif
+    }
+    auto invalid{Headers(308, 1)};
+    Invalidate(invalid.front());
+    BOOST_CHECK(!verifier.Check(invalid, params));
+}
+
+BOOST_AUTO_TEST_CASE(fast_startup_flushes_untrusted_headers_before_trusted_entries)
+{
+    CacheBudget budget{1 << 20};
+    const auto headers{Headers(306, 4)};
+    const std::array<uint32_t, 4> statuses{BLOCK_VALID_TREE, BLOCK_VALID_UNKNOWN,
+                                            BLOCK_VALID_TREE, BLOCK_VALID_UNKNOWN};
+    Observation observation;
+    BOOST_CHECK(LoadStartupHeaders(headers, 8, false, true, BLOCK_VALID_UNKNOWN, false, statuses));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+    BOOST_CHECK_EQUAL(calls.load(), 2U);
+#endif
+}
+
+BOOST_AUTO_TEST_CASE(fast_startup_still_checks_genesis)
+{
+    CacheBudget budget{1 << 20};
+    Observation observation;
+    BOOST_CHECK(LoadStartupHeaders({main->GenesisBlock()}, 8, false, true, BLOCK_VALID_TREE));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+    BOOST_CHECK_EQUAL(calls.load(), 1U);
+#endif
 }
 
 BOOST_AUTO_TEST_CASE(startup_progress_counts_entries_and_reports_one_percent_buckets)
