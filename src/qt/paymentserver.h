@@ -69,7 +69,7 @@ public:
     // process.
     // Note: if a payment request is given, SelectParams(MAIN/TESTNET)
     // will be called so we startup in the right mode.
-    static bool ipcSendCommandLine();
+    static bool ipcSendCommandLine(QString& error);
 
     // parent should be QApplication object
     explicit PaymentServer(QObject* parent, bool startLocalServer = true);
