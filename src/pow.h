@@ -7,8 +7,12 @@
 #define BITCOIN_POW_H
 
 #include <consensus/params.h>
+#include <kernel/cs_main.h>
 
 #include <cstdint>
+#include <cstddef>
+#include <memory>
+#include <span>
 
 class CBlockHeader;
 class CBlockIndex;
@@ -32,9 +36,23 @@ unsigned int CalculateNextWorkRequired(const CBlockIndex* pindexLast, int64_t nF
 unsigned int CalculateSugarShieldWorkRequired(const arith_uint256& target_sum, int64_t mtp_span, const Consensus::Params&);
 
 /** Check whether a block hash satisfies the proof-of-work requirement specified by nBits */
-bool CheckBlockProofOfWork(const CBlockHeader& header, const Consensus::Params& params);
+bool CheckBlockProofOfWork(const CBlockHeader& header, const Consensus::Params& params, bool cache_result = true);
 bool CheckProofOfWork(uint256 hash, unsigned int nBits, const Consensus::Params&);
 bool CheckProofOfWorkImpl(uint256 hash, unsigned int nBits, const Consensus::Params&);
+/** Domain of local persisted results; not a cryptographic proof of execution. */
+
+inline constexpr size_t DEFAULT_YESPOWER_CACHE_BYTES{16 << 20};
+// Also keeps CuckooCache's uint32_t epoch-size arithmetic below overflow.
+inline constexpr size_t MAX_YESPOWER_CACHE_BYTES{size_t{2048} << 20};
+/** Configure process-local proof evidence; resizing discards all old entries.
+ * In fast startup, grow the cache within the same budget as proofs accumulate.
+ */
+void InitYespowerVerificationCache(size_t bytes, bool grow_on_demand = false);
+
+/** With cs_main held, restore an evicted proof from a genuinely checked live index. */
+void CacheVerifiedBlockIndexProof(const CBlockIndex& index, const Consensus::Params& params) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
+
 
 /**
  * Return false if the proof-of-work requirement specified by new_nbits at a

@@ -10,11 +10,25 @@
 #include <arith_uint256.h>
 #include <algorithm>
 #include <chain.h>
+#include <checkqueue.h>
 #include <crypto/common.h>
-#include <limits>
+#include <crypto/sha256.h>
+#include <cuckoocache.h>
+#include <hash.h>
 #include <primitives/block.h>
+#include <random.h>
 #include <uint256.h>
 #include <util/check.h>
+#include <util/hasher.h>
+
+#include <array>
+#include <mutex>
+#include <exception>
+#include <limits>
+#include <shared_mutex>
+#include <stdexcept>
+#include <variant>
+#include <vector>
 
 namespace {
 // Exact unsigned long division, eight base-2^32 limbs instead of 256 bit steps.
@@ -31,7 +45,204 @@ arith_uint256 DivideSugarShieldTarget(const arith_uint256& value, int64_t diviso
     }
     return UintToArith256(quotient);
 }
+
+static_assert(MAX_YESPOWER_CACHE_BYTES / sizeof(uint256) <= std::numeric_limits<uint32_t>::max() / 45);
+// As with the signature cache, store only successful verification, under a
+// salted digest of the entire input. This is bounded, process-local evidence:
+// neither a peer nor a persisted block-index status can populate it.
+// Construct initialized proof objects only on writes. Untouched pages behave
+// exactly like a contiguous zero-initialized table, without touching its whole
+// entry budget during tier growth. All access uses the enclosing cache lock.
+class PagedYespowerProofs {
+    static constexpr size_t PAGE_ITEMS{128};
+    using Page = std::array<uint256, PAGE_ITEMS>;
+    std::vector<std::unique_ptr<Page>> m_pages;
+
+public:
+    void resize(size_t size) { m_pages.resize((size + PAGE_ITEMS - 1) / PAGE_ITEMS); }
+    const uint256& operator[](size_t index) const
+    {
+        static const uint256 empty{};
+        const auto& page{m_pages[index / PAGE_ITEMS]};
+        return page ? (*page)[index % PAGE_ITEMS] : empty;
+    }
+    uint256& operator[](size_t index)
+    {
+        auto& page{m_pages[index / PAGE_ITEMS]};
+        if (!page) page = std::make_unique<Page>();
+        return (*page)[index % PAGE_ITEMS];
+    }
+};
+
+class YespowerVerificationCache {
+    using Cache = CuckooCache::cache<uint256, SignatureCacheHasher>;
+    using GrowingProofCache = CuckooCache::cache<uint256, SignatureCacheHasher, PagedYespowerProofs>;
+    // Only the fast backend owns tier metadata. The legacy backend remains
+    // the original single CuckooCache with eager configured-budget allocation.
+    struct GrowingCache {
+        std::vector<std::unique_ptr<GrowingProofCache>> valid;
+        size_t budget;
+        size_t allocated;
+        uint32_t active_slots;
+        uint32_t active_inserts{0};
+        bool growth_disabled{false};
+
+        explicit GrowingCache(size_t valid_budget) : budget{valid_budget}
+        {
+            allocated = std::min(budget, std::min(DEFAULT_YESPOWER_CACHE_BYTES, std::max(size_t{64}, budget / 128)));
+            auto initial{std::make_unique<GrowingProofCache>()};
+            active_slots = initial->setup_bytes(allocated).first;
+            valid.push_back(std::move(initial));
+        }
+        bool Contains(const uint256& entry) const
+        {
+            for (auto it{valid.rbegin()}; it != valid.rend(); ++it) {
+                if ((*it)->contains(entry, false)) return true;
+            }
+            return false;
+        }
+        void Insert(const uint256& entry)
+        {
+            if (Contains(entry)) return;
+            // Preserve older positive proof evidence and the configured budget.
+            if (!growth_disabled && active_inserts >= active_slots * 45 / 100 && allocated < budget) {
+                const size_t remaining{budget - allocated};
+                const size_t next_bytes{std::min(allocated * 2, remaining)};
+                if (next_bytes >= allocated) {
+                    try {
+                        auto next{std::make_unique<GrowingProofCache>()};
+                        const auto [slots, _]{next->setup_bytes(next_bytes)};
+                        valid.push_back(std::move(next));
+                        allocated += next_bytes;
+                        active_slots = slots;
+                        active_inserts = 0;
+                    } catch (const std::bad_alloc&) {
+                        growth_disabled = true;
+                    }
+                } else {
+                    growth_disabled = true;
+                }
+            }
+            valid.back()->insert(entry);
+            if (!growth_disabled && allocated < budget) ++active_inserts;
+        }
+    };
+    using ValidStore = std::variant<std::unique_ptr<Cache>, std::unique_ptr<GrowingCache>>;
+    CSHA256 m_hasher;
+    ValidStore m_valid;
+    std::unique_ptr<Cache> m_batches;
+    std::shared_mutex m_mutex;
+
+    bool ContainsLocked(const uint256& entry) const
+    {
+        if (m_valid.index() == 0) return std::get<0>(m_valid)->contains(entry, false);
+        return std::get<1>(m_valid)->Contains(entry);
+    }
+    void InsertLocked(const uint256& entry)
+    {
+        if (m_valid.index() == 0) std::get<0>(m_valid)->insert(entry);
+        else std::get<1>(m_valid)->Insert(entry);
+    }
+
+public:
+    YespowerVerificationCache()
+    {
+        const auto nonce{GetRandHash()};
+        m_hasher.Write(nonce.begin(), nonce.size());
+        Reset(DEFAULT_YESPOWER_CACHE_BYTES);
+    }
+
+    void Reset(size_t bytes, bool grow_on_demand = false)
+    {
+        const size_t batch_bytes{bytes >= 1024 ? std::min(bytes / 8, size_t{2} << 20) : 0};
+        const size_t valid_budget{bytes - batch_bytes};
+        ValidStore replacement;
+        if (grow_on_demand) replacement.emplace<1>(std::make_unique<GrowingCache>(valid_budget));
+        else replacement.emplace<0>(std::make_unique<Cache>());
+        std::unique_ptr<Cache> batches;
+        if (batch_bytes) {
+            batches = std::make_unique<Cache>();
+            batches->setup_bytes(batch_bytes);
+        }
+        // Original mode-zero setup and insertion policy: one full-size cache.
+        if (!grow_on_demand) std::get<0>(replacement)->setup_bytes(valid_budget);
+        std::unique_lock lock{m_mutex};
+        std::swap(m_valid, replacement);
+        std::swap(m_batches, batches);
+    }
+
+    uint256 Entry(const CBlockHeader& header) const
+    {
+        // GetHash commits to all 80 serialized bytes, including nBits. The
+        // YespowerSugar algorithm and personalization are fixed in GetPoWHash.
+        const auto hash{header.GetHash()};
+        uint256 entry;
+        CSHA256{m_hasher}.Write(hash.begin(), hash.size()).Finalize(entry.begin());
+        return entry;
+    }
+
+    bool Contains(const uint256& entry)
+    {
+        std::shared_lock lock{m_mutex};
+        return ContainsLocked(entry);
+    }
+
+    void Insert(const uint256& entry)
+    {
+        std::unique_lock lock{m_mutex};
+        InsertLocked(entry);
+    }
+
+    uint256 BatchEntry(std::span<const CBlockHeader> headers) const
+    {
+        // Bind order, count and all header bytes. Separate the batch domain
+        // from individual proofs; neither kind of evidence survives restart.
+        const unsigned char domain{1};
+        unsigned char count[8];
+        WriteLE64(count, headers.size());
+        auto hasher{m_hasher};
+        hasher.Write(&domain, 1).Write(count, sizeof(count));
+        for (const auto& header : headers) {
+            const auto hash{header.GetHash()};
+            hasher.Write(hash.begin(), hash.size());
+        }
+        uint256 entry;
+        hasher.Finalize(entry.begin());
+        return entry;
+    }
+
+    bool RestoreBatch(const uint256& entry, std::span<const CBlockHeader> headers)
+    {
+        std::unique_lock lock{m_mutex};
+        if (!m_batches || !m_batches->contains(entry, false)) return false;
+        // Repopulate ordinary proof evidence for subsequent AcceptBlockHeader
+        // checks. The caller must first recheck every current target limit.
+        for (const auto& header : headers) InsertLocked(Entry(header));
+        return true;
+    }
+
+    void InsertBatch(const uint256& entry)
+    {
+        std::unique_lock lock{m_mutex};
+        if (m_batches) m_batches->insert(entry);
+    }
+};
+
+YespowerVerificationCache& VerificationCache()
+{
+    static YespowerVerificationCache cache;
+    return cache;
+}
+
 } // namespace
+
+void InitYespowerVerificationCache(size_t bytes, bool grow_on_demand)
+{
+    if (!bytes || bytes > MAX_YESPOWER_CACHE_BYTES) {
+        throw std::invalid_argument("Yespower cache size must be positive and at most 2048 MiB");
+    }
+    VerificationCache().Reset(bytes, grow_on_demand);
+}
 
 // Preserve integer operation ordering (divide before multiply) for consensus.
 unsigned int CalculateSugarShieldWorkRequired(const arith_uint256& total, int64_t span, const Consensus::Params& params)
@@ -228,9 +439,27 @@ bool CheckProofOfWorkImpl(uint256 hash, unsigned int nBits, const Consensus::Par
     return true;
 }
 
-// Validate the target before computing the expensive, uncached PoW hash.
-bool CheckBlockProofOfWork(const CBlockHeader& header, const Consensus::Params& params)
+// Always validate the current network's target limit, including on cache hits.
+bool CheckBlockProofOfWork(const CBlockHeader& header, const Consensus::Params& params, bool cache_result)
 {
     if (!DeriveTarget(header.nBits, params.powLimit)) return false;
-    return CheckProofOfWork(params.fYespowerSugar ? header.GetPoWHash() : header.GetHash(), header.nBits, params);
+    if (!params.fYespowerSugar || EnableFuzzDeterminism()) {
+        return CheckProofOfWork(params.fYespowerSugar ? header.GetPoWHash() : header.GetHash(), header.nBits, params);
+    }
+    auto& cache{VerificationCache()};
+    const auto entry{cache.Entry(header)};
+    if (cache.Contains(entry)) return true;
+    if (!CheckProofOfWork(header.GetPoWHash(), header.nBits, params)) return false;
+    if (cache_result) cache.Insert(entry);
+    return true;
+}
+
+void CacheVerifiedBlockIndexProof(const CBlockIndex& index, const Consensus::Params& params)
+{
+    AssertLockHeld(cs_main);
+    if (!params.fYespowerSugar || EnableFuzzDeterminism() || !index.m_checked_yespower || !index.phashBlock) return;
+    const auto header{index.GetBlockHeader()};
+    if (header.GetHash() != index.GetBlockHash() || !DeriveTarget(header.nBits, params.powLimit)) return;
+    auto& cache{VerificationCache()};
+    cache.Insert(cache.Entry(header));
 }
