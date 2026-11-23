@@ -5,6 +5,7 @@
 #include <consensus/validation.h>
 #include <node/blockstorage.h>
 #include <kernel/chainparams.h>
+#include <kernel/notifications_interface.h>
 #include <pow.h>
 #include <primitives/block.h>
 #include <streams.h>
@@ -49,6 +50,7 @@ struct CacheBudget {
 };
 
 struct HeaderPoWSetup : BasicTestingSetup {
+    StartupUINotifications notifications;
     const std::unique_ptr<const CChainParams> main{CChainParams::Main()};
     Consensus::Params params{main->GetConsensus()};
 

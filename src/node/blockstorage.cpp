@@ -16,6 +16,7 @@
 #include <kernel/messagestartchars.h>
 #include <kernel/notifications_interface.h>
 #include <kernel/types.h>
+#include <node/startup_progress.h>
 #include <pow.h>
 #include <primitives/block.h>
 #include <primitives/transaction.h>
@@ -42,6 +43,7 @@
 #include <validation.h>
 
 #include <cerrno>
+#include <chrono>
 #include <compare>
 #include <cstddef>
 #include <cstdio>
@@ -51,10 +53,35 @@
 #include <ostream>
 #include <span>
 #include <stdexcept>
+#include <string>
 #include <system_error>
 #include <unordered_map>
 
 namespace kernel {
+namespace {
+std::string FormatCompactDuration(std::chrono::seconds duration)
+{
+    uint64_t remaining{duration.count() > 0 ? static_cast<uint64_t>(duration.count()) : 0};
+    std::string result;
+    const auto append = [&](uint64_t unit, std::string_view suffix) {
+        const uint64_t value{remaining / unit};
+        if (value) {
+            result += std::to_string(value);
+            result += suffix;
+        }
+        remaining %= unit;
+    };
+    append(365 * 24 * 60 * 60, "y");
+    append(30 * 24 * 60 * 60, "mo");
+    append(7 * 24 * 60 * 60, "w");
+    append(24 * 60 * 60, "d");
+    append(60 * 60, "h");
+    append(60, "m");
+    append(1, "s");
+    return result.empty() ? "0s" : result;
+}
+} // namespace
+
 static constexpr uint8_t DB_BLOCK_FILES{'f'};
 static constexpr uint8_t DB_BLOCK_INDEX{'b'};
 static constexpr uint8_t DB_FLAG{'F'};
@@ -120,9 +147,13 @@ bool BlockTreeDB::ReadFlag(const std::string& name, bool& fValue)
 bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt, int pow_workers)
 {
     AssertLockHeld(::cs_main);
+    const auto startup_message = [notifications](const std::string& message, bool log) {
+        if (notifications) notifications->startupMessage(message, log);
+        else if (log) LogInfo("%s", message);
+    };
     uint64_t total_entries{0};
     if (startup_optimizations) {
-        uiInterface.InitMessage("Counting block index entries...");
+        startup_message("Counting block index entries...", true);
         {
             std::unique_ptr<CDBIterator> count_cursor(NewIterator());
             count_cursor->Seek(std::make_pair(DB_BLOCK_INDEX, uint256()));
@@ -140,6 +171,45 @@ bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, s
     }
     std::unique_ptr<CDBIterator> pcursor(NewIterator());
     pcursor->Seek(std::make_pair(DB_BLOCK_INDEX, uint256()));
+
+    uint64_t processed{0};
+    unsigned next_percent{1};
+    unsigned next_log_percent{0};
+    const auto progress_threshold = [&](unsigned percent) {
+        // Ceil(percent * total / 100) without overflowing uint64_t.
+        return (total_entries / 100) * percent + ((total_entries % 100) * percent + 99) / 100;
+    };
+    uint64_t next_threshold{progress_threshold(next_percent)};
+    const bool check_yespower{consensusParams.fYespowerSugar && !EnableFuzzDeterminism()};
+    const auto log_progress = [&](unsigned percent) {
+        std::string message;
+        bool log{true};
+        if (startup_optimizations) {
+            message = strprintf("Loading block index: %s / %s (%u%%)",
+                FormatGroupedCount(processed), FormatGroupedCount(total_entries), percent);
+            log = percent >= next_log_percent;
+            while (percent >= next_log_percent) next_log_percent += 25;
+        } else {
+            // Legacy loading still reports at the original 2,000-entry boundaries.
+            message = strprintf("Loading block index: %s", FormatGroupedCount(processed));
+        }
+        startup_message(message, log);
+    };
+    if (startup_optimizations) log_progress(0);
+    const auto report_progress = [&] {
+        if (!startup_optimizations) {
+            if (processed % 2000 == 0) log_progress(0);
+            return;
+        }
+        // Publish 100% only after the iterator has reached the end.
+        if (processed >= total_entries || next_percent >= 100 || processed < next_threshold) return;
+        // Tiny databases can cross several 1% buckets with a single entry.
+        unsigned percent{next_percent};
+        while (percent < 99 && processed >= progress_threshold(percent + 1)) ++percent;
+        next_percent = percent + 1;
+        next_threshold = progress_threshold(next_percent);
+        log_progress(percent);
+    };
 
     // Load m_block_index
     while (pcursor->Valid()) {
@@ -167,11 +237,15 @@ bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, s
                 pindexNew->nStatus        = diskindex.nStatus;
                 pindexNew->nTx            = diskindex.nTx;
 
+                // Count validation calls, including cache hits, rather than raw Yespower hashes.
+                if (check_yespower) ++yespower_checks;
                 if (!CheckBlockProofOfWork(pindexNew->GetBlockHeader(), consensusParams)) {
                     LogError("%s: CheckProofOfWork failed: %s\n", __func__, pindexNew->ToString());
                     return false;
                 }
 
+                ++processed;
+                if (processed % 2000 == 0) log_progress();
                 pcursor->Next();
             } else {
                 LogError("%s: failed to read value\n", __func__);
@@ -182,6 +256,7 @@ bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, s
         }
     }
 
+    if (processed % 2000 != 0) log_progress();
     return true;
 }
 
@@ -269,13 +344,20 @@ void SortBlockIndicesByHeight(std::vector<CBlockIndex*>& indices)
     for (auto* index : scratch) indices[offsets[BUCKETS + (key(index) >> 16)]++] = index;
 }
 
-std::vector<CBlockIndex*> BlockManager::GetAllBlockIndices()
+std::vector<CBlockIndex*> BlockManager::GetAllBlockIndices(const char* startup_stage)
 {
     AssertLockHeld(cs_main);
     std::vector<CBlockIndex*> rv;
     rv.reserve(m_block_index.size());
-    for (auto& [_, block_index] : m_block_index) {
-        rv.push_back(&block_index);
+    if (startup_stage) {
+        StartupProgress progress{m_opts.notifications, startup_stage, m_block_index.size()};
+        for (auto& [_, block_index] : m_block_index) {
+            rv.push_back(&block_index);
+            progress.Advance();
+        }
+        progress.Finish();
+    } else {
+        for (auto& [_, block_index] : m_block_index) rv.push_back(&block_index);
     }
     return rv;
 }
@@ -526,7 +608,8 @@ bool BlockManager::LoadBlockIndex(const std::optional<uint256>& snapshot_blockha
     Assert(m_snapshot_height.has_value() == snapshot_blockhash.has_value());
 
     // Calculate nChainWork
-    std::vector<CBlockIndex*> vSortedByHeight{GetAllBlockIndices()};
+    std::vector<CBlockIndex*> vSortedByHeight{GetAllBlockIndices("Preparing block index")};
+    StartupProgress sorting{m_opts.notifications, "Sorting block index", vSortedByHeight.size(), false};
     // Radix passes bound both sorting work and temporary memory.
     // The same height-only ordering still places every parent before its child.
     if (m_opts.startup_optimizations) {
@@ -536,6 +619,8 @@ bool BlockManager::LoadBlockIndex(const std::optional<uint256>& snapshot_blockha
               CBlockIndexHeightOnlyComparator());
     }
 
+    sorting.FinishSort();
+    StartupProgress linking{m_opts.notifications, "Linking block index", vSortedByHeight.size()};
     CBlockIndex* previous_index{nullptr};
     for (CBlockIndex* pindex : vSortedByHeight) {
         if (m_interrupt) return false;
@@ -583,7 +668,7 @@ bool BlockManager::LoadBlockIndex(const std::optional<uint256>& snapshot_blockha
             pindex->BuildSkip();
         }
     }
-
+    linking.Finish();
     return true;
 }
 
@@ -638,13 +723,14 @@ bool BlockManager::LoadBlockIndexDB(const std::optional<uint256>& snapshot_block
             setBlkDataFiles.insert(block_index.nFile);
         }
     }
+    StartupProgress checking{m_opts.notifications, "Checking block files", setBlkDataFiles.size()};
     for (std::set<int>::iterator it = setBlkDataFiles.begin(); it != setBlkDataFiles.end(); it++) {
         FlatFilePos pos(*it, 0);
         if (OpenBlockFile(pos, /*fReadOnly=*/true).IsNull()) {
             return false;
         }
     }
-
+    checking.Finish();
     {
         // Initialize the blockfile cursors.
         LOCK(cs_LastBlockFile);
