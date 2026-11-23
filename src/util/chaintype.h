@@ -20,4 +20,7 @@ std::string ChainTypeToString(ChainType chain);
 
 std::optional<ChainType> ChainTypeFromString(std::string_view chain);
 
+/** Return an error for public networks not ported to Sugarchain. */
+std::optional<std::string> CheckSupportedChainType(ChainType chain);
+
 #endif // BITCOIN_UTIL_CHAINTYPE_H
