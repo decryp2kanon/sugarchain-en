@@ -45,15 +45,38 @@ env
 echo "=== END env ==="
 
 if [ "$RUN_FUZZ_TESTS" = "true" ]; then
-  export DIR_FUZZ_IN=${DIR_QA_ASSETS}/fuzz_corpora/
-  if [ ! -d "$DIR_FUZZ_IN" ]; then
-    ${CI_RETRY_EXE} git clone --depth=1 https://github.com/bitcoin-core/qa-assets "${DIR_QA_ASSETS}"
+  qa_assets_url=https://github.com/bitcoin-core/qa-assets
+  if [[ -n "${QA_ASSETS_COMMIT:-}" ]]; then
+    mkdir -p "$BASE_SCRATCH_DIR"
+    replay_workdir=$(mktemp -d "$BASE_SCRATCH_DIR/qa-replay.XXXXXX")
+    trap 'rm -rf -- "$replay_workdir"' EXIT
+    DIR_QA_ASSETS="$replay_workdir/qa-assets"
+    git init --quiet "$DIR_QA_ASSETS"
+    git -C "$DIR_QA_ASSETS" remote add origin "$qa_assets_url"
+    if [[ -n "${REPLAY_CORPUS_SHARD:-}" ]]; then
+      git -C "$DIR_QA_ASSETS" config remote.origin.promisor true
+      git -C "$DIR_QA_ASSETS" config remote.origin.partialclonefilter blob:none
+      git -C "$DIR_QA_ASSETS" sparse-checkout set --cone "fuzz_corpora/$FUZZ_TESTS_CONFIG"
+    fi
+    ${CI_RETRY_EXE} git -C "$DIR_QA_ASSETS" fetch --no-tags --depth=1 origin "$QA_ASSETS_COMMIT"
+    ${CI_RETRY_EXE} git -C "$DIR_QA_ASSETS" checkout --quiet --detach "$QA_ASSETS_COMMIT"
+  elif [ ! -d "$DIR_QA_ASSETS/fuzz_corpora" ]; then
+    ${CI_RETRY_EXE} git clone --depth=1 "$qa_assets_url" "$DIR_QA_ASSETS"
   fi
+  export DIR_FUZZ_IN="$DIR_QA_ASSETS/fuzz_corpora/"
   (
     cd "${DIR_QA_ASSETS}"
     echo "Using qa-assets repo from commit ..."
     git log -1
   )
+  if [[ -n "${REPLAY_CORPUS_SHARD:-}" ]]; then
+    : "${QA_ASSETS_COMMIT:?A frozen QA revision is required}"
+    DIR_FUZZ_IN="$replay_workdir/shard"
+    mkdir "$DIR_FUZZ_IN"
+    python3 "$BASE_ROOT_DIR/ci/test/prepare_replay_shard.py" \
+      "$DIR_QA_ASSETS" "$QA_ASSETS_COMMIT" \
+      "$FUZZ_TESTS_CONFIG" "$REPLAY_CORPUS_SHARD" "$DIR_FUZZ_IN"
+  fi
 elif [ "$RUN_UNIT_TESTS" = "true" ]; then
   export DIR_UNIT_TEST_DATA=${DIR_QA_ASSETS}/unit_test_data/
   if [ ! -d "$DIR_UNIT_TEST_DATA" ]; then
@@ -232,9 +255,9 @@ if [ "$RUN_FUZZ_TESTS" = "true" ]; then
   # shellcheck disable=SC2086
   LD_LIBRARY_PATH="${DEPENDS_DIR}/${HOST}/lib" \
   "${BASE_BUILD_DIR}/test/fuzz/test_runner.py" \
-    ${FUZZ_TESTS_CONFIG} \
     "${MAKEJOBS}" \
     -l DEBUG \
+    --empty_min_time=60 \
     "${DIR_FUZZ_IN}" \
-    --empty_min_time=60
+    ${FUZZ_TESTS_CONFIG}
 fi
