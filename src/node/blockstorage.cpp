@@ -126,10 +126,14 @@ bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, s
     // Load m_block_index
     while (pcursor->Valid()) {
         if (interrupt) return false;
+        // Keys are a fixed byte prefix plus a uint256. The parsed key hash was
+        // unused; retain the same size/prefix checks without decoding it.
         std::pair<uint8_t, uint256> key;
-        if (pcursor->GetKey(key) && key.first == DB_BLOCK_INDEX) {
+        const bool block_key{startup_optimizations ? pcursor->KeyHasPrefix(DB_BLOCK_INDEX, 1 + uint256::size()) :
+            (pcursor->GetKey(key) && key.first == DB_BLOCK_INDEX)};
+        if (block_key) {
             CDiskBlockIndex diskindex;
-            if (pcursor->GetValue(diskindex)) {
+            if (pcursor->GetValue(diskindex, /*direct_read=*/startup_optimizations)) {
                 // Construct block index object
                 CBlockIndex* pindexNew = insertBlockIndex(diskindex.ConstructBlockHash());
                 pindexNew->pprev          = insertBlockIndex(diskindex.hashPrev);
@@ -1229,7 +1233,9 @@ BlockManager::BlockManager(const util::SignalInterrupt& interrupt, Options opts)
       m_undo_file_seq{FlatFileSeq{m_opts.blocks_dir, "rev", UNDOFILE_CHUNK_SIZE}},
       m_interrupt{interrupt}
 {
-    m_block_tree_db = std::make_unique<BlockTreeDB>(m_opts.block_tree_db_params);
+    auto db_params{m_opts.block_tree_db_params};
+    db_params.reclaim_read_cache = m_opts.startup_optimizations;
+    m_block_tree_db = std::make_unique<BlockTreeDB>(db_params);
 
     if (m_opts.block_tree_db_params.wipe_data) {
         m_block_tree_db->WriteReindexing(true);
