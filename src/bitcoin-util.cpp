@@ -14,6 +14,7 @@
 #include <compat/compat.h>
 #include <core_io.h>
 #include <streams.h>
+#include <util/chaintype.h>
 #include <util/exception.h>
 #include <util/strencodings.h>
 #include <util/translation.h>
@@ -76,7 +77,12 @@ static int AppInitUtil(ArgsManager& args, int argc, char* argv[])
 
     // Check for chain settings (Params() calls are only valid after this clause)
     try {
-        SelectParams(args.GetChainType());
+        const auto chain{args.GetChainType()};
+        if (auto error = CheckSupportedChainType(chain)) {
+            tfm::format(std::cerr, "Error: %s\n", *error);
+            return EXIT_FAILURE;
+        }
+        SelectParams(chain);
     } catch (const std::exception& e) {
         tfm::format(std::cerr, "Error: %s\n", e.what());
         return EXIT_FAILURE;
