@@ -65,12 +65,23 @@ def github_import_vs_env(_ci_type):
             env_file.write(f"{name}={value}\n")
 
 
+def cmake_warning_options(version):
+    options = ["-Werror=dev"]
+    if tuple(map(int, version.split(".")[:2])) >= (4, 5):
+        # CMake 4.5 adds a default-ignored style advisory; keep it visible
+        # without making inherited non-target directives fatal to CI.
+        # https://cmake.org/cmake/help/v4.5/diagnostic/CMD_NON_TARGET_DIRECTIVE.html
+        options.append("-Wno-error=non-target-directive")
+    return options
+
+
 def generate(ci_type):
+    version = run(["cmake", "--version"], capture_output=True, text=True).stdout.splitlines()[0].split()[-1]
     command = [
         "cmake",
         "-B",
         "build",
-        "-Werror=dev",
+        *cmake_warning_options(version),
         "--preset",
         "vs2026",
     ] + GENERATE_OPTIONS[ci_type]
@@ -101,11 +112,11 @@ def check_manifests(ci_type):
         return
 
     release_dir = Path.cwd() / "build" / "bin" / "Release"
-    manifest_path = release_dir / "bitcoind.manifest"
+    manifest_path = release_dir / "sugarchaind.manifest"
     cmd_bitcoind_manifest = [
         "mt.exe",
         "-nologo",
-        f"-inputresource:{release_dir / 'bitcoind.exe'}",
+        f"-inputresource:{release_dir / 'sugarchaind.exe'}",
         f"-out:{manifest_path}",
     ]
     run(cmd_bitcoind_manifest)
@@ -113,9 +124,8 @@ def check_manifests(ci_type):
 
     skips = {  # Skip as they currently do not have manifests
         "fuzz.exe",
-        "bench_bitcoin.exe",
         "test_bitcoin-qt.exe",
-        "bitcoin-chainstate.exe",
+        "sugarchain-chainstate.exe",
     }
     for entry in release_dir.iterdir():
         if entry.suffix.lower() != ".exe":
@@ -162,14 +172,14 @@ def run_tests(ci_type):
     if ci_type == "standard":
         os.environ["DIR_UNIT_TEST_DATA"] = str(workspace / "unit_test_data")
         test_envs = {
-            "BITCOIN_BIN": "bitcoin.exe",
-            "BITCOIND": "bitcoind.exe",
-            "BITCOINCLI": "bitcoin-cli.exe",
+            "BITCOIN_BIN": "sugarchain.exe",
+            "BITCOIND": "sugarchaind.exe",
+            "BITCOINCLI": "sugarchain-cli.exe",
             "BITCOIN_BENCH": "bench_bitcoin.exe",
-            "BITCOINTX": "bitcoin-tx.exe",
-            "BITCOINUTIL": "bitcoin-util.exe",
-            "BITCOINWALLET": "bitcoin-wallet.exe",
-            "BITCOINCHAINSTATE": "bitcoin-chainstate.exe",
+            "BITCOINTX": "sugarchain-tx.exe",
+            "BITCOINUTIL": "sugarchain-util.exe",
+            "BITCOINWALLET": "sugarchain-wallet.exe",
+            "BITCOINCHAINSTATE": "sugarchain-chainstate.exe",
         }
         for var, exe in test_envs.items():
             os.environ[var] = str(release_bin / exe)

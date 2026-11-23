@@ -471,8 +471,12 @@ BOOST_AUTO_TEST_CASE(util_ParseMoney)
     BOOST_CHECK_EQUAL(ParseMoney("0.00000001 ").value(), COIN/100000000);
     BOOST_CHECK_EQUAL(ParseMoney(" 0.00000001").value(), COIN/100000000);
 
-    // Parsing amount that cannot be represented should fail
-    BOOST_CHECK(!ParseMoney("100000000.00"));
+    // Sugarchain accepts its full monetary range, including amounts above Bitcoin limits.
+    BOOST_CHECK_EQUAL(ParseMoney("100000000.00").value(), 100000000 * COIN);
+    BOOST_CHECK_EQUAL(ParseMoney("1073741824.00000000").value(), MAX_MONEY);
+    BOOST_CHECK(!ParseMoney("1073741824.00000001"));
+
+    // Amounts with more than eight fractional digits cannot be represented.
     BOOST_CHECK(!ParseMoney("0.000000001"));
 
     // Parsing empty string should fail
@@ -1044,6 +1048,10 @@ enum : char {
             break;
         case ExitCommand:
             close(fd);
+            // exit() bypasses Boost.Test's automatic shutdown helper. Close its
+            // inherited output sinks while their singleton owners are still alive;
+            // normal process exit must still run the directory-lock destructors.
+            boost::unit_test::framework::shutdown();
             exit(0);
         default:
             assert(0);
@@ -1506,7 +1514,7 @@ BOOST_AUTO_TEST_CASE(message_sign)
 {
     const std::array<unsigned char, 32> privkey_bytes = {
         // just some random data
-        // derived address from this private key: 15CRxFdyRpGZLW9w8HnHvVduizdL5jKNbs
+        // derived address from this private key: SRVRz6R8ABTkrowPfimNUPnUNmrks2EsJv
         0xD9, 0x7F, 0x51, 0x08, 0xF1, 0x1C, 0xDA, 0x6E,
         0xEE, 0xBA, 0xAA, 0x42, 0x0F, 0xEF, 0x07, 0x26,
         0xB1, 0xF8, 0x98, 0x06, 0x0B, 0x98, 0x48, 0x9F,
@@ -1516,7 +1524,7 @@ BOOST_AUTO_TEST_CASE(message_sign)
     const std::string message = "Trust no one";
 
     const std::string expected_signature =
-        "IPojfrX2dfPnH26UegfbGQQLrdK844DlHq5157/P6h57WyuS/Qsl+h/WSVGDF4MUi4rWSswW38oimDYfNNUBUOk=";
+        "H52a8nSNsEm1meaoSvgTuyLC6fUeTVC/G31DqkHaoVnjXSTJ9f4az5CsIk4qUybctc1fNZLK5vK7tuYGBsHJLwk=";
 
     CKey privkey;
     std::string generated_signature;
@@ -1549,42 +1557,51 @@ BOOST_AUTO_TEST_CASE(message_verify)
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "3B5fQsEXEaV8v6U3ejYc8XaKXAkyQj2MjV",
+            "sTe3Zu16SE6H47CSb5WrKaEj3hgAjZD87W",
             "signature should be irrelevant",
             "message too"),
         MessageVerificationResult::ERR_ADDRESS_NO_KEY);
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "1KqbBpLy5FARmTPD4VZnDDpYjkUvkr82Pm",
+            "Sg8bDf87ocMdHmAfbvYrm7y7PXiMZmBntk",
             "invalid signature, not in base64 encoding",
             "message should be irrelevant"),
         MessageVerificationResult::ERR_MALFORMED_SIGNATURE);
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "1KqbBpLy5FARmTPD4VZnDDpYjkUvkr82Pm",
+            "Sg8bDf87ocMdHmAfbvYrm7y7PXiMZmBntk",
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
             "message should be irrelevant"),
         MessageVerificationResult::ERR_PUBKEY_NOT_RECOVERED);
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "15CRxFdyRpGZLW9w8HnHvVduizdL5jKNbs",
-            "IPojfrX2dfPnH26UegfbGQQLrdK844DlHq5157/P6h57WyuS/Qsl+h/WSVGDF4MUi4rWSswW38oimDYfNNUBUOk=",
+            "SRVRz6R8ABTkrowPfimNUPnUNmrks2EsJv",
+            "H52a8nSNsEm1meaoSvgTuyLC6fUeTVC/G31DqkHaoVnjXSTJ9f4az5CsIk4qUybctc1fNZLK5vK7tuYGBsHJLwk=",
             "I never signed this"),
         MessageVerificationResult::ERR_NOT_SIGNED);
 
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "15CRxFdyRpGZLW9w8HnHvVduizdL5jKNbs",
-            "IPojfrX2dfPnH26UegfbGQQLrdK844DlHq5157/P6h57WyuS/Qsl+h/WSVGDF4MUi4rWSswW38oimDYfNNUBUOk=",
+            "SRVRz6R8ABTkrowPfimNUPnUNmrks2EsJv",
+            "H52a8nSNsEm1meaoSvgTuyLC6fUeTVC/G31DqkHaoVnjXSTJ9f4az5CsIk4qUybctc1fNZLK5vK7tuYGBsHJLwk=",
             "Trust no one"),
         MessageVerificationResult::OK);
 
+    // A Bitcoin-domain signature does not authenticate the same native address.
     BOOST_CHECK_EQUAL(
         MessageVerify(
-            "11canuhp9X2NocwCq7xNrQYTmUgZAnLK3",
+            "SRVRz6R8ABTkrowPfimNUPnUNmrks2EsJv",
+            "IPojfrX2dfPnH26UegfbGQQLrdK844DlHq5157/P6h57WyuS/Qsl+h/WSVGDF4MUi4rWSswW38oimDYfNNUBUOk=",
+            "Trust no one"),
+        MessageVerificationResult::ERR_NOT_SIGNED);
+
+    // Retain the crafted compact signature; the native message hash recovers a different key.
+    BOOST_CHECK_EQUAL(
+        MessageVerify(
+            "SdCAdgXuY5XWXh9CGhGAtY3hXCMbAfptmm",
             "IIcaIENoYW5jZWxsb3Igb24gYnJpbmsgb2Ygc2Vjb25kIGJhaWxvdXQgZm9yIGJhbmtzIAaHRtbCeDZINyavx14=",
             "Trust me"),
         MessageVerificationResult::OK);
@@ -1592,6 +1609,7 @@ BOOST_AUTO_TEST_CASE(message_verify)
 
 BOOST_AUTO_TEST_CASE(message_hash)
 {
+    BOOST_CHECK_EQUAL(MESSAGE_MAGIC, "Sugarchain Signed Message:\n");
     const std::string unsigned_tx = "...";
     const std::string prefixed_message =
         std::string(1, (char)MESSAGE_MAGIC.length()) +

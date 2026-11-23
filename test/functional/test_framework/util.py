@@ -304,7 +304,14 @@ class Binaries:
         wrapper executable directly, not to the commands that `bitcoin` calls.
         """
         if self.bin_dir is not None:
-            return [os.path.join(self.bin_dir, os.path.basename(bin_path))]
+            path = os.path.join(self.bin_dir, os.path.basename(bin_path))
+            # Historical compatibility fixtures retain their upstream executable names.
+            stem, suffix = os.path.splitext(os.path.basename(bin_path))
+            legacy_name = re.sub(r"^sugarchain(?=$|-|d$)", "bitcoin", stem) + suffix
+            legacy_path = os.path.join(self.bin_dir, legacy_name)
+            if not os.path.exists(path) and os.path.exists(legacy_path):
+                path = legacy_path
+            return [path]
         elif self.paths.bitcoin_cmd is not None or need_ipc:
             # If the current test needs IPC functionality, use the bitcoin
             # wrapper binary and append -m so it calls multiprocess binaries.
