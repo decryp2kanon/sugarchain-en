@@ -64,9 +64,9 @@ fi
 
 # Make sure default datadir does not exist and is never read by creating a dummy file
 if [ "$CI_OS_NAME" == "macos" ]; then
-  echo > "${HOME}/Library/Application Support/Bitcoin"
+  echo > "${HOME}/Library/Application Support/Sugarchain"
 else
-  echo > "${HOME}/.bitcoin"
+  echo > "${HOME}/.sugarchain"
 fi
 
 if [ -z "$NO_DEPENDS" ]; then
@@ -80,6 +80,10 @@ fi
 if [ "$DOWNLOAD_PREVIOUS_RELEASES" = "true" ]; then
   test/get_previous_releases.py --target-dir "$PREVIOUS_RELEASES_DIR"
 fi
+if [ "$DOWNLOAD_SUGARCHAIN_RELEASE" = "true" ]; then
+  export SUGARCHAIN_LEGACY_BINARY
+  SUGARCHAIN_LEGACY_BINARY=$(python3 .github/ci-legacy-release.py --target-dir "${BASE_SCRATCH_DIR}/sugarchain-legacy-release")
+fi
 
 BITCOIN_CONFIG_ALL="-DCMAKE_COMPILE_WARNING_AS_ERROR=ON -DBUILD_BENCH=ON -DBUILD_FUZZ_BINARY=ON"
 if [ -z "$NO_DEPENDS" ]; then
@@ -92,6 +96,10 @@ ccache --zero-stats
 BASE_BUILD_DIR=${BASE_BUILD_DIR:-$BASE_SCRATCH_DIR/build-$HOST}
 
 BITCOIN_CONFIG_ALL="$BITCOIN_CONFIG_ALL -DCMAKE_INSTALL_PREFIX=$BASE_OUTDIR -Werror=dev"
+# CMake 4.5 reports directory-wide build directives under -Werror=dev.
+if cmake --help-diagnostic CMD_NON_TARGET_DIRECTIVE >/dev/null 2>&1; then
+  BITCOIN_CONFIG_ALL="$BITCOIN_CONFIG_ALL -Wno-error=non-target-directive"
+fi
 
 if [[ "${RUN_IWYU}" == true || "${RUN_TIDY}" == true ]]; then
   BITCOIN_CONFIG_ALL="$BITCOIN_CONFIG_ALL -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
@@ -137,9 +145,10 @@ if [ "$RUN_CHECK_DEPS" = "true" ]; then
   "${BASE_ROOT_DIR}/contrib/devtools/check-deps.sh" "${BASE_BUILD_DIR}"
 fi
 
-if [[ "$CI_OS_NAME" == "macos" && "${GOAL}" = "install deploy" ]]; then
-  unzip "${BASE_BUILD_DIR}/bitcoin-macos-app.zip" -d "${BASE_BUILD_DIR}/deploy"
-  if ! ( codesign --verify "${BASE_BUILD_DIR}/deploy/Bitcoin-Qt.app" ); then
+if [[ "$CI_OS_NAME" == "macos" && " ${GOAL} " == *" deploy "* ]]; then
+  macos_archive=$(cat "${BASE_BUILD_DIR}/macos-archive-path.txt")
+  unzip "${macos_archive}" -d "${BASE_BUILD_DIR}/deploy"
+  if ! ( codesign --verify "${BASE_BUILD_DIR}/deploy/Sugarchain En.app" ); then
     echo "Codesigning failed."
     false
   fi
