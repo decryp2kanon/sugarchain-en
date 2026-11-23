@@ -156,15 +156,14 @@ public:
         vSeeds.emplace_back("seed.sugarchain.site");
         // vSeeds.emplace_back("seed.sugar.hel.lu");
 
-        // Wallet/address porting is deliberately deferred; these baseline fields
-        // are not used for header, block, script or network validation.
-        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,0);
-        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,5);
+        // Official Sugarchain mainnet address encodings.
+        base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1,63);
+        base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1,125);
         base58Prefixes[SECRET_KEY] =     std::vector<unsigned char>(1,128);
         base58Prefixes[EXT_PUBLIC_KEY] = {0x04, 0x88, 0xB2, 0x1E};
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x88, 0xAD, 0xE4};
 
-        bech32_hrp = "bc";
+        bech32_hrp = "sugar";
 
         vFixedSeeds.assign(std::begin(chainparams_seed_main), std::end(chainparams_seed_main));
 
