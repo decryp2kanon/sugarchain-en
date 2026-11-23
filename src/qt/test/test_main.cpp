@@ -18,6 +18,7 @@
 
 #ifdef ENABLE_WALLET
 #include <qt/test/addressbooktests.h>
+#include <qt/test/paymentipctests.h>
 #include <qt/test/wallettests.h>
 #endif // ENABLE_WALLET
 
@@ -95,6 +96,9 @@ int main(int argc, char* argv[])
         num_test_failures += QTest::qExec(&test3);
 
 #ifdef ENABLE_WALLET
+        PaymentIpcTests payment_ipc_tests;
+        num_test_failures += QTest::qExec(&payment_ipc_tests);
+
         WalletTests test5(app.node());
         num_test_failures += QTest::qExec(&test5);
 

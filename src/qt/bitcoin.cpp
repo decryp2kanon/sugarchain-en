@@ -230,9 +230,10 @@ BitcoinApplication::~BitcoinApplication()
 }
 
 #ifdef ENABLE_WALLET
-void BitcoinApplication::createPaymentServer()
+bool BitcoinApplication::createPaymentServer()
 {
     paymentServer = new PaymentServer(this);
+    return paymentServer->isListening();
 }
 #endif
 
@@ -638,7 +639,7 @@ int GuiMain(int argc, char* argv[])
     // Start up the payment server early, too, so impatient users that click on
     // sugarchain: links repeatedly have their payment requests routed to this process:
     if (WalletModel::isWalletEnabled()) {
-        app.createPaymentServer();
+        if (!app.createPaymentServer()) return EXIT_FAILURE;
     }
 #endif // ENABLE_WALLET
 
