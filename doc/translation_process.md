@@ -1,14 +1,14 @@
 Translations
 ============
 
-The Bitcoin-Core project has been designed to support multiple localisations. This makes adding new phrases, and completely new languages easily achievable. For managing all application translations, Bitcoin-Core makes use of the Transifex online translation management tool.
+Sugarchain En supports multiple localisations. Fork-specific strings and translations are maintained through pull requests in the [Sugarchain En repository](https://github.com/decryp2kanon/sugarchain-en).
 
-### Helping to translate (using Transifex)
-Transifex is setup to monitor the GitHub repo for updates, and when code containing new translations is found, Transifex will process any changes. It may take several hours after a pull-request has been merged, to appear in the Transifex web interface.
+### Helping to translate Sugarchain En
+Use the local Qt translation files for this fork and submit reviewed changes through a pull request. The upstream translation service described below belongs to Bitcoin Core.
 
-Multiple language support is critical in assisting Bitcoin’s global adoption, and growth. One of Bitcoin’s greatest strengths is cross-border money transfers, any help making that easier is greatly appreciated.
+Translations make Sugarchain En accessible in more languages. Product names in user-facing strings should identify Sugarchain En, while historical attribution and technical identifiers keep their original meaning.
 
-See the [Transifex Bitcoin project](https://explore.transifex.com/bitcoin/bitcoin/) to assist in translations. You should also join the translation mailing list for announcements - see details below.
+The [Transifex Bitcoin project](https://explore.transifex.com/bitcoin/bitcoin/) is an upstream reference, not a Sugarchain En translation service. The inherited `.tx/config` and upstream import tooling do not establish automatic synchronisation for this fork. Do not upload Sugarchain En strings to the Bitcoin project; review any upstream imports before proposing them here.
 
 ### Writing code with translations
 We use automated scripts to help extract translations in both Qt, and non-Qt source files. It is rarely necessary to manually edit the files in `src/qt/locale/`. The translation source files must adhere to the following format:
@@ -28,9 +28,9 @@ QToolBar *toolbar = addToolBar(tr("Tabs toolbar"));
 ```
 
 ### Creating a pull-request
-For general PRs, you shouldn’t include any updates to the translation source files. They will be updated periodically, primarily around pre-releases, allowing time for any new phrases to be translated before public releases. This is also important in avoiding translation related merge conflicts.
+Include the source and translation changes needed for Sugarchain En in a focused pull request. Preserve placeholders, plural forms, shortcuts, and rich-text markup, and check that the generated translations still build.
 
-When an updated source file is merged into the GitHub repo, Transifex will automatically detect it (although it can take several hours). Once processed, the new strings will show up as "Remaining" in the Transifex web interface and are ready for translators.
+Merging a change in this repository does not imply that the upstream Transifex project will import it. Reviewers should inspect the local translation diff and verify that upstream branding has not replaced Sugarchain En strings.
 
 To create the pull-request, use the following commands:
 ```
@@ -38,19 +38,19 @@ git add src/qt/bitcoinstrings.cpp src/qt/locale/bitcoin_en.ts
 git commit
 ```
 
-### Creating a Transifex account
+### Upstream Transifex reference
 Visit the [Transifex Signup](https://app.transifex.com/signup/open-source/) page to create an account. Take note of your username and password, as they will be required to configure the command-line tool.
 
-You can find the Bitcoin translation project at [https://explore.transifex.com/bitcoin/bitcoin/](https://explore.transifex.com/bitcoin/bitcoin/).
+The upstream Bitcoin translation project is available at [https://explore.transifex.com/bitcoin/bitcoin/](https://explore.transifex.com/bitcoin/bitcoin/).
 
 ### Installing the Transifex client command-line tool
 The client is used to fetch updated translations. Please check installation instructions and any other details at https://developers.transifex.com/docs/cli.
 
-The Transifex Bitcoin project config file is included as part of the repo. It can be found at `.tx/config`, however you shouldn’t need to change anything.
+The inherited `.tx/config` points to the upstream Bitcoin project. Keep it separate from fork-specific translation work; it is not a Sugarchain En publishing destination.
 
 ### Synchronising translations
 
-To assist in updating translations, a helper script is available in the [maintainer-tools repo](https://github.com/bitcoin-core/bitcoin-maintainer-tools). To use it and commit the result, simply do:
+An upstream import helper is available in the [Bitcoin Core maintainer-tools repository](https://github.com/bitcoin-core/bitcoin-maintainer-tools). The command below is upstream reference material; its output must be reviewed and adapted before inclusion in Sugarchain En:
 
 ```
 python3 ../bitcoin-maintainer-tools/update-translations.py
@@ -84,4 +84,4 @@ To create a new language template, you will need to edit the languages manifest 
 
 ### Questions and general assistance
 
-If you are a translator, you should also subscribe to the mailing list, https://groups.google.com/forum/#!forum/bitcoin-translators. Announcements will be posted during application pre-releases to notify translators to check for updates.
+For Sugarchain En translation questions, use the [project issues](https://github.com/decryp2kanon/sugarchain-en/issues). The [Bitcoin translators mailing list](https://groups.google.com/forum/#!forum/bitcoin-translators) is an upstream reference only.

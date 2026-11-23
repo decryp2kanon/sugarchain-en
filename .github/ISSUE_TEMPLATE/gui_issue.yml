@@ -5,10 +5,10 @@ body:
 - type: checkboxes
   id: acknowledgement
   attributes:
-    label: Issues, reports or feature requests related to the GUI should be opened directly on the GUI repo
-    description: https://github.com/bitcoin-core/gui/issues/
+    label: Sugarchain En GUI reports belong in this repository
+    description: https://github.com/decryp2kanon/sugarchain-en/issues
     options:
-      - label: I still think this issue should be opened here
+      - label: This report concerns the Sugarchain En GUI
         required: true
 - type: textarea
   id: gui-request
