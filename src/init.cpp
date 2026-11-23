@@ -47,6 +47,7 @@
 #include <netgroup.h>
 #include <node/blockmanager_args.h>
 #include <node/blockstorage.h>
+#include <node/abort.h>
 #include <node/caches.h>
 #include <node/chainstate.h>
 #include <node/chainstatemanager_args.h>
@@ -323,6 +324,7 @@ void Shutdown(NodeContext& node)
     StopTorControl();
 
     if (node.background_init_thread.joinable()) node.background_init_thread.join();
+    if (node.historical_pow_thread.joinable()) node.historical_pow_thread.join();
     // After everything has been shut down, but before things get flushed, stop the
     // the scheduler. After this point, SyncWithValidationInterfaceQueue() should not be called anymore
     // as this would prevent the shutdown from completing.
@@ -2304,6 +2306,36 @@ bool AppInitMain(NodeContext& node, interfaces::BlockAndHeaderTipInfo* tip_info)
     SetRPCWarmupFinished();
 
     uiInterface.InitMessage(_("Done loading"));
+
+    if (chainman.GetConsensus().fYespowerSugar) {
+        node::BlockTreeDB* db;
+        {
+            LOCK(cs_main);
+            db = chainman.m_blockman.m_block_tree_db.get();
+            chainman.m_blockman.m_historical_pow.total = chainman.m_blockman.m_block_index.size();
+            chainman.m_blockman.m_historical_pow.state = kernel::HistoricalPoWStats::RUNNING;
+        }
+        const unsigned pause_ms{static_cast<unsigned>(args.GetIntArg("-background-pow-pause", 0))};
+        const int pow_workers{static_cast<int>(std::clamp<int64_t>(args.GetIntArg("-background-pow-workers", args.GetIntArg("-parpow", DEFAULT_HEADER_POW_WORKERS)), 1, MAX_HEADER_POW_WORKERS))};
+        LogInfo("Lazy PoW scheduled after startup (historical trust policy: %s)\n",
+            chainman.m_blockman.UsesHistoricalPoWTrust() ? "enabled until background verification completes" : "disabled; startup fully reverified PoW");
+        node.historical_pow_thread = std::thread(&util::TraceThread, "historicalpow", [&node, &chainman, db, pause_ms, pow_workers] {
+            try {
+                if (auto error = db->VerifyHistoricalPoW(chainman.GetConsensus(), chainman.m_interrupt,
+                        chainman.m_blockman.m_historical_pow, pause_ms, [&chainman](const CBlockHeader& header) {
+                            LOCK(cs_main);
+                            const auto* index{chainman.m_blockman.LookupBlockIndex(header.GetHash())};
+                            return index && index->HasCurrentProcessYespowerEvidence() && index->GetBlockHeader().GetHash() == header.GetHash();
+                        }, pow_workers)) {
+                    node::AbortNode(node.shutdown_request, node.exit_status, Untranslated(*error), node.warnings.get());
+                }
+            } catch (const std::exception& e) {
+                chainman.m_blockman.m_historical_pow.state = kernel::HistoricalPoWStats::FAILED;
+                node::AbortNode(node.shutdown_request, node.exit_status,
+                    Untranslated(strprintf("Lazy PoW stopped due to storage/resource error (not proven invalid PoW): %s", e.what())), node.warnings.get());
+            }
+        });
+    }
 
     for (const auto& client : node.chain_clients) {
         client->start(scheduler);
