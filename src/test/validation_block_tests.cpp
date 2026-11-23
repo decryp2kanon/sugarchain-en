@@ -10,14 +10,18 @@
 #include <node/miner.h>
 #include <pow.h>
 #include <random.h>
+#include <streams.h>
+#include <test/data/sugarchain_headers.raw.h>
 #include <test/util/common.h>
 #include <test/util/random.h>
 #include <test/util/script.h>
 #include <test/util/setup_common.h>
+#include <util/chaintype.h>
 #include <util/time.h>
 #include <validation.h>
 #include <validationinterface.h>
 
+#include <span>
 #include <thread>
 
 using kernel::ChainstateRole;
@@ -368,4 +372,39 @@ BOOST_AUTO_TEST_CASE(witness_commitment_index)
 
     BOOST_CHECK_EQUAL(GetWitnessCommitmentIndex(pblock), 2);
 }
+
+BOOST_FIXTURE_TEST_CASE(mainnet_future_header_boundary, TestingSetup)
+{
+    // Override this suite's regtest fixture: Sugarchain mainnet permits only
+    // 60 seconds of future time, while regtest retains Bitcoin's two hours.
+    BOOST_REQUIRE(Params().GetChainType() == ChainType::MAIN);
+    BOOST_REQUIRE_EQUAL(Params().GetConsensus().max_future_block_time, 60);
+
+    // Use the authentic first mainnet header so PoW and contextual difficulty
+    // are valid without mining or changing any production consensus rules.
+    DataStream stream{std::span{test::data::sugarchain_headers}.first(80)};
+    CBlockHeader header;
+    stream >> header;
+    BOOST_REQUIRE(CheckBlockProofOfWork(header, Params().GetConsensus()));
+    auto& chainman = *Assert(m_node.chainman);
+    BOOST_REQUIRE_EQUAL(WITH_LOCK(cs_main, return chainman.ActiveChain().Height()), 0);
+
+    SetMockTime(std::chrono::seconds{header.nTime - 61});
+    BlockValidationState future_state;
+    const CBlockIndex* index{nullptr};
+    BOOST_CHECK(!chainman.ProcessNewBlockHeaders(std::span{&header, 1}, true, future_state, &index));
+    BOOST_CHECK(future_state.GetResult() == BlockValidationResult::BLOCK_TIME_FUTURE);
+    BOOST_CHECK_EQUAL(future_state.GetRejectReason(), "time-too-new");
+    BOOST_CHECK(index == nullptr);
+
+    // The inclusive +60-second boundary must accept the identical header:
+    // temporary rejection must not mark it permanently invalid.
+    SetMockTime(std::chrono::seconds{header.nTime - 60});
+    BlockValidationState boundary_state;
+    BOOST_REQUIRE(chainman.ProcessNewBlockHeaders(std::span{&header, 1}, true, boundary_state, &index));
+    BOOST_REQUIRE(index != nullptr);
+    BOOST_CHECK_EQUAL(index->nHeight, 1);
+    BOOST_CHECK_EQUAL(index->GetBlockHash(), header.GetHash());
+}
+
 BOOST_AUTO_TEST_SUITE_END()

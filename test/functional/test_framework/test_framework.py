@@ -268,6 +268,11 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
                 raise SkipTest("--usecli specified but test does not support using CLI")
             self.skip_if_no_cli()
         self.skip_test_if_missing_module()
+        supported_chains = self.config["environment"]["SUPPORTED_CHAINS"].split(",")
+        # Mainnet uses an empty data subdirectory in the test framework.
+        chain_name = self.chain or "main"
+        if chain_name not in supported_chains:
+            raise SkipTest(f"Network {chain_name!r} is not supported by this application (supported: {supported_chains})")
         self.setup_chain()
         self.setup_network()
 
@@ -578,18 +583,21 @@ class BitcoinTestFramework(metaclass=BitcoinTestMetaClass):
         self.wait_until(lambda: find_conn(from_connection, to_connection_subver, inbound=False) is not None)
         self.wait_until(lambda: find_conn(to_connection, from_connection_subver, inbound=True) is not None)
 
-        def check_bytesrecv(peer, msg_type, min_bytes_recv):
+        def handshake_complete(node, peer_subversion, inbound):
+            peer = find_conn(node, peer_subversion, inbound)
             assert peer is not None, "Error: peer disconnected"
-            return peer['bytesrecv_per_msg'].pop(msg_type, 0) >= min_bytes_recv
+            if 'minping' in peer:
+                return True
+            # Before v0.21, a zero-duration pong does not set minping. A sent pong
+            # proves the message loop handled the other node's ping after verack.
+            return (
+                not node.version_is_at_least(210000)
+                and peer['bytessent_per_msg'].get('pong', 0) > 0
+                and peer['bytesrecv_per_msg'].get('pong', 0) > 0
+            )
 
-        # Poll until version handshake (fSuccessfullyConnected) is complete to
-        # avoid race conditions, because some message types are blocked from
-        # being sent or received before fSuccessfullyConnected.
-        #
-        # As the flag fSuccessfullyConnected is not exposed, check it by
-        # waiting for a pong, which can only happen after the flag was set.
-        self.wait_until(lambda: check_bytesrecv(find_conn(from_connection, to_connection_subver, inbound=False), 'pong', 29))
-        self.wait_until(lambda: check_bytesrecv(find_conn(to_connection, from_connection_subver, inbound=True), 'pong', 29))
+        self.wait_until(lambda: handshake_complete(from_connection, to_connection_subver, inbound=False))
+        self.wait_until(lambda: handshake_complete(to_connection, from_connection_subver, inbound=True))
 
     def disconnect_nodes(self, a, b):
         def disconnect_nodes_helper(node_a, node_b):

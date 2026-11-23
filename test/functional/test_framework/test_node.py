@@ -154,6 +154,9 @@ class TestNode():
             "-debugexclude=rand",
             "-uacomment=testnode%d" % i,  # required for subversion uniqueness across peers
         ]
+        if self.binaries.bin_dir is not None:
+            # Historical binaries otherwise look for bitcoin.conf instead of the shared fixture.
+            self.args.append(f"-conf={self.bitcoinconf}")
         if uses_wallet is not None and not uses_wallet:
             self.args.append("-disablewallet")
 
@@ -994,7 +997,10 @@ class TestNodeCLI():
         p_args = self.binaries.rpc_argv() + [
             f"-datadir={self.datadir}",
             f"-rpcclienttimeout={int(self.rpc_timeout)}",
-        ] + self.options
+        ]
+        if self.binaries.bin_dir is not None:
+            p_args.append(f"-conf={os.path.join(self.datadir, 'sugarchain.conf')}")
+        p_args += self.options
         if named_args:
             p_args += ["-named"]
         base_arg_pos = len(p_args)

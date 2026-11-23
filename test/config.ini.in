@@ -12,6 +12,8 @@ SRCDIR=@abs_top_srcdir@
 BUILDDIR=@abs_top_builddir@
 EXEEXT=@EXEEXT@
 RPCAUTH=@abs_top_srcdir@/share/rpcauth/rpcauth.py
+# Match the application policy in util/chaintype.cpp::CheckSupportedChainType.
+SUPPORTED_CHAINS=main,regtest
 
 [components]
 # Which components are enabled. These are commented out by cmake if they were disabled during configuration.
