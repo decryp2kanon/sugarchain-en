@@ -13,6 +13,7 @@
 #include <kernel/chainparams.h>
 #include <kernel/cs_main.h>
 #include <kernel/messagestartchars.h>
+#include <node/blockmap.h>
 #include <primitives/block.h>
 #include <serialize.h>
 #include <streams.h>
@@ -128,12 +129,6 @@ static constexpr uint32_t STORAGE_HEADER_BYTES{std::tuple_size_v<MessageStartCha
 /** Total overhead when writing undo data: header (8 bytes) plus checksum (32 bytes) */
 static constexpr uint32_t UNDO_DATA_DISK_OVERHEAD{STORAGE_HEADER_BYTES + uint256::size()};
 
-// Because validation code takes pointers to the map's CBlockIndex objects, if
-// we ever switch to another associative container, we need to either use a
-// container that has stable addressing (true of all std associative
-// containers), or make the key a `std::unique_ptr<CBlockIndex>`
-using BlockMap = std::unordered_map<uint256, CBlockIndex, BlockHasher>;
-
 struct CBlockIndexWorkComparator {
     bool operator()(const CBlockIndex* pa, const CBlockIndex* pb) const;
     using is_transparent = void;
@@ -143,6 +138,9 @@ struct CBlockIndexHeightOnlyComparator {
     /* Only compares the height of two block indices, doesn't try to tie-break */
     bool operator()(const CBlockIndex* pa, const CBlockIndex* pb) const;
 };
+
+/** Startup-only height ordering; temporary cached keys are released before linking. */
+void SortBlockIndicesByHeight(std::vector<CBlockIndex*>& indices);
 
 struct PruneLockInfo {
     int height_first{std::numeric_limits<int>::max()}; //! Height of earliest block that should be kept and not pruned

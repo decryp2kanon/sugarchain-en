@@ -120,6 +120,24 @@ bool BlockTreeDB::ReadFlag(const std::string& name, bool& fValue)
 bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt, int pow_workers)
 {
     AssertLockHeld(::cs_main);
+    uint64_t total_entries{0};
+    if (startup_optimizations) {
+        uiInterface.InitMessage("Counting block index entries...");
+        {
+            std::unique_ptr<CDBIterator> count_cursor(NewIterator());
+            count_cursor->Seek(std::make_pair(DB_BLOCK_INDEX, uint256()));
+            // The same open DB is used for both passes, before networking starts.
+            // Inspect only serialized keys; do not read values or construct indexes.
+            std::pair<uint8_t, uint256> count_key;
+            while (count_cursor->Valid() && count_cursor->GetKey(count_key) && count_key.first == DB_BLOCK_INDEX) {
+                if (interrupt) return false;
+                ++total_entries;
+                count_cursor->Next();
+            }
+        }
+        LogInfo("Counted %s block index entries", FormatGroupedCount(total_entries));
+        if (reserveBlockIndex) reserveBlockIndex(total_entries);
+    }
     std::unique_ptr<CDBIterator> pcursor(NewIterator());
     pcursor->Seek(std::make_pair(DB_BLOCK_INDEX, uint256()));
 
@@ -198,6 +216,57 @@ bool CBlockIndexWorkComparator::operator()(const CBlockIndex* pa, const CBlockIn
 bool CBlockIndexHeightOnlyComparator::operator()(const CBlockIndex* pa, const CBlockIndex* pb) const
 {
     return pa->nHeight < pb->nHeight;
+}
+
+void SortBlockIndicesByHeight(std::vector<CBlockIndex*>& indices)
+{
+    const auto pointer_sort = [&] {
+        boost::sort::spreadsort::integer_sort(
+            indices.begin(), indices.end(),
+            [](const CBlockIndex* index, unsigned shift) { return index->nHeight >> shift; },
+            CBlockIndexHeightOnlyComparator());
+    };
+    if (indices.size() < 4096) {
+        pointer_sort();
+        return;
+    }
+    // Two stable 16-bit radix passes use one pointer-sized scratch array,
+    // instead of caching a height plus a pointer for every index. Flip the
+    // sign bit so negative heights retain the signed comparator's ordering.
+    if (indices.size() > std::numeric_limits<uint32_t>::max()) {
+        pointer_sort();
+        return;
+    }
+    constexpr size_t BUCKETS{1 << 16};
+    std::vector<CBlockIndex*> scratch;
+    std::vector<uint32_t> offsets;
+    try {
+        scratch.resize(indices.size());
+        offsets.resize(2 * BUCKETS);
+    } catch (const std::bad_alloc&) {
+        std::vector<CBlockIndex*>{}.swap(scratch);
+        std::vector<uint32_t>{}.swap(offsets);
+        pointer_sort();
+        return;
+    }
+    const auto key = [](const CBlockIndex* index) {
+        return static_cast<uint32_t>(index->nHeight) ^ uint32_t{0x80000000};
+    };
+    for (const auto* index : indices) {
+        const uint32_t height{key(index)};
+        ++offsets[height & 0xffff];
+        ++offsets[BUCKETS + (height >> 16)];
+    }
+    for (size_t base : {size_t{0}, BUCKETS}) {
+        uint32_t sum{0};
+        for (size_t i = 0; i < BUCKETS; ++i) {
+            const uint32_t count{offsets[base + i]};
+            offsets[base + i] = sum;
+            sum += count;
+        }
+    }
+    for (auto* index : indices) scratch[offsets[key(index) & 0xffff]++] = index;
+    for (auto* index : scratch) indices[offsets[BUCKETS + (key(index) >> 16)]++] = index;
 }
 
 std::vector<CBlockIndex*> BlockManager::GetAllBlockIndices()
@@ -420,6 +489,7 @@ CBlockIndex* BlockManager::InsertBlockIndex(const uint256& hash)
     CBlockIndex* pindex = &(*mi).second;
     if (inserted) {
         pindex->phashBlock = &((*mi).first);
+        if (inserted_indices) inserted_indices->push_back(pindex);
     }
     return pindex;
 }
@@ -457,8 +527,14 @@ bool BlockManager::LoadBlockIndex(const std::optional<uint256>& snapshot_blockha
 
     // Calculate nChainWork
     std::vector<CBlockIndex*> vSortedByHeight{GetAllBlockIndices()};
-    std::sort(vSortedByHeight.begin(), vSortedByHeight.end(),
+    // Radix passes bound both sorting work and temporary memory.
+    // The same height-only ordering still places every parent before its child.
+    if (m_opts.startup_optimizations) {
+        SortBlockIndicesByHeight(vSortedByHeight);
+    } else {
+        std::sort(vSortedByHeight.begin(), vSortedByHeight.end(),
               CBlockIndexHeightOnlyComparator());
+    }
 
     CBlockIndex* previous_index{nullptr};
     for (CBlockIndex* pindex : vSortedByHeight) {
@@ -468,7 +544,7 @@ bool BlockManager::LoadBlockIndex(const std::optional<uint256>& snapshot_blockha
             return false;
         }
         previous_index = pindex;
-        pindex->nChainWork = (pindex->pprev ? pindex->pprev->nChainWork : 0) + GetBlockProof(*pindex);
+        pindex->nChainWork = (pindex->pprev ? pindex->pprev->nChainWork : 0) + GetBitsProof(pindex->nBits, m_opts.startup_optimizations);
         pindex->nTimeMax = (pindex->pprev ? std::max(pindex->pprev->nTimeMax, pindex->nTime) : pindex->nTime);
 
         // We can link the chain of blocks for which we've received transactions at some point, or
@@ -1231,7 +1307,8 @@ BlockManager::BlockManager(const util::SignalInterrupt& interrupt, Options opts)
       m_opts{std::move(opts)},
       m_block_file_seq{FlatFileSeq{m_opts.blocks_dir, "blk", m_opts.fast_prune ? 0x4000 /* 16kB */ : BLOCKFILE_CHUNK_SIZE}},
       m_undo_file_seq{FlatFileSeq{m_opts.blocks_dir, "rev", UNDOFILE_CHUNK_SIZE}},
-      m_interrupt{interrupt}
+      m_interrupt{interrupt},
+      m_block_index{m_opts.startup_optimizations}
 {
     auto db_params{m_opts.block_tree_db_params};
     db_params.reclaim_read_cache = m_opts.startup_optimizations;
