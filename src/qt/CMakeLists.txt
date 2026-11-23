@@ -119,6 +119,8 @@ add_library(bitcoinqt STATIC EXCLUDE_FROM_ALL
   qvaluecombobox.h
   rpcconsole.cpp
   rpcconsole.h
+  settingsmigration.cpp
+  settingsmigration.h
   splashscreen.cpp
   splashscreen.h
   trafficgraphwidget.cpp

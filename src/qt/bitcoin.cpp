@@ -27,6 +27,7 @@
 #include <qt/networkstyle.h>
 #include <qt/optionsmodel.h>
 #include <qt/platformstyle.h>
+#include <qt/settingsmigration.h>
 #include <qt/splashscreen.h>
 #include <qt/utilitydialog.h>
 #include <qt/winshutdownmonitor.h>
@@ -557,6 +558,13 @@ int GuiMain(int argc, char* argv[])
     QApplication::setApplicationName(QAPP_APP_NAME_DEFAULT);
     QApplication::setApplicationDisplayName(CLIENT_NAME);
 
+    // Migrate the base profile before translations and the datadir selection read it.
+    QString migration_error;
+    if (!MigrateLegacyQtSettings(QStringLiteral("Sugarchain Komorebi"), migration_error)) {
+        QMessageBox::critical(nullptr, CLIENT_NAME, migration_error);
+        return EXIT_FAILURE;
+    }
+
     /// 4. Initialization of translations, so that intro dialog is in user's language
     // Now that QSettings are accessible, initialize translations
     QTranslator qtTranslatorBase, qtTranslator, translatorBase, translator;
@@ -608,6 +616,12 @@ int GuiMain(int argc, char* argv[])
     assert(!networkStyle.isNull());
     // Allow for separate UI settings for testnets
     QApplication::setApplicationName(networkStyle->getAppName());
+    const QString legacy_app = QString(networkStyle->getAppName()).replace(
+        QStringLiteral("Sugarchain En"), QStringLiteral("Sugarchain Komorebi"));
+    if (!MigrateLegacyQtSettings(legacy_app, migration_error)) {
+        QMessageBox::critical(nullptr, CLIENT_NAME, migration_error);
+        return EXIT_FAILURE;
+    }
     // Re-initialize translations after changing application name (language in network-specific settings can be different)
     initTranslations(qtTranslatorBase, qtTranslator, translatorBase, translator);
 
