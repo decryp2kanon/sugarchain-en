@@ -617,6 +617,32 @@ bool GetStartOnSystemStartup()
     return true;
 }
 
+// Desktop Entry Exec quoting is distinct from shell quoting. Apply argument
+// quoting first, then the desktop file's string escapes and literal percent rule.
+// https://specifications.freedesktop.org/desktop-entry/latest/exec-variables.html
+static std::string EscapeDesktopExecPath(const std::string& path)
+{
+    std::string quoted{"\""};
+    for (const char ch : path) {
+        if (ch == '\\' || ch == '"' || ch == '`' || ch == '$') quoted += '\\';
+        quoted += ch;
+    }
+    quoted += '"';
+
+    std::string escaped;
+    for (const char ch : quoted) {
+        switch (ch) {
+        case '\\': escaped += "\\\\"; break;
+        case '\n': escaped += "\\n"; break;
+        case '\r': escaped += "\\r"; break;
+        case '\t': escaped += "\\t"; break;
+        case '%': escaped += "%%"; break;
+        default: escaped += ch; break;
+        }
+    }
+    return escaped;
+}
+
 bool SetStartOnSystemStartup(bool fAutoStart)
 {
     if (!fAutoStart)
@@ -629,6 +655,10 @@ bool SetStartOnSystemStartup(bool fAutoStart)
             return false;
         }
         pszExePath[r] = '\0';
+        const std::string executable{pszExePath};
+        // '=' is forbidden in executable paths. Desktop launchers also reject
+        // literal '%' paths before field expansion, even when escaped as '%%'.
+        if (executable.find_first_of("=%") != std::string::npos) return false;
 
         fs::create_directories(GetAutostartDir());
 
@@ -640,10 +670,10 @@ bool SetStartOnSystemStartup(bool fAutoStart)
         optionFile << "[Desktop Entry]\n";
         optionFile << "Type=Application\n";
         if (chain == ChainType::MAIN)
-            optionFile << "Name=Sugarchain Komorebi\n";
+            optionFile << "Name=Sugarchain En\n";
         else
-            optionFile << strprintf("Name=Sugarchain Komorebi (%s)\n", ChainTypeToString(chain));
-        optionFile << "Exec=" << pszExePath << strprintf(" -min -chain=%s\n", ChainTypeToString(chain));
+            optionFile << strprintf("Name=Sugarchain En (%s)\n", ChainTypeToString(chain));
+        optionFile << "Exec=" << EscapeDesktopExecPath(executable) << strprintf(" -min -chain=%s\n", ChainTypeToString(chain));
         optionFile << "Icon=sugarchain\n";
         optionFile << "Terminal=false\n";
         optionFile << "Hidden=false\n";
