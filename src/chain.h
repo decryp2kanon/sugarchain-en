@@ -160,9 +160,15 @@ private:
     friend class ChainstateManager;
     friend class kernel::BlockTreeDB;
     friend class CDiskBlockIndex;
-    friend void CacheVerifiedBlockIndexProof(const CBlockIndex&, const Consensus::Params&);
+    friend void CacheVerifiedBlockIndexProof(const CBlockIndex&, const Consensus::Params&) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
 public:
+
+    bool HasCurrentProcessYespowerEvidence() const EXCLUSIVE_LOCKS_REQUIRED(::cs_main)
+    {
+        AssertLockHeld(::cs_main);
+        return m_checked_yespower;
+    }
 
     explicit CBlockIndex(const CBlockHeader& block)
         : nVersion{block.nVersion},
