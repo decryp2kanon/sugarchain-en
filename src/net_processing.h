@@ -50,6 +50,9 @@ static const unsigned int MAX_CMPCTBLOCKS_INFLIGHT_PER_BLOCK = 3;
 /** Number of headers sent in one getheaders result. We rely on the assumption that if a peer sends
  *  less than this number, we reached its tip. Changing this value is a protocol upgrade. */
 static const unsigned int MAX_HEADERS_RESULTS = 2000;
+/** IBD-only lookahead; the per-peer inflight request budget remains independent.
+ * See doc/ibd-download-window.md for the 1024/4096 comparisons and RSS costs. */
+static constexpr int IBD_BLOCK_DOWNLOAD_WINDOW{4096};
 
 struct CNodeStateStats {
     int nSyncHeight = -1;
