@@ -58,14 +58,13 @@
         <translation type="unfinished">&amp;Вибрати</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">Це ваші біткоїн-адреси для надсилання платежів. Завжди перевіряйте суму та адресу одержувача перед відправленням монет.</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">Це ваші Біткоїн адреси для отримання платежів. Використовуйте кнопку "Створити нову адресу для отримання" на вкладці отримання, щоб створити нові адреси.
-Підпис можливий лише з адресами типу "legacy".</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -164,8 +163,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Підтвердить шифрування гаманця</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation type="unfinished">Увага: Якщо ви зашифруєте свій гаманець і втратите парольну фразу, ви &lt;b&gt;ВТРАТИТЕ ВСІ СВОЇ БІТКОЇНИ&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -192,8 +191,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Назад</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">Пам’ятайте, що шифрування гаманця не може повністю захистити ваші біткоїни від крадіжки, у випадку якщо ваш комп’ютер буде інфіковано шкідливими програмами.</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -327,8 +326,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Кількість</translation>
     </message>
     <message>
-        <source>Enter a Bitcoin address (e.g. %1)</source>
-        <translation type="unfinished">Введіть біткоїн-адресу (наприклад, %1)</translation>
+        <source>Enter a Sugarchain address (e.g. %1)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Unroutable</source>
@@ -543,8 +542,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Проксі &lt;b&gt;увімкнено&lt;/b&gt;: %1</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation type="unfinished">Відправити монети на вказану адресу</translation>
+        <source>Send coins to a Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -587,16 +586,16 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">&amp;Підписати повідомлення…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">Підтвердіть, що ви є власником повідомлення підписавши його вашою Bitcoin-адресою</translation>
+        <source>Sign messages with your Sugarchain addresses to prove you own them</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
         <translation type="unfinished">П&amp;еревірити повідомлення…</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation type="unfinished">Перевірте повідомлення для впевненості, що воно підписано вказаною Bitcoin-адресою</translation>
+        <source>Verify messages to ensure they were signed with specified Sugarchain addresses</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Load PSBT from file…</source>
@@ -659,8 +658,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Підключення до учасників…</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation type="unfinished">Створити запит платежу (генерує QR-код та bitcoin: URI)</translation>
+        <source>Request payments (generates QR codes and sugarchain: URIs)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -743,8 +742,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">&amp;Адреси для отримання</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI</source>
-        <translation type="unfinished">Відкрити URI-адресу "bitcoin:"</translation>
+        <source>Open a sugarchain: URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open Wallet</source>
@@ -781,8 +780,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">Перенести гаманець</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation type="unfinished">Показати довідку %1 для отримання переліку можливих параметрів командного рядка.</translation>
+        <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Mask values</source>
@@ -858,12 +857,12 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">&amp;Відобразити</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
-            <numerusform>%n активне з'єднання з мережею Біткоїн.</numerusform>
-            <numerusform>%n активних з'єднання з мережею Біткоїн.</numerusform>
-            <numerusform>%n активних з'єднань з мережею Біткоїн.</numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
+            <numerusform></numerusform>
         </translation>
     </message>
     <message>
@@ -1410,8 +1409,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">Редагувати адресу для відправлення</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Bitcoin address.</source>
-        <translation type="unfinished">Введена адреса "%1" не є дійсною Bitcoin адресою.</translation>
+        <source>The entered address "%1" is not a valid Sugarchain address.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Address "%1" already exists as a receiving address with label "%2" and so cannot be added as a sending address.</source>
@@ -1571,8 +1570,8 @@ The migration process will create a backup of the wallet before migrating. This 
         </translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Bitcoin block chain.</source>
-        <translation type="unfinished">%1 буде завантажувати та зберігати копію блокчейну.</translation>
+        <source>%1 will download and store a copy of the Sugarchain block chain.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1594,12 +1593,12 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">Форма</translation>
     </message>
     <message>
-        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the bitcoin network, as detailed below.</source>
-        <translation type="unfinished">Нещодавні транзакції ще не відображаються, тому баланс вашого гаманця може бути неточним. Ця інформація буде вірною після того, як ваш гаманець завершить синхронізацію з мережею Біткоїн, враховуйте показники нижче.</translation>
+        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the Sugarchain network, as detailed below.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Attempting to spend bitcoins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
-        <translation type="unfinished">Спроба відправити біткоїни, які ще не відображаються, не буде прийнята мережею.</translation>
+        <source>Attempting to spend Sugarchain coins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Number of blocks left</source>
@@ -1649,8 +1648,8 @@ The migration process will create a backup of the wallet before migrating. This 
 <context>
     <name>OpenURIDialog</name>
     <message>
-        <source>Open bitcoin URI</source>
-        <translation type="unfinished">Відкрити біткоїн URI</translation>
+        <source>Open Sugarchain URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Paste address from clipboard</source>
@@ -1698,8 +1697,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">Повний шлях до скрипту, сумісного з %1 (наприклад, C:\Downloads\hwi.exe або /Users/you/Downloads/hwi.py). Обережно: зловмисні програми можуть вкрасти Ваші монети!</translation>
     </message>
     <message>
-        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
-        <translation type="unfinished">Автоматично відкривати порт клієнта Біткоїн в маршрутизаторі. Це працює лише за умови, що ваш маршрутизатор підтримує PCP або NAT-PMP, і ця функція ввімкнена. Зовнішній порт може бути випадковим.</translation>
+        <source>Automatically open the Sugarchain client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Map port using PCP or NA&amp;T-PMP</source>
@@ -1837,8 +1836,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">Дозволити в&amp;хідні з'єднання</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
-        <translation type="unfinished">Підключення до мережі Біткоїн через SOCKS5 проксі.</translation>
+        <source>Connect to the Sugarchain network through a SOCKS5 proxy.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
@@ -1917,8 +1916,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">Показати або сховати керування входами.</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a separate SOCKS5 proxy for Tor onion services.</source>
-        <translation type="unfinished">Підключитися до мережі Біткоїн через окремий проксі-сервер SOCKS5 для сервісів Tor.</translation>
+        <source>Connect to the Sugarchain network through a separate SOCKS5 proxy for Tor onion services.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Use separate SOCKS&amp;5 proxy to reach peers via Tor onion services:</source>
@@ -2010,8 +2009,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">Форма</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-        <translation type="unfinished">Показана інформація вже може бути застарілою. Ваш гаманець буде автоматично синхронізовано з мережею Біткоїн після встановлення підключення, але цей процес ще не завершено.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Sugarchain network after a connection is established, but this process has not completed yet.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Available:</source>
@@ -2208,17 +2207,14 @@ The migration process will create a backup of the wallet before migrating. This 
         <source>Payment request error</source>
         <translation type="unfinished">Помилка запиту платежу</translation>
     </message>
-    <message>
-        <source>Cannot start bitcoin: click-to-pay handler</source>
-        <translation type="unfinished">Не вдалося запустити біткоїн: обробник "click-to-pay"</translation>
-    </message>
+
     <message>
         <source>URI handling</source>
         <translation type="unfinished">Обробка URI</translation>
     </message>
     <message>
-        <source>'bitcoin://' is not a valid URI. Use 'bitcoin:' instead.</source>
-        <translation type="unfinished">"bitcoin://" не є припустимим URI. Використовуйте натомість "bitcoin:".</translation>
+        <source>'sugarchain://' is not a valid URI. Use 'sugarchain:' instead.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Cannot process payment request because BIP70 is not supported.
@@ -2229,8 +2225,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
 Якщо ви отримуєте цю помилку, вам слід вимагати у продавця надати URI, який сумісний з BIP21.</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Bitcoin address or malformed URI parameters.</source>
-        <translation type="unfinished">Не вдалося проаналізувати URI-адресу! Причиною цього може бути некоректна біткоїн-адреса або неправильні параметри URI.</translation>
+        <source>URI cannot be parsed! This can be caused by an invalid Sugarchain address or malformed URI parameters.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Payment request file handling</source>
@@ -2387,8 +2383,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">Локальні адреси</translation>
     </message>
     <message>
-        <source>Network addresses that your Bitcoin node is currently using to communicate with other nodes.</source>
-        <translation type="unfinished">Мережеві адреси, які ваш біткоїн-вузол використовує для зв'язку з іншими вузлами.</translation>
+        <source>Network addresses that your Sugarchain node is currently using to communicate with other nodes.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Block chain</source>
@@ -2843,8 +2839,8 @@ For more information on using this console, type %6.
         <translation type="unfinished">&amp;Повідомлення:</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Bitcoin network.</source>
-        <translation type="unfinished">Необов'язкове повідомлення на додаток до запиту платежу, яке буде показане під час відкриття запиту. Примітка: це повідомлення не буде відправлено з платежем через мережу Біткоїн.</translation>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Sugarchain network.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>An optional label to associate with the new receiving address.</source>
@@ -3144,8 +3140,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
 Примітка: Оскільки в розрахунку враховуються байти, комісія "100 сатоші за квБ" для транзакції розміром 500 віртуальних байт (половина 1 квБ) в результаті становить всього 50 сатоші.</translation>
     </message>
     <message>
-        <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for bitcoin transactions than the network can process.</source>
-        <translation type="unfinished">Якщо обсяг транзакцій менше, ніж простір у блоках, майнери, а також вузли ретрансляції можуть стягувати мінімальну плату. Сплата лише цієї мінімальної суми може призвести до ніколи не підтверджуваної транзакції, коли буде більше попиту на біткоїн-транзакції, ніж мережа може обробити.</translation>
+        <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for Sugarchain transactions than the network can process.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>A too low fee might result in a never confirming transaction (read the tooltip)</source>
@@ -3382,8 +3378,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         </translation>
     </message>
     <message>
-        <source>Warning: Invalid Bitcoin address</source>
-        <translation type="unfinished">Увага: Неприпустима біткоїн-адреса.</translation>
+        <source>Warning: Invalid Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Warning: Unknown change address</source>
@@ -3421,8 +3417,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">Обрати ранiш використовувану адресу</translation>
     </message>
     <message>
-        <source>The Bitcoin address to send the payment to</source>
-        <translation type="unfinished">Біткоїн-адреса для відправлення платежу</translation>
+        <source>The Sugarchain address to send the payment to</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Paste address from clipboard</source>
@@ -3437,8 +3433,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">Сума у вибраній одиниці, яку потрібно надіслати</translation>
     </message>
     <message>
-        <source>The fee will be deducted from the amount being sent. The recipient will receive less bitcoins than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
-        <translation type="unfinished">Комісію буде знято зі вказаної суми. До отримувача надійде менше біткоїнів, ніж було вказано в полі кількості. Якщо ж отримувачів декілька - комісію буде розподілено між ними.</translation>
+        <source>The fee will be deducted from the amount being sent. The recipient will receive less Sugarchain coins than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>S&amp;ubtract fee from amount</source>
@@ -3457,8 +3453,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">Введіть мітку для цієї адреси для додавання її в список використаних адрес</translation>
     </message>
     <message>
-        <source>A message that was attached to the bitcoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Bitcoin network.</source>
-        <translation type="unfinished">Повідомлення, що було додане до bitcoin:URI та буде збережено разом з транзакцією для довідки. Примітка: це повідомлення не буде відправлено в мережу Біткоїн.</translation>
+        <source>A message that was attached to the sugarchain: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Sugarchain network.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -3483,12 +3479,12 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">&amp;Підписати повідомлення</translation>
     </message>
     <message>
-        <source>You can sign messages/agreements with your legacy (P2PKH) addresses to prove you can receive bitcoins sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
-        <translation type="unfinished">Ви можете підписувати повідомлення/угоди своїми старими (P2PKH) адресами, щоб підтвердити, що можете отримувати біткоїни, надіслані на них. Будьте обережні і не підписуйте нічого розпливчастого або випадкового, оскільки фішингові атаки можуть спробувати обдурити вас, щоб ви передали їм свої особисті дані. Підписуйте лише повністю деталізовані заяви, з якими ви згодні.</translation>
+        <source>You can sign messages/agreements with your legacy (P2PKH) addresses to prove you can receive Sugarchain coins sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>The Bitcoin address to sign the message with</source>
-        <translation type="unfinished">Біткоїн-адреса для підпису цього повідомлення</translation>
+        <source>The Sugarchain address to sign the message with</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -3511,8 +3507,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">Скопіювати поточний підпис до буфера обміну</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Bitcoin address</source>
-        <translation type="unfinished">Підпишіть повідомлення щоб довести, що ви є власником цієї адреси</translation>
+        <source>Sign the message to prove you own this Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -3535,8 +3531,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">Введіть нижче адресу отримувача, повідомлення (впевніться, що ви точно скопіювали символи завершення рядка, табуляцію, пробіли тощо) та підпис для перевірки повідомлення. Впевніться, що в підпис не було додано зайвих символів: це допоможе уникнути атак типу «людина посередині». Зауважте, що це лише засвідчує можливість отримання транзакцій підписувачем, але не в стані підтвердити джерело жодної транзакції!</translation>
     </message>
     <message>
-        <source>The Bitcoin address the message was signed with</source>
-        <translation type="unfinished">Біткоїн-адреса, якою було підписано це повідомлення</translation>
+        <source>The Sugarchain address the message was signed with</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The signed message to verify</source>
@@ -3547,8 +3543,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">Підпис наданий при підписанні цього повідомлення</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Bitcoin address</source>
-        <translation type="unfinished">Перевірте повідомлення для впевненості, що воно підписано вказаною біткоїн-адресою</translation>
+        <source>Verify the message to ensure it was signed with the specified Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -4243,8 +4239,8 @@ Go to File &gt; Open Wallet to load a wallet.
         <translation type="unfinished">Помилка: Неправильний запис ідентифікатора файлу дампа. Отримано "%s", очікується "%s".</translation>
     </message>
     <message>
-        <source>Error: Dumpfile version is not supported. This version of bitcoin-wallet only supports version 1 dumpfiles. Got dumpfile with version %s</source>
-        <translation type="unfinished">Помилка: Версія файлу дампа не підтримується. Ця версія bitcoin-wallet підтримує лише файли дампа версії 1. Отримано файл дампа версії %s</translation>
+        <source>Error: Dumpfile version is not supported. This version of sugarchain-wallet only supports version 1 dumpfiles. Got dumpfile with version %s</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Error: Unable to produce descriptors for this legacy wallet. Make sure to provide the wallet's passphrase if it is encrypted.</source>

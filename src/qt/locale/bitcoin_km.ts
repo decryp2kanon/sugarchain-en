@@ -58,14 +58,13 @@
         <translation type="unfinished">ជ្រើសរើស(&amp;h)</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">ទាំងនេះ​គឺជាអាសយដ្ឋាន Bitcoin របស់អ្នកសម្រាប់ធ្វើការផ្ញើការបង់ប្រាក់។ តែងតែពិនិត្យមើលចំនួនប្រាក់ និងអាសយដ្ឋានដែលទទួល មុនពេលផ្ញើប្រាក់។</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">ទាំងនេះគឺជាអាសយដ្ឋាន Bitcoin របស់អ្នកសម្រាប់ការទទួលការទូទាត់។ ប្រើប៊ូតុង 'បង្កើតអាសយដ្ឋានទទួលថ្មី' នៅក្នុងផ្ទាំងទទួល ដើម្បីបង្កើតអាសយដ្ឋានថ្មី។ 
-ការចុះហត្ថលេខាគឺអាចធ្វើទៅបានតែជាមួយអាសយដ្ឋាននៃប្រភេទ 'legacy' ប៉ុណ្ណោះ។</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -164,8 +163,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">បញ្ជាក់ការអ៊ិនគ្រីបកាបូបចល័ត</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation type="unfinished">ការព្រមាន៖ ប្រសិនបើអ្នកអ៊ិនគ្រីបកាបូបចល័តរបស់អ្នក ហើយអ្នកភ្លេចបាត់ឃ្លាសម្ងាត់ នោះអ្នកនិង &lt;b&gt;បាត់បង់ BITCOINS របស់អ្នកទាំងអស់&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -192,8 +191,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ត្រឡប់</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">សូមចងចាំថាការអ៊ិនគ្រីបកាបូបរបស់អ្នកមិនអាចការពារបានពេញលេញនូវ bitcoins របស់អ្នកពីការលួចដោយមេរោគដែលឆ្លងកុំព្យូទ័ររបស់អ្នក។</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -467,8 +466,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ប្រូកស៊ី ត្រូវបាន &lt;b&gt;អនុញ្ញាត&lt;/b&gt;៖ %1</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation type="unfinished">ផ្ញើកាក់ទៅកាន់ អាសយដ្ឋាន Bitcoin មួយ</translation>
+        <source>Send coins to a Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -511,16 +510,16 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ចុះហត្ថលេខាសារ…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">ចុះហត្ថលេខាលើសារ អាសយដ្ឋានប៊ីតខញរបស់អ្នក ដើម្បីបញ្ចាក់ថាអ្នកជាម្ចាស់</translation>
+        <source>Sign messages with your Sugarchain addresses to prove you own them</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
         <translation type="unfinished">ផ្ទៀងផ្ទាត់សារ…</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation type="unfinished">ធ្វើការបញ្ចាក់សារ ដើម្បីធានាថាសារទាំំងនោះបានចុះហត្ថលេខា ជាមួយអាសយដ្ខានប៊ីតខញ</translation>
+        <source>Verify messages to ensure they were signed with specified Sugarchain addresses</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Load PSBT from file…</source>
@@ -579,8 +578,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">កំពុងភ្ជាប់ទៅមិត្តភក្ដិ...</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation type="unfinished">សំណើរទូរទាត់​(បង្កើតកូដ QR និង ប៊ីតខញ: URLs)</translation>
+        <source>Request payments (generates QR codes and sugarchain: URIs)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -642,8 +641,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">អាសយដ្ឋានទទួល</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI</source>
-        <translation type="unfinished">បើកប៊ីតខញមួយៈ URl</translation>
+        <source>Open a sugarchain: URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open Wallet</source>
@@ -676,8 +675,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">កាបូបMigrate</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation type="unfinished">បង្ហាញសារជំនួយ%1ដើម្បីទទួលបានបញ្ជីជាមួយនឹងជម្រើសបន្ទាត់ពាក្យបញ្ជា Bitcoin ដែលអាចធ្វើទៅបាន</translation>
+        <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Mask values</source>
@@ -732,10 +731,10 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">បង្ហាញ</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
-            <numerusform>%n ការតភ្ជាប់សកម្មទៅបណ្តាញ Bitcoin ។</numerusform>
+            <numerusform></numerusform>
             <numerusform />
         </translation>
     </message>
@@ -1172,8 +1171,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">កែប្រែអាសយដ្ឋានបញ្ចូន</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Bitcoin address.</source>
-        <translation type="unfinished">អាសយដ្ឋានដែលបានបញ្ចូល  ៉​%1 ៉​គឺមិនមែនជាអាសយដ្ឋានត្រឹមត្រូវរបស់ប៊ីតខញ។</translation>
+        <source>The entered address "%1" is not a valid Sugarchain address.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Address "%1" already exists as a receiving address with label "%2" and so cannot be added as a sending address.</source>
@@ -1256,8 +1255,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ប្រើទីតាំងផ្ទុកទិន្នន័យ ដែលមានការជ្រើសរើសមួយៈ</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation type="unfinished">ប៊ីតខញ</translation>
+        <source>Sugarchain</source>
+        <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <source>%n GB of space available</source>
@@ -1304,12 +1303,12 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ទម្រង់</translation>
     </message>
     <message>
-        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the bitcoin network, as detailed below.</source>
-        <translation type="unfinished">ប្រត្តិបត្តិការថ្មីៗនេះប្រហែលជាមិនអាចមើលឃើញ ហេតុដូច្នេះសមតុល្យនៅក្នងកាបូបអេឡិចត្រូនិចរបស់អ្នកប្រហែលជាមិនត្រឹមត្រូវ។ ព័ត៌មានត្រឹមត្រូវនៅពេលដែលកាបូបអេឡិចត្រូនិចរបស់អ្នកបានធ្វើសមកាលកម្មជាមួយបណ្តាញប៊ឺតខញ  សូមពិនិត្យព័ត៌មានលំម្អិតខាងក្រោម។</translation>
+        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the Sugarchain network, as detailed below.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Attempting to spend bitcoins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
-        <translation type="unfinished">ព្យាយាមក្នុងការចំណាយប៊ីតខញដែលទទួលរងឥទ្ឋិពលពីប្រត្តិបត្តិការមិនទាន់ធ្វើការបង្ហាញ នឹងមិនត្រូវទទួលស្គាល់ពីបណ្តាញ។</translation>
+        <source>Attempting to spend Sugarchain coins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Number of blocks left</source>
@@ -1359,8 +1358,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
 <context>
     <name>OpenURIDialog</name>
     <message>
-        <source>Open bitcoin URI</source>
-        <translation type="unfinished">បើកប៊ីតខញ​URl</translation>
+        <source>Open Sugarchain URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>URI:</source>
@@ -1412,8 +1411,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ផ្លូវពេញទៅកាន់%1ស្គ្រីបដែលត្រូវគ្នា (ឧ. C:\Downloads\hwi.exe ឬ /Users/you/Downloads/hwi.py)។ ប្រយ័ត្ន៖ មេរោគអាចលួចកាក់របស់អ្នក!</translation>
     </message>
     <message>
-        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
-        <translation type="unfinished">បើកច្រកម៉ាស៊ីនភ្ញៀវ Bitcoin ដោយស្វ័យប្រវត្តិនៅលើរ៉ោតទ័រ។ វាដំណើរការតែនៅពេលដែលរ៉ោតទ័ររបស់អ្នកគាំទ្រ PCP ឬ NAT-PMP ហើយវាត្រូវបានបើក។ ច្រកខាងក្រៅអាចជាចៃដន្យ។</translation>
+        <source>Automatically open the Sugarchain client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Map port using PCP or NA&amp;T-PMP</source>
@@ -1495,8 +1494,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">អនុញ្ញាតឲ្យមានការតភ្ជាប់ដែលចូលមក</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
-        <translation type="unfinished">ភ្ជាប់ទៅកាន់បណ្តាញប៊ឺតខញតាមរយៈ​ SOCKS5 proxy។</translation>
+        <source>Connect to the Sugarchain network through a SOCKS5 proxy.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Port:</source>
@@ -1574,8 +1573,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ទម្រង់</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-        <translation type="unfinished">ព័ត៏មានបានបង្ហាញអាចហួសសពុលភាព។ កាបូបអេឡិចត្រូនិចរបស់អ្នកធ្វើសមកាលកម្មជាមួយនឹងបណ្តាញប៊ីតខញដោយស្វ័យប្រវត្ត បន្ទាប់ពីមានការតភ្ជាប់ ប៉ុន្តែដំណើរការនេះមិនទាន់បានបញ្ចប់នៅឡើយ។</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Sugarchain network after a connection is established, but this process has not completed yet.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Available:</source>
@@ -2065,8 +2064,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">&amp;សារ</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Bitcoin network.</source>
-        <translation type="unfinished">សារជាជម្រើសមួយក្នុងការភ្ជាប់ទៅនឹងសំណើរទូរទាត់ប្រាក់ ដែលនឹងត្រូវបង្ហាញនៅពេលដែលសំណើរត្រូវបានបើក។ កំណត់ចំណាំៈ សារនេះនឹងមិនត្រូវបានបញ្ចូនជាមួយការទូរទាត់ប្រាក់នៅលើបណ្តាញប៊ីតខញ។</translation>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Sugarchain network.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>An optional label to associate with the new receiving address.</source>
@@ -2504,8 +2503,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">ជ្រើសរើសអាសយដ្ឋានដែលបានប្រើពីមុន</translation>
     </message>
     <message>
-        <source>The Bitcoin address to send the payment to</source>
-        <translation type="unfinished">អាសយដ្ឋានប៊ីតខញក្នុងការបញ្ចូនការទូរទាត់ប្រាក់ទៅកាន់</translation>
+        <source>The Sugarchain address to send the payment to</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Paste address from clipboard</source>
@@ -2546,8 +2545,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">&amp;ចុះហត្ថលេខា សារ</translation>
     </message>
     <message>
-        <source>The Bitcoin address to sign the message with</source>
-        <translation type="unfinished">អាសយដ្ឋានប៊ីតខញនេះ ចុះហត្ថលេខានៅលើសារ</translation>
+        <source>The Sugarchain address to sign the message with</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -2566,8 +2565,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">ហត្ថលេខា</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Bitcoin address</source>
-        <translation type="unfinished">ចុះហត្ថលេខាលើសារនេះដើម្បីបង្ហាញថាលោកអ្នកជាម្ចាស់អាសយដ្ឋានប៊ីតខញ</translation>
+        <source>Sign the message to prove you own this Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -2594,8 +2593,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
         <translation type="unfinished">ហត្ថលេខាត្រូវបានផ្តល់នៅពេលដែលសារត្រូវបានចុះហត្ថលេខា</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Bitcoin address</source>
-        <translation type="unfinished">ផ្ទៀងផ្ទាត់សារដើម្បីធានាថាវាត្រូវបានចុះហត្ថលេខាជាមួយនឹងអាសយដ្ឋានប៊ីតខញជាក់លាក់។</translation>
+        <source>Verify the message to ensure it was signed with the specified Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>

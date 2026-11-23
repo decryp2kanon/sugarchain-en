@@ -54,13 +54,13 @@
  </translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">یہ آپ کے ادائیگی بھیجنے کے لئے بٹ کوائن ایڈریس ہیں.سکے بھیجنے سے پہلے ہمیشہ رقم اور وصول کنندہ پتہ چیک کریں۔</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">ادائیگیوں کے لئے آپ کے بٹ کوائن ایڈریس ہیں۔ نئے پتے بنانے کے لئے وصول کنندہ ٹیب میں 'نیا وصول کنندہ پتہ بنائیں' بٹن کا استعمال کریں۔دستخط صرف 'میراثی' قسم کے پتے کے ساتھ ہی ممکن ہے۔</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -159,8 +159,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">پرس کی خفیہ کاری کی تصدیق کریں</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation type="unfinished">انتباہ: اگر آپ اپنا بٹوہ انکرپٹ کرتے ہیں اور اپنا پاس فریز کھو دیتے ہیں تو ، آپ اپنے تمام بٹکوئنز کھو دیں گے.</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -187,8 +187,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">پیچھے</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">یاد رکھیں کہ آپ کے پرس کو خفیہ کرنا آپ کے بٹ کوائنز کو میلویئر/چور سے آپ کے کمپیوٹر میں انفیکشن لگانے کے ذریعہ چوری ہونے سے پوری طرح محفوظ نہیں رکھ سکتا ہے۔</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -500,8 +500,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">پراکسی &lt;b&gt;فعال&lt;/b&gt; ہے:%1</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation type="unfinished">بٹ کوائن ایڈریس پر سکے بھیجیں</translation>
+        <source>Send coins to a Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -540,16 +540,16 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">سائن اور پیغام…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">اپنے ویکیپیڈیا پتوں کے ساتھ پیغامات پر دستخط کریں تاکہ آپ ان کے مالک ہوں</translation>
+        <source>Sign messages with your Sugarchain addresses to prove you own them</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
         <translation type="unfinished">پیغام کی توثیق کریں…</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation type="unfinished">پیغامات کی توثیق کریں تاکہ یہ یقینی بن سکے کہ ان پر بٹ کوائن کے مخصوص پتوں پر دستخط ہوئے ہیں</translation>
+        <source>Verify messages to ensure they were signed with specified Sugarchain addresses</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open &amp;URI…</source>
@@ -604,8 +604,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ساتھیوں سے منسلک کرنے</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation type="unfinished">ادائیگی کی درخواست کریں: ( کوئیک رسپانس ( کیو۔آر ) کوڈ اور بٹ کوائن ( یونیورسل ادائیگیوں کا نظام) کے ذریعے سے</translation>
+        <source>Request payments (generates QR codes and sugarchain: URIs)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -687,8 +687,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">اور پتے وصول کرنا</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI</source>
-        <translation type="unfinished">بٹ کوائن کا یو۔آر۔آئی۔ کھولیں</translation>
+        <source>Open a sugarchain: URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open Wallet</source>
@@ -725,8 +725,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">ایک والیٹ منتقل کریں</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation type="unfinished">ممکنہ بٹ کوائن کمانڈ لائن اختیارات کے ساتھ فہرست حاصل کرنے کے لیے %1 مدد کا پیغام دکھائیں۔</translation>
+        <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Mask values</source>
@@ -777,11 +777,11 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">'%1'کلائنٹ</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
-            <numerusform>بٹ کوائن نیٹ ورک سے %n فعال کنکشن۔</numerusform>
-            <numerusform>%n active connection(s) to Bitcoin network.</numerusform>
+            <numerusform></numerusform>
+            <numerusform>%n active connection(s) to Sugarchain network.</numerusform>
         </translation>
     </message>
     <message>
@@ -1061,7 +1061,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
     <name>MigrateWalletActivity</name>
     <message>
         <source>Migrate wallet</source>
-        <translation type="unfinished">بٹ کوائن کے لیے بٹوے کو منتقل کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Migrating the wallet will convert this wallet to one or more descriptor wallets. A new wallet backup will need to be made.
@@ -1088,11 +1088,11 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Migration failed</source>
-        <translation type="unfinished">بٹ کوائن کے لیے منتقلی ناکام ہوئی</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Migration Successful</source>
-        <translation type="unfinished">بٹ کوائن کے لیے منتقلی کامیاب ہوئی</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1131,7 +1131,7 @@ The migration process will create a backup of the wallet before migrating. This 
     <message>
         <source>Restore wallet message</source>
         <extracomment>Title of message box which is displayed when the wallet is successfully restored.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے بٹوے کو بحال کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1161,7 +1161,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>You are one step away from creating your new wallet!</source>
-        <translation type="unfinished">آپ بٹ کوائن کے لیے نئے بٹوے بنانے سے صرف ایک قدم دور ہیں!</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Please provide a name and, if desired, enable any advanced options</source>
@@ -1340,8 +1340,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">اپنی مرضی کے مطابق ڈیٹا ڈائرکٹری کا استعمال کریں:</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation type="unfinished">بٹ کوائن</translation>
+        <source>Sugarchain</source>
+        <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <source>%n GB of space available</source>
@@ -1366,7 +1366,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Choose data directory</source>
-        <translation type="unfinished">ٹ کوائن کے لیے ڈیٹا ڈائریکٹری منتخب کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <source>(sufficient to restore backups %n day(s) old)</source>
@@ -1392,12 +1392,12 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">فارم</translation>
     </message>
     <message>
-        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the bitcoin network, as detailed below.</source>
-        <translation type="unfinished">ہو سکتا ہے حالیہ لین دین ابھی تک نظر نہ آئے، اور اس وجہ سے آپ کے والیٹ کا بیلنس غلط ہو سکتا ہے۔ یہ معلومات درست ہوں گی جب آپ کے والیٹ نے بٹ کوائن نیٹ ورک کے ساتھ مطابقت پذیری مکمل کر لی ہو، جیسا کہ ذیل میں تفصیل ہے۔</translation>
+        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the Sugarchain network, as detailed below.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Attempting to spend bitcoins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
-        <translation type="unfinished">ایسے بٹ کوائنز خرچ کرنے کی کوشش کرنا جو ابھی تک ظاہر نہ ہونے والے لین دین سے متاثر ہوں نیٹ ورک کے ذریعے قبول نہیں کیا جائے گا۔</translation>
+        <source>Attempting to spend Sugarchain coins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Number of blocks left</source>
@@ -1435,8 +1435,8 @@ The migration process will create a backup of the wallet before migrating. This 
 <context>
     <name>OpenURIDialog</name>
     <message>
-        <source>Open bitcoin URI</source>
-        <translation type="unfinished">بٹ کوائن URI کھولیں۔</translation>
+        <source>Open Sugarchain URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>URI:</source>
@@ -1465,7 +1465,7 @@ The migration process will create a backup of the wallet before migrating. This 
     <message>
         <source>Maximum database cache size. Make sure you have enough RAM. A larger cache can contribute to faster sync, after which the benefit is less pronounced for most use cases. Lowering the cache size will reduce memory usage. Unused mempool memory is shared for this cache.</source>
         <extracomment>Tooltip text for Options window setting that sets the size of the database cache. Explains the corresponding effects of increasing/decreasing this value.</extracomment>
-        <translation type="unfinished">"بٹ کوائن کے لیے زیادہ سے زیادہ ڈیٹابیس کیش کا سائز۔ یقینی بنائیں کہ آپ کے پاس کافی ریم ہے۔ بڑا کیش تیز سنک کرنے میں مدد کر سکتا ہے، لیکن اس کے بعد زیادہ تر استعمال کے لیے فائدہ کم ہوتا ہے۔ کیش کا سائز کم کرنے سے میموری کا استعمال کم ہوگا۔ غیر استعمال شدہ میمپول میموری اس کیش کے لیے شیئر کی جاتی ہے</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Size of &amp;database cache</source>
@@ -1476,12 +1476,12 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">اسکرپٹ اور تصدیقی دھاگوں کی تعداد</translation>
     </message>
     <message>
-        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
-        <translation type="unfinished">"بٹ کوائن کلائنٹ پورٹ کو روٹر پر خودکار طور پر کھولیں۔ یہ صرف اس وقت کام کرتا ہے جب آپ کا روٹر PCP یا NAT-PMP کو سپورٹ کرتا ہو اور یہ فعال ہو۔ بیرونی پورٹ بے ترتیب ہو سکتا ہے۔</translation>
+        <source>Automatically open the Sugarchain client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Map port using PCP or NA&amp;T-PMP</source>
-        <translation type="unfinished">بٹ کوائن کے لیے PCP یا NAT-PMP کا استعمال کرتے ہوئے پورٹ میپ کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>IP address of the proxy (e.g. IPv4: 127.0.0.1 / IPv6: ::1)</source>
@@ -1497,7 +1497,7 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>Font in the Overview tab: </source>
-        <translation type="unfinished">بٹ کوائن کے لیے اوور ویو ٹیب میں فونٹ"</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open Configuration File</source>
@@ -1525,27 +1525,26 @@ The migration process will create a backup of the wallet before migrating. This 
     </message>
     <message>
         <source>MiB</source>
-        <translation type="unfinished">بٹ کوائن کے لیے بلاک اسٹوریج کو میبی بائٹ تک پرون کریں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Set the number of script verification threads. Negative values correspond to the number of cores you want to leave free to the system.</source>
         <extracomment>Tooltip text for Options window setting that sets the number of script verification threads. Explains that negative values mean to leave these many cores free to the system.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے اسکرپٹ تصدیق کے دھاگوں کی تعداد سیٹ کریں۔ منفی اقدار اس تعداد کے مساوی ہیں جو آپ سسٹم کے لیے آزاد رکھنا چاہتے ہیں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>(0 = auto, &lt;0 = leave that many cores free)</source>
-        <translation type="unfinished">(بٹ کوائن کے لیے) 0 = خودکار، &lt;0 = اتنی کورز کو سسٹم کے لیے آزاد
- چھوڑیں</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>This allows you or a third party tool to communicate with the node through command-line and JSON-RPC commands.</source>
         <extracomment>Tooltip text for Options window setting that enables the RPC server.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے اس سے آپ یا کوئی تیسری پارٹی کا ٹول نوڈ کے ساتھ کمانڈ لائن اور JSON-RPC کمانڈز کے ذریعے رابطہ کر سکتا ہے۔"</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Whether to set subtract fee from amount as default or not.</source>
         <extracomment>Tooltip text for Options window setting that sets subtracting the fee from a sending amount as default.</extracomment>
-        <translation type="unfinished">بٹ کوائن کے لیے کیا فیس کو رقم سے خودکار طور پر منہا کرنا ہے یا نہیں۔</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Subtract &amp;fee from amount by default</source>
@@ -1582,9 +1581,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">باہر سے رابطے قبول کری</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
-        <translation type="unfinished">بٹ کوائن نیٹ ورک سے SOCKS5 پراکسی کے ذریع
-ے رابطہ کریں"</translation>
+        <source>Connect to the Sugarchain network through a SOCKS5 proxy.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Port of the proxy (e.g. 9050)</source>
@@ -1627,8 +1625,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">"کیا سکے کنٹرول فیچرز دکھانے ہیں یا نہیں۔</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a separate SOCKS5 proxy for Tor onion services.</source>
-        <translation type="unfinished">ور آنین سروسز کے لیے الگ SOCKS5 پراکسی کے ذریعے بٹ کوائن نیٹ ورک سے رابطہ کریں</translation>
+        <source>Connect to the Sugarchain network through a separate SOCKS5 proxy for Tor onion services.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Compiled without external signing support (required for external signing)</source>
@@ -1700,8 +1698,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">فارم</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-        <translation type="unfinished">ظاہر کی گئی معلومات پرانی ہو سکتی ہے۔ کنکشن قائم ہونے کے بعد آپ کا والیٹ خود بخود بٹ کوائن نیٹ ورک کے ساتھ ہم آہنگ ہوجاتا ہے، لیکن یہ عمل ابھی مکمل نہیں ہوا ہے۔</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Sugarchain network after a connection is established, but this process has not completed yet.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Available:</source>
@@ -1880,10 +1878,7 @@ The migration process will create a backup of the wallet before migrating. This 
         <source>Payment request error</source>
         <translation type="unfinished">ادائیگی کی درخواست کی خرابی۔</translation>
     </message>
-    <message>
-        <source>Cannot start bitcoin: click-to-pay handler</source>
-        <translation type="unfinished">کوائن شروع نہیں کیا جا سکتا: کلک کرکے ادائیگی کرنے والا ہینڈلر۔</translation>
-    </message>
+
     <message>
         <source>URI handling</source>
         <translation type="unfinished">یُو آر آئی کی ہینڈلنگ</translation>
@@ -1895,8 +1890,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">ادائیگی کی درخواست پر کارروائی نہیں کی جا سکتی کیونکہ BIP70 تعاون یافتہ نہیں ہے۔ BIP70 میں سیکورٹی کی وسیع خامیوں کی وجہ سے یہ پرزور مشورہ دیا جاتا ہے کہ والیٹ کو تبدیل کرنے کے لیے کسی بھی تاجر کی ہدایات کو نظر انداز کر دیا جائے۔ اگر آپ کو یہ خرابی موصول ہو رہی ہے تو آپ کو مرچنٹ سے BIP21 مطابقت پذیر URI فراہم کرنے کی درخواست کرنی چاہیے۔</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Bitcoin address or malformed URI parameters.</source>
-        <translation type="unfinished">URI کو پارس نہیں کیا جا سکتا! اس کی وجہ ایک غلط بٹ کوائن ایڈریس یا خراب URI پیرا میٹرز ہو سکتے ہیں۔</translation>
+        <source>URI cannot be parsed! This can be caused by an invalid Sugarchain address or malformed URI parameters.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Payment request file handling</source>
@@ -2205,8 +2200,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">اور پیغام</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Bitcoin network.</source>
-        <translation type="unfinished">ادائیگی کی درخواست کے ساتھ منسلک کرنے کے لیے ایک اختیاری پیغام، جو درخواست کے کھلنے پر ظاہر ہوگا۔ نوٹ: پیغام بٹ کوائن نیٹ ورک پر ادائیگی کے ساتھ نہیں بھیجا جائے گا۔</translation>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Sugarchain network.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>An optional label to associate with the new receiving address.</source>
@@ -2513,8 +2508,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         </translation>
     </message>
     <message>
-        <source>Warning: Invalid Bitcoin address</source>
-        <translation type="unfinished">انتباہ: غلط بٹ کوائن ایڈریس</translation>
+        <source>Warning: Invalid Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Warning: Unknown change address</source>
@@ -2544,8 +2539,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">پہلے استعمال شدہ پتہ کا انتخاب کریں۔</translation>
     </message>
     <message>
-        <source>The Bitcoin address to send the payment to</source>
-        <translation type="unfinished">ادائیگی بھیجنے کے لیے بٹ کوائن کا پتہ</translation>
+        <source>The Sugarchain address to send the payment to</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Paste address from clipboard</source>
@@ -2560,8 +2555,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">منتخب یونٹ میں بھیجی جانے والی رقم</translation>
     </message>
     <message>
-        <source>The fee will be deducted from the amount being sent. The recipient will receive less bitcoins than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
-        <translation type="unfinished">بھیجی جانے والی رقم سے فیس کاٹی جائے گی۔ وصول کنندہ کو اس سے کم بٹ کوائنز موصول ہوں گے جو آپ رقم کے خانے میں داخل کریں گے۔ اگر متعدد وصول کنندگان کو منتخب کیا جاتا ہے، تو فیس کو برابر تقسیم کیا جاتا ہے۔</translation>
+        <source>The fee will be deducted from the amount being sent. The recipient will receive less Sugarchain coins than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Use available balance</source>
@@ -2583,8 +2578,8 @@ If you are receiving this error you should request the merchant provide a BIP21 
         <translation type="unfinished">دستخط - ایک پیغام پر دستخط / تصدیق کریں۔</translation>
     </message>
     <message>
-        <source>The Bitcoin address to sign the message with</source>
-        <translation type="unfinished">پیغام پر دستخط کرنے کے لیے بٹ کوائن کا پتہ</translation>
+        <source>The Sugarchain address to sign the message with</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Choose previously used address</source>

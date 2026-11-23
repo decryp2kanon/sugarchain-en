@@ -54,14 +54,13 @@
         <translation type="unfinished">خوښول</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">دا ستاسو د Bitcoin پتې دي د تادیاتو لپاره. تل د سکې لیږلو مخکې اندازه او د ترلاسه کوونکي پته وګورئ.</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">دا ستاسو د بټکوین پته ده د تادیاتو ترلاسه کولو لپاره. د 'نوې ترلاسه کولو پته جوړه کړئ' تڼۍ په ترلاسه کولو ټب کې وکاروئ ترڅو نوي پته جوړ کړئ.
-لاسلیک یوازې د 'لیګسي' ډول پتو سره ممکن دی.</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Copy Address</source>
@@ -160,8 +159,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">د والټ کوډ کول تایید کړئ</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation type="unfinished">خبرتیا: که تاسې خپل والټ کوډ کړئ او خپلپاسفریز، ته به یې. &lt;b&gt;خپل ټول بټ کوینونه له لاسه ورکړئ&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -188,9 +187,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">بېرته</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">یاد ولرئ چې ستاسو د والټ رمز جوړول بشپړ ساتنه نه شي کولای.ستاسو بټ کوینونه د مالویر له لارې د غلا څخه خوندي کول
- ستاسو کمپیوټ</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -429,8 +427,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">پروکسي دی &lt;b&gt;فعال&lt;/b&gt;: %1</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation type="unfinished">سکې د بټ کوین پته ته واستوئ</translation>
+        <source>Send coins to a Sugarchain address</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -473,16 +471,16 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">لاسلیک او پیغام…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">د خپلو بټ کوین پتې سره پیغامونه لاسلیک کړئ ترڅو دا ثابت کړئ چې تاسو یې لرئ</translation>
+        <source>Sign messages with your Sugarchain addresses to prove you own them</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
         <translation type="unfinished">&amp;پیغام تایید کړئ…</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation type="unfinished">پیغامونه تصدیق کړئ ترڅو ډاډ ترلاسه کړئ چې دوی د ټاکل شوو بټ کوین پته سره لاسلیک شوي دي</translation>
+        <source>Verify messages to ensure they were signed with specified Sugarchain addresses</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Load PSBT from file…</source>
@@ -541,8 +539,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">د همکارانو سره نښلول…</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation type="unfinished">د تادیاتو غوښتنه کول (QR کوډونه او بټ کوین: URI جوړوي</translation>
+        <source>Request payments (generates QR codes and sugarchain: URIs)</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -628,8 +626,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">او د ترلاسه کولو پته</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI</source>
-        <translation type="unfinished">یو بټ کوین: URI پرانیزئ</translation>
+        <source>Open a sugarchain: URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Open Wallet</source>
@@ -666,8 +664,8 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">والټ لېږدول</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation type="unfinished">%1 مرسته پیغام وښایه ترڅو د ممکنه بټ کوین کمانډ لاین اختیارونو سره لیست ترلاسه کړئ"</translation>
+        <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>&amp;Mask values</source>
@@ -730,7 +728,7 @@ Signing is only possible with addresses of the type 'legacy'.</source>
         <translation type="unfinished">"ښودل</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
             <numerusform />
@@ -1250,8 +1248,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">د لېږلو پته سمول</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Bitcoin address.</source>
-        <translation type="unfinished">د داخل شوي پته "%1"دا د بټ کوین صحيح پته نه ده</translation>
+        <source>The entered address "%1" is not a valid Sugarchain address.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Address "%1" already exists as a receiving address with label "%2" and so cannot be added as a sending address.</source>
@@ -1367,8 +1365,8 @@ The migration process will create a backup of the wallet before migrating. This 
         <translation type="unfinished">یو دودیز د معلوماتو ډایرکټري وکاروئ</translation>
     </message>
     <message>
-        <source>Bitcoin</source>
-        <translation type="unfinished">ٹ کوائن</translation>
+        <source>Sugarchain</source>
+        <translation type="unfinished"></translation>
     </message>
     <message numerus="yes">
         <source>%n GB of space available</source>
@@ -1412,8 +1410,8 @@ The migration process will create a backup of the wallet before migrating. This 
         </translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Bitcoin block chain.</source>
-        <translation type="unfinished">به د بیتکوین بلاک چین کاپي ډاونلوډ کړي او ذخیره کړي.%1</translation>
+        <source>%1 will download and store a copy of the Sugarchain block chain.</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1486,8 +1484,8 @@ The migration process will create a backup of the wallet before migrating. This 
 <context>
     <name>OpenURIDialog</name>
     <message>
-        <source>Open bitcoin URI</source>
-        <translation type="unfinished">بټ کوین URI پرانیزئ</translation>
+        <source>Open Sugarchain URI</source>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>URI:</source>
