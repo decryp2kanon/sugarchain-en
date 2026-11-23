@@ -6,14 +6,70 @@
 #include <pow.h>
 
 #include <arith_uint256.h>
+#include <algorithm>
 #include <chain.h>
+#include <crypto/common.h>
+#include <limits>
 #include <primitives/block.h>
 #include <uint256.h>
 #include <util/check.h>
 
+namespace {
+// Exact unsigned long division, eight base-2^32 limbs instead of 256 bit steps.
+// remainder < divisor <= UINT32_MAX keeps each intermediate within uint64_t.
+arith_uint256 DivideSugarShieldTarget(const arith_uint256& value, int64_t divisor)
+{
+    if (divisor <= 0 || uint64_t(divisor) > UINT32_MAX) return value / arith_uint256{uint64_t(divisor)};
+    uint256 quotient{ArithToUint256(value)};
+    uint64_t remainder{0};
+    for (int offset{28}; offset >= 0; offset -= 4) {
+        const uint64_t part{(remainder << 32) | ReadLE32(quotient.begin() + offset)};
+        WriteLE32(quotient.begin() + offset, part / uint64_t(divisor));
+        remainder = part % uint64_t(divisor);
+    }
+    return UintToArith256(quotient);
+}
+} // namespace
+
+// Preserve integer operation ordering (divide before multiply) for consensus.
+unsigned int CalculateSugarShieldWorkRequired(const arith_uint256& total, int64_t span, const Consensus::Params& params)
+{
+    assert(params.nPowAveragingWindow > 0);
+    const arith_uint256 limit = UintToArith256(params.powLimit);
+    span = params.AveragingWindowTimespan() + (span - params.AveragingWindowTimespan()) / 4;
+    span = std::clamp(span, params.MinActualTimespan(), params.MaxActualTimespan());
+    arith_uint256 next = DivideSugarShieldTarget(total, params.nPowAveragingWindow);
+    next = DivideSugarShieldTarget(next, params.AveragingWindowTimespan());
+    // Mainnet's clamped timespan fits one limb; synthetic large windows must
+    // retain the full multiplier instead of narrowing it to uint32_t.
+    if (span <= std::numeric_limits<uint32_t>::max()) {
+        next *= static_cast<uint32_t>(span);
+    } else {
+        next *= arith_uint256{static_cast<uint64_t>(span)};
+    }
+    if (next > limit) next = limit;
+    return next.GetCompact();
+}
+
+// Official Sugarchain SugarShield: average 510 targets, using endpoint MTPs.
+static unsigned int GetSugarShieldWorkRequired(const CBlockIndex* last, const Consensus::Params& params)
+{
+    const CBlockIndex* first = last;
+    arith_uint256 total{0};
+    for (int64_t i = 0; first && i < params.nPowAveragingWindow; ++i) {
+        arith_uint256 target;
+        target.SetCompact(first->nBits);
+        total += target;
+        first = first->pprev;
+    }
+    if (!first) return UintToArith256(params.powLimit).GetCompact();
+    return CalculateSugarShieldWorkRequired(total, last->GetMedianTimePast() - first->GetMedianTimePast(), params);
+}
+
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader *pblock, const Consensus::Params& params)
 {
     assert(pindexLast != nullptr);
+    if (params.nPowAveragingWindow) return GetSugarShieldWorkRequired(pindexLast, params);
     unsigned int nProofOfWorkLimit = UintToArith256(params.powLimit).GetCompact();
 
     // Only change once per difficulty adjustment interval
