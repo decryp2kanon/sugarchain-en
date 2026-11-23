@@ -58,13 +58,13 @@
         <translation type="unfinished">&amp;Vel</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
-        <translation type="unfinished">Hetta eru goymdar Bitcoin adressur at senda til. Kanna altíð upphæddina og útgjaldsadressuna áðrenn hvørja flyting.</translation>
+        <source>These are your Sugarchain addresses for sending payments. Always check the amount and the receiving address before sending coins.</source>
+        <translation type="unfinished">Hetta eru goymdar Sugarchain adressur at senda til. Kanna altíð upphæddina og útgjaldsadressuna áðrenn hvørja flyting.</translation>
     </message>
     <message>
-        <source>These are your Bitcoin addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
+        <source>These are your Sugarchain addresses for receiving payments. Use the 'Create new receiving address' button in the receive tab to create new addresses.
 Signing is only possible with addresses of the type 'legacy'.</source>
-        <translation type="unfinished">Hetta eru tínar Bitcoin adressur at móttakað við. Vel 'Framleið nýggja inngjaldsadressu', undir Móttak-skiljiblaðnum fyri at útroknað nýggjar adressur.
+        <translation type="unfinished">Hetta eru tínar Sugarchain adressur at móttakað við. Vel 'Framleið nýggja inngjaldsadressu', undir Móttak-skiljiblaðnum fyri at útroknað nýggjar adressur.
 Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</translation>
     </message>
     <message>
@@ -164,8 +164,8 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">Vátta mappu bronglan</translation>
     </message>
     <message>
-        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR BITCOINS&lt;/b&gt;!</source>
-        <translation type="unfinished">Gev gætur: Bronglar tú mappuna og gloymur loyniorðið &lt;b&gt;MISSUR TÚ ALLAR TÍNAR BITCOINS&lt;/b&gt;!</translation>
+        <source>Warning: If you encrypt your wallet and lose your passphrase, you will &lt;b&gt;LOSE ALL OF YOUR SUGAR&lt;/b&gt;!</source>
+        <translation type="unfinished">Gev gætur: Bronglar tú mappuna og gloymur loyniorðið &lt;b&gt;MISSUR TÚ ALLAR TÍNAR SUGAR&lt;/b&gt;!</translation>
     </message>
     <message>
         <source>Are you sure you wish to encrypt your wallet?</source>
@@ -192,8 +192,8 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">Ógilda</translation>
     </message>
     <message>
-        <source>Remember that encrypting your wallet cannot fully protect your bitcoins from being stolen by malware infecting your computer.</source>
-        <translation type="unfinished">Hav í huga at tað at brongla tína mappu ikki er ein fullfíggjað verja ímóti at tínar bitcoins kunnu stjalast av illbúnaði á tíni teldu.</translation>
+        <source>Remember that encrypting your wallet cannot fully protect your Sugarchain coins from being stolen by malware infecting your computer.</source>
+        <translation type="unfinished">Hav í huga at tað at brongla tína mappu ikki er ein fullfíggjað verja ímóti at tínar SUGAR kunnu stjalast av illbúnaði á tíni teldu.</translation>
     </message>
     <message>
         <source>Wallet to be encrypted</source>
@@ -327,8 +327,8 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">Upphædd</translation>
     </message>
     <message>
-        <source>Enter a Bitcoin address (e.g. %1)</source>
-        <translation type="unfinished">Inntøppa eina Bitcoin adressu (t.d. %1)</translation>
+        <source>Enter a Sugarchain address (e.g. %1)</source>
+        <translation type="unfinished">Inntøppa eina Sugarchain adressu (t.d. %1)</translation>
     </message>
     <message>
         <source>Ctrl+W</source>
@@ -509,8 +509,8 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">&lt;b&gt;Virktur&lt;/b&gt; proxy: %1</translation>
     </message>
     <message>
-        <source>Send coins to a Bitcoin address</source>
-        <translation type="unfinished">Send myntir til eina Bitcoin adressu</translation>
+        <source>Send coins to a Sugarchain address</source>
+        <translation type="unfinished">Send myntir til eina Sugarchain adressu</translation>
     </message>
     <message>
         <source>Backup wallet to another location</source>
@@ -549,16 +549,16 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">&amp;Undirrita boð…</translation>
     </message>
     <message>
-        <source>Sign messages with your Bitcoin addresses to prove you own them</source>
-        <translation type="unfinished">Undirrita boðini við tíni Bitcoin-adressu fyri at prógva at tey eru tíni</translation>
+        <source>Sign messages with your Sugarchain addresses to prove you own them</source>
+        <translation type="unfinished">Undirrita boðini við tíni Sugarchain-adressu fyri at prógva at tey eru tíni</translation>
     </message>
     <message>
         <source>&amp;Verify message…</source>
         <translation type="unfinished">&amp;Vátta boð…</translation>
     </message>
     <message>
-        <source>Verify messages to ensure they were signed with specified Bitcoin addresses</source>
-        <translation type="unfinished">Sannroyn boð fyri at tryggja at tey vóru undirritaði av ávísaru Bitcoin adressu</translation>
+        <source>Verify messages to ensure they were signed with specified Sugarchain addresses</source>
+        <translation type="unfinished">Sannroyn boð fyri at tryggja at tey vóru undirritaði av ávísaru Sugarchain adressu</translation>
     </message>
     <message>
         <source>&amp;Load PSBT from file…</source>
@@ -621,8 +621,8 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">Sambindur við javningar…</translation>
     </message>
     <message>
-        <source>Request payments (generates QR codes and bitcoin: URIs)</source>
-        <translation type="unfinished">Umbið gjald (framleiður QR kotu og bitcoin: URI'ir)</translation>
+        <source>Request payments (generates QR codes and sugarchain: URIs)</source>
+        <translation type="unfinished">Umbið gjald (framleiður QR kotu og sugarchain: URI'ir)</translation>
     </message>
     <message>
         <source>Show the list of used sending addresses and labels</source>
@@ -704,8 +704,8 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">&amp;Inngjaldsadressur</translation>
     </message>
     <message>
-        <source>Open a bitcoin: URI</source>
-        <translation type="unfinished">Innles eitt bitcoin: URI</translation>
+        <source>Open a sugarchain: URI</source>
+        <translation type="unfinished">Innles eitt sugarchain: URI</translation>
     </message>
     <message>
         <source>Open Wallet</source>
@@ -742,8 +742,8 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">Uppstiga forsniðið á eini mappu</translation>
     </message>
     <message>
-        <source>Show the %1 help message to get a list with possible Bitcoin command-line options</source>
-        <translation type="unfinished">Vís %1 hjálpartekstin fyri ein lista við Bitcoin stýriboð-linju møgulleikum</translation>
+        <source>Show the %1 help message to get a list with possible Sugarchain command-line options</source>
+        <translation type="unfinished">Vís %1 hjálpartekstin fyri ein lista við Sugarchain stýriboð-linju møgulleikum</translation>
     </message>
     <message>
         <source>&amp;Mask values</source>
@@ -819,11 +819,11 @@ Undirritan, av boðum, er einans møgulig fyri 'legacy' (eldri) adressusløg.</t
         <translation type="unfinished">&amp;Vís</translation>
     </message>
     <message numerus="yes">
-        <source>%n active connection(s) to Bitcoin network.</source>
+        <source>%n active connection(s) to Sugarchain network.</source>
         <extracomment>A substring of the tooltip.</extracomment>
         <translation type="unfinished">
-            <numerusform>%n virkið samband til Bitcoin netið.</numerusform>
-            <numerusform>%n virkin sambond til Bitcoin netið.</numerusform>
+            <numerusform>%n virkið samband til Sugarchain netið.</numerusform>
+            <numerusform>%n virkin sambond til Sugarchain netið.</numerusform>
         </translation>
     </message>
     <message>
@@ -1372,8 +1372,8 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         <translation type="unfinished">Broyt útgjaldsadressu</translation>
     </message>
     <message>
-        <source>The entered address "%1" is not a valid Bitcoin address.</source>
-        <translation type="unfinished">Inntøppaða adressan "%1" er ikki ein gildig Bitcoin adressa.</translation>
+        <source>The entered address "%1" is not a valid Sugarchain address.</source>
+        <translation type="unfinished">Inntøppaða adressan "%1" er ikki ein gildig Sugarchain adressa.</translation>
     </message>
     <message>
         <source>Address "%1" already exists as a receiving address with label "%2" and so cannot be added as a sending address.</source>
@@ -1529,8 +1529,8 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         </translation>
     </message>
     <message>
-        <source>%1 will download and store a copy of the Bitcoin block chain.</source>
-        <translation type="unfinished">%1 tekur niður og goymir eitt avrit av Bitcoin blokkketuni.</translation>
+        <source>%1 will download and store a copy of the Sugarchain block chain.</source>
+        <translation type="unfinished">%1 tekur niður og goymir eitt avrit av Sugarchain blokkketuni.</translation>
     </message>
     <message>
         <source>The wallet will also be stored in this directory.</source>
@@ -1552,12 +1552,12 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         <translation type="unfinished">Formil</translation>
     </message>
     <message>
-        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the bitcoin network, as detailed below.</source>
-        <translation type="unfinished">Nýggjari flytingar eru enn ókendar, og tí kann vísta saldan, á mappuni, vera óeftirfarandi. Kunningin gerst tíðarhóskandi tá tín knútur er samstillaður við bitcoin netið; nágreina niðanfyri.</translation>
+        <source>Recent transactions may not yet be visible, and therefore your wallet's balance might be incorrect. This information will be correct once your wallet has finished synchronizing with the Sugarchain network, as detailed below.</source>
+        <translation type="unfinished">Nýggjari flytingar eru enn ókendar, og tí kann vísta saldan, á mappuni, vera óeftirfarandi. Kunningin gerst tíðarhóskandi tá tín knútur er samstillaður við Sugarchain netið; nágreina niðanfyri.</translation>
     </message>
     <message>
-        <source>Attempting to spend bitcoins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
-        <translation type="unfinished">Netið góðtekur ikki nýtslu av bitcoins, ið hesin knúturin ikki enn hevur kunnleika til og harvið ikki vera vístar.</translation>
+        <source>Attempting to spend Sugarchain coins that are affected by not-yet-displayed transactions will not be accepted by the network.</source>
+        <translation type="unfinished">Netið góðtekur ikki nýtslu av SUGAR, ið hesin knúturin ikki enn hevur kunnleika til og harvið ikki vera vístar.</translation>
     </message>
     <message>
         <source>Number of blocks left</source>
@@ -1607,8 +1607,8 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
 <context>
     <name>OpenURIDialog</name>
     <message>
-        <source>Open bitcoin URI</source>
-        <translation type="unfinished">Innles bitcoin URI</translation>
+        <source>Open Sugarchain URI</source>
+        <translation type="unfinished">Innles Sugarchain URI</translation>
     </message>
     <message>
         <source>Paste address from clipboard</source>
@@ -1656,8 +1656,8 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         <translation type="unfinished">Fullfíggja leið til eitt %1 sínamillumvirki skeljarrit (t.d. C:\Downloads\hwi.exe ella /Users/you/Downloads/hwi.py). Gev gætur: Illbúnaður kann stjala tín pening!</translation>
     </message>
     <message>
-        <source>Automatically open the Bitcoin client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
-        <translation type="unfinished">Sjálvvirkandi upplating av Bitcoin viðskiftara portrið á beinaranum. Hetta virkar bert um tín beinari hevur virktan PCP ella NAT-PMP hentleika. Ytra portrið kann vera tilvildarligt.</translation>
+        <source>Automatically open the Sugarchain client port on the router. This only works when your router supports PCP or NAT-PMP and it is enabled. The external port could be random.</source>
+        <translation type="unfinished">Sjálvvirkandi upplating av Sugarchain viðskiftara portrið á beinaranum. Hetta virkar bert um tín beinari hevur virktan PCP ella NAT-PMP hentleika. Ytra portrið kann vera tilvildarligt.</translation>
     </message>
     <message>
         <source>Map port using PCP or NA&amp;T-PMP</source>
@@ -1787,8 +1787,8 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         <translation type="unfinished">Loyv &amp;inngangandi sambondum</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a SOCKS5 proxy.</source>
-        <translation type="unfinished">Sambind við Bitcoin netið umvegis ein SOCKS5 proxy.</translation>
+        <source>Connect to the Sugarchain network through a SOCKS5 proxy.</source>
+        <translation type="unfinished">Sambind við Sugarchain netið umvegis ein SOCKS5 proxy.</translation>
     </message>
     <message>
         <source>&amp;Connect through SOCKS5 proxy (default proxy):</source>
@@ -1863,8 +1863,8 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         <translation type="unfinished">Um mynt-val møgulleikin er sjónligur ella ikki.</translation>
     </message>
     <message>
-        <source>Connect to the Bitcoin network through a separate SOCKS5 proxy for Tor onion services.</source>
-        <translation type="unfinished">Sambind við Bitcoin netið umvegis ein serstakan SOCKS5 proxy, til at røkka Tor-onion-tænastum.</translation>
+        <source>Connect to the Sugarchain network through a separate SOCKS5 proxy for Tor onion services.</source>
+        <translation type="unfinished">Sambind við Sugarchain netið umvegis ein serstakan SOCKS5 proxy, til at røkka Tor-onion-tænastum.</translation>
     </message>
     <message>
         <source>Use separate SOCKS&amp;5 proxy to reach peers via Tor onion services:</source>
@@ -1960,8 +1960,8 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         <translation type="unfinished">Formil</translation>
     </message>
     <message>
-        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Bitcoin network after a connection is established, but this process has not completed yet.</source>
-        <translation type="unfinished">Vísta kunningin kann vera ótíðarhóskandi. Tín knútur samstillar við Bitcoin netið, sjálvvirkandi, eftir at samband er fingið við tað; men tann tilgongdin er ikki liðug enn.</translation>
+        <source>The displayed information may be out of date. Your wallet automatically synchronizes with the Sugarchain network after a connection is established, but this process has not completed yet.</source>
+        <translation type="unfinished">Vísta kunningin kann vera ótíðarhóskandi. Tín knútur samstillar við Sugarchain netið, sjálvvirkandi, eftir at samband er fingið við tað; men tann tilgongdin er ikki liðug enn.</translation>
     </message>
     <message>
         <source>Available:</source>
@@ -2156,17 +2156,14 @@ Trygdaravritið verður kallað &lt;wallet name&gt;-&lt;timestamp&gt;.legacy.bak
         <source>Payment request error</source>
         <translation type="unfinished">Gjaldsumbøn villa</translation>
     </message>
-    <message>
-        <source>Cannot start bitcoin: click-to-pay handler</source>
-        <translation type="unfinished">Bar ikki til at byrja bitcoin: click-to-pay handfaran</translation>
-    </message>
+
     <message>
         <source>URI handling</source>
         <translation type="unfinished">URI handfaring</translation>
     </message>
     <message>
-        <source>'bitcoin://' is not a valid URI. Use 'bitcoin:' instead.</source>
-        <translation type="unfinished">"bitcoin://" er ikki eitt gildigt URI. Brúka ístaðin 'bitcoin:'.</translation>
+        <source>'sugarchain://' is not a valid URI. Use 'sugarchain:' instead.</source>
+        <translation type="unfinished">"sugarchain://" er ikki eitt gildigt URI. Brúka ístaðin 'sugarchain:'.</translation>
     </message>
     <message>
         <source>Cannot process payment request because BIP70 is not supported.
@@ -2177,8 +2174,8 @@ Vegnað væl kend trygdarhol í BIP70, er harðliga frámælt at fylgja boðum, 
 Fært tú hesi feilboð, skalt tú biðja seljaran, ella tann vinnurekandi, útflýggja tær eitt BIP21-sínamillumvirki URI.</translation>
     </message>
     <message>
-        <source>URI cannot be parsed! This can be caused by an invalid Bitcoin address or malformed URI parameters.</source>
-        <translation type="unfinished">Bar ikki til at tulkað URI! Tað kann standast av ógildigari Bitcoin adressu ella avskeplaðum URI ávirkjum.</translation>
+        <source>URI cannot be parsed! This can be caused by an invalid Sugarchain address or malformed URI parameters.</source>
+        <translation type="unfinished">Bar ikki til at tulkað URI! Tað kann standast av ógildigari Sugarchain adressu ella avskeplaðum URI ávirkjum.</translation>
     </message>
     <message>
         <source>Payment request file handling</source>
@@ -2325,8 +2322,8 @@ Fært tú hesi feilboð, skalt tú biðja seljaran, ella tann vinnurekandi, útf
         <translation type="unfinished">Nærnetatsetur</translation>
     </message>
     <message>
-        <source>Network addresses that your Bitcoin node is currently using to communicate with other nodes.</source>
-        <translation type="unfinished">Tín Bitcoin knútur brúkar fylgjandi net-atsetur at samskifta við aðrar knútar.</translation>
+        <source>Network addresses that your Sugarchain node is currently using to communicate with other nodes.</source>
+        <translation type="unfinished">Tín Sugarchain knútur brúkar fylgjandi net-atsetur at samskifta við aðrar knútar.</translation>
     </message>
     <message>
         <source>Block chain</source>
@@ -2777,8 +2774,8 @@ Fyri meira upplýsingar um nýtslu av hesi stýristøð, skriva og send %6.
         <translation type="unfinished">&amp;Boð:</translation>
     </message>
     <message>
-        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Bitcoin network.</source>
-        <translation type="unfinished">Eini valfríð boð at festa í gjaldsumbønina, ið kunnu verða víst, tá umbønin verður latin upp. Hav í huga: Boðini verða ikki send, við gjaldinum, umvegis Bitcoin netið.</translation>
+        <source>An optional message to attach to the payment request, which will be displayed when the request is opened. Note: The message will not be sent with the payment over the Sugarchain network.</source>
+        <translation type="unfinished">Eini valfríð boð at festa í gjaldsumbønina, ið kunnu verða víst, tá umbønin verður latin upp. Hav í huga: Boðini verða ikki send, við gjaldinum, umvegis Sugarchain netið.</translation>
     </message>
     <message>
         <source>An optional label to associate with the new receiving address.</source>
@@ -3078,8 +3075,8 @@ Note:  Since the fee is calculated on a per-byte basis, a fee rate of "100 satos
 Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgjaldssatsur á "100 satoshis fyri ktB" fyri eina flyting, ið er 500 tykislig být (helvtin av 1 ktB), at elva til eitt avgjald á 50 satoshis.</translation>
     </message>
     <message>
-        <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for bitcoin transactions than the network can process.</source>
-        <translation type="unfinished">Tá nøgdin av flytingum er minni enn pláss er fyri teimum, í blokkunum, kunnu blokk-útvinnarar og framsendandi knútar hava lágmark fyri flytingaravgjald. Tað er í lagið at gjalda hesa minstu upphædd sum flytingaravgjald, men hav í huga at tað kann elva til at flytingin ongantíð verður váttað, tá eftirspurningurin, eftir bitcoin flytingum, er stórri enn netið kann útinna.</translation>
+        <source>When there is less transaction volume than space in the blocks, miners as well as relaying nodes may enforce a minimum fee. Paying only this minimum fee is just fine, but be aware that this can result in a never confirming transaction once there is more demand for Sugarchain transactions than the network can process.</source>
+        <translation type="unfinished">Tá nøgdin av flytingum er minni enn pláss er fyri teimum, í blokkunum, kunnu blokk-útvinnarar og framsendandi knútar hava lágmark fyri flytingaravgjald. Tað er í lagið at gjalda hesa minstu upphædd sum flytingaravgjald, men hav í huga at tað kann elva til at flytingin ongantíð verður váttað, tá eftirspurningurin, eftir Sugarchain flytingum, er stórri enn netið kann útinna.</translation>
     </message>
     <message>
         <source>A too low fee might result in a never confirming transaction (read the tooltip)</source>
@@ -3273,7 +3270,7 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
     </message>
     <message>
         <source>Confirm send coins</source>
-        <translation type="unfinished">Vátta bitcoin flyting</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>The recipient address is not valid. Please recheck.</source>
@@ -3311,8 +3308,8 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         </translation>
     </message>
     <message>
-        <source>Warning: Invalid Bitcoin address</source>
-        <translation type="unfinished">Ávaring: Ógildig Bitcoin adressa</translation>
+        <source>Warning: Invalid Sugarchain address</source>
+        <translation type="unfinished">Ávaring: Ógildig Sugarchain adressa</translation>
     </message>
     <message>
         <source>Warning: Unknown change address</source>
@@ -3350,8 +3347,8 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         <translation type="unfinished">Brúka adressuna ið frammanundan var brúkt</translation>
     </message>
     <message>
-        <source>The Bitcoin address to send the payment to</source>
-        <translation type="unfinished">Bitcoin adressan at rinda til</translation>
+        <source>The Sugarchain address to send the payment to</source>
+        <translation type="unfinished">Sugarchain adressan at rinda til</translation>
     </message>
     <message>
         <source>Alt+A</source>
@@ -3374,8 +3371,8 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         <translation type="unfinished">Upphædd at flyta, í valdu eindini</translation>
     </message>
     <message>
-        <source>The fee will be deducted from the amount being sent. The recipient will receive less bitcoins than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
-        <translation type="unfinished">Avgjaldið verður drigi frá sendu upphæddini. Móttakarin móttekur færri bitcoins enn tú ásetur í upphædd teigin. Um fleiri móttakaraadressur eru ásettar verður avgjaldið javnt býtt.</translation>
+        <source>The fee will be deducted from the amount being sent. The recipient will receive less Sugarchain coins than you enter in the amount field. If multiple recipients are selected, the fee is split equally.</source>
+        <translation type="unfinished">Avgjaldið verður drigi frá sendu upphæddini. Móttakarin móttekur færri SUGAR enn tú ásetur í upphædd teigin. Um fleiri móttakaraadressur eru ásettar verður avgjaldið javnt býtt.</translation>
     </message>
     <message>
         <source>S&amp;ubtract fee from amount</source>
@@ -3394,8 +3391,8 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         <translation type="unfinished">Inntøppa eitt spjaldur ið verður knýtt at hesi adressuni í útgjaldsadressuskránni</translation>
     </message>
     <message>
-        <source>A message that was attached to the bitcoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Bitcoin network.</source>
-        <translation type="unfinished">Eini boð, ið vóru partur at bitcoin: URI'inum, ið verða goymd saman við flytingini, og sum tú kann brúka sum tilvísing. Hav í huga: Boðini verða ikki send, við gjaldinum, umvegis Bitcoin netið.</translation>
+        <source>A message that was attached to the sugarchain: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Sugarchain network.</source>
+        <translation type="unfinished">Eini boð, ið vóru partur at sugarchain: URI'inum, ið verða goymd saman við flytingini, og sum tú kann brúka sum tilvísing. Hav í huga: Boðini verða ikki send, við gjaldinum, umvegis Sugarchain netið.</translation>
     </message>
 </context>
 <context>
@@ -3416,12 +3413,12 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         <translation type="unfinished">&amp;Undirrita Boð</translation>
     </message>
     <message>
-        <source>You can sign messages/agreements with your legacy (P2PKH) addresses to prove you can receive bitcoins sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
-        <translation type="unfinished">Tú kann undirrita boð/sáttmálar við tínum legacy/eldru (P2PKH) adressum, fyri at prógva at tú kann móttaka bitcoins, sendar til tær. Ver ansin so tú ikki skrivar undir nakað ógreitt ella tilvildarligt, tí fysking-álop kunnu royna at snýta teg til at latað tín samleika til tey. Undirrita bert nágreiniligar útsagnir sum tú tekur undir við.</translation>
+        <source>You can sign messages/agreements with your legacy (P2PKH) addresses to prove you can receive Sugarchain coins sent to them. Be careful not to sign anything vague or random, as phishing attacks may try to trick you into signing your identity over to them. Only sign fully-detailed statements you agree to.</source>
+        <translation type="unfinished">Tú kann undirrita boð/sáttmálar við tínum legacy/eldru (P2PKH) adressum, fyri at prógva at tú kann móttaka SUGAR, sendar til tær. Ver ansin so tú ikki skrivar undir nakað ógreitt ella tilvildarligt, tí fysking-álop kunnu royna at snýta teg til at latað tín samleika til tey. Undirrita bert nágreiniligar útsagnir sum tú tekur undir við.</translation>
     </message>
     <message>
-        <source>The Bitcoin address to sign the message with</source>
-        <translation type="unfinished">Bitcoin adressan at undirskriva boðini við</translation>
+        <source>The Sugarchain address to sign the message with</source>
+        <translation type="unfinished">Sugarchain adressan at undirskriva boðini við</translation>
     </message>
     <message>
         <source>Choose previously used address</source>
@@ -3452,8 +3449,8 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         <translation type="unfinished">Avrita undirskriftina á setiborðið</translation>
     </message>
     <message>
-        <source>Sign the message to prove you own this Bitcoin address</source>
-        <translation type="unfinished">Undirskriva boðini fyri at prógva at Bitcoin-adressan er tín</translation>
+        <source>Sign the message to prove you own this Sugarchain address</source>
+        <translation type="unfinished">Undirskriva boðini fyri at prógva at Sugarchain-adressan er tín</translation>
     </message>
     <message>
         <source>Sign &amp;Message</source>
@@ -3476,8 +3473,8 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         <translation type="unfinished">Inntøppa undirritara-adressuna, boðið (syrg fyri neyvari varðveitslu av reglubrotum, millumrúmum, teigarum, o.s.fr.), og undirskrift niðanfyri fyri at vátta boðið. Ver varin við ikki at lesa meira inn í boðið enn hvat neyvt stendur í tí, fyri at umgangast svik av einum sokallaðum "man-in-the-middle" álopi. Hav í huga at hetta prógvar bert at undirritarin kann móttakað við adressuni; tað kann ikki prógva sendaraskap av flytingum!</translation>
     </message>
     <message>
-        <source>The Bitcoin address the message was signed with</source>
-        <translation type="unfinished">Bitcoin-adressan ið undirskrivaði boðini</translation>
+        <source>The Sugarchain address the message was signed with</source>
+        <translation type="unfinished">Sugarchain-adressan ið undirskrivaði boðini</translation>
     </message>
     <message>
         <source>The signed message to verify</source>
@@ -3488,8 +3485,8 @@ Gev gætur: Av tí at avgjaldið verður roknað fyri hvørt být, fer ein avgja
         <translation type="unfinished">Givna undirskrift boðsins</translation>
     </message>
     <message>
-        <source>Verify the message to ensure it was signed with the specified Bitcoin address</source>
-        <translation type="unfinished">Vátta at boðini vóru undirritað av ásettu Bitcoin adressuni</translation>
+        <source>Verify the message to ensure it was signed with the specified Sugarchain address</source>
+        <translation type="unfinished">Vátta at boðini vóru undirritað av ásettu Sugarchain adressuni</translation>
     </message>
     <message>
         <source>Verify &amp;Message</source>
@@ -4172,8 +4169,8 @@ Vel Fíla -&gt; Innles Mappu fyri at innlesa eina mappu.
         <translation type="unfinished">Villa: Dátuheitis-dáta, tilhoyrandi dusmfílu, er ikki rætt. Fekk "%s", væntaði "%s".</translation>
     </message>
     <message>
-        <source>Error: Dumpfile version is not supported. This version of bitcoin-wallet only supports version 1 dumpfiles. Got dumpfile with version %s</source>
-        <translation type="unfinished">Villa: Hendan útgávan av bitcoin-mappuni kann bert innlesa útgávu 1 dumsufílur. Læs útgávu %s dumsufílu</translation>
+        <source>Error: Dumpfile version is not supported. This version of sugarchain-wallet only supports version 1 dumpfiles. Got dumpfile with version %s</source>
+        <translation type="unfinished">Villa: Hendan útgávan av Sugarchain-mappuni kann bert innlesa útgávu 1 dumsufílur. Læs útgávu %s dumsufílu</translation>
     </message>
     <message>
         <source>Error: Unable to produce descriptors for this legacy wallet. Make sure to provide the wallet's passphrase if it is encrypted.</source>
