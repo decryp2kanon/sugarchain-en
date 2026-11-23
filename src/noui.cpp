@@ -51,16 +51,27 @@ bool noui_ThreadSafeQuestion(const bilingual_str& /* ignored interactive message
     return noui_ThreadSafeMessageBox(Untranslated(message), style);
 }
 
-void noui_InitMessage(const std::string& message)
+static void LogInitMessage(const std::string& message)
 {
-    LogInfo("init message: %s", message);
+    static const std::string progress_prefix{"Loading block index: "};
+    if (message.starts_with(progress_prefix) ||
+        message == "Counting block index entries...") {
+        LogInfo("%s", message);
+    } else {
+        LogInfo("init message: %s", message);
+    }
+}
+
+void noui_InitMessage(const std::string& message, bool log)
+{
+    if (log) LogInitMessage(message);
 }
 
 void noui_connect()
 {
     noui_ThreadSafeMessageBoxConn = uiInterface.ThreadSafeMessageBox_connect(noui_ThreadSafeMessageBox);
     noui_ThreadSafeQuestionConn = uiInterface.ThreadSafeQuestion_connect(noui_ThreadSafeQuestion);
-    noui_InitMessageConn = uiInterface.InitMessage_connect(noui_InitMessage);
+    noui_InitMessageConn = uiInterface.InitMessageWithLog_connect(noui_InitMessage);
 }
 
 bool noui_ThreadSafeMessageBoxRedirect(const bilingual_str& message, unsigned int style)
@@ -75,9 +86,9 @@ bool noui_ThreadSafeQuestionRedirect(const bilingual_str& /* ignored interactive
     return false;
 }
 
-void noui_InitMessageRedirect(const std::string& message)
+void noui_InitMessageRedirect(const std::string& message, bool log)
 {
-    LogInfo("init message: %s", message);
+    if (log) LogInitMessage(message);
 }
 
 void noui_test_redirect()
@@ -87,7 +98,7 @@ void noui_test_redirect()
     noui_InitMessageConn.disconnect();
     noui_ThreadSafeMessageBoxConn = uiInterface.ThreadSafeMessageBox_connect(noui_ThreadSafeMessageBoxRedirect);
     noui_ThreadSafeQuestionConn = uiInterface.ThreadSafeQuestion_connect(noui_ThreadSafeQuestionRedirect);
-    noui_InitMessageConn = uiInterface.InitMessage_connect(noui_InitMessageRedirect);
+    noui_InitMessageConn = uiInterface.InitMessageWithLog_connect(noui_InitMessageRedirect);
 }
 
 void noui_reconnect()
