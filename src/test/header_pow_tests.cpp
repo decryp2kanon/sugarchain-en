@@ -448,6 +448,9 @@ BOOST_FIXTURE_TEST_CASE(historical_scan_survives_invalid_headers_flood, TestingS
     BOOST_CHECK_EQUAL(stats.reused.load(), 0U);
     BOOST_CHECK_EQUAL(attacks_during_scan, peers);
     BOOST_CHECK_EQUAL(WITH_LOCK(cs_main, return chainman.m_blockman.m_block_index.size()), index_size);
+    const auto usage{GetYespowerVerificationCacheUsage()};
+    BOOST_CHECK_EQUAL(usage.budget_bytes, 1U << 20);
+    BOOST_CHECK_LE(usage.proof_storage_bytes, usage.budget_bytes);
     for (const auto& header : headers) BOOST_CHECK(db.HasYespowerEvidence(header, consensus));
     for (const auto& bad : forged) {
         BOOST_CHECK(!WITH_LOCK(cs_main, return chainman.m_blockman.LookupBlockIndex(bad.GetHash())));
@@ -1845,6 +1848,89 @@ BOOST_AUTO_TEST_CASE(historical_evidence_durable_reopen_and_reindex)
         BOOST_CHECK(!db.VerifyHistoricalPoW(params, stop, wiped, 0));
         BOOST_CHECK_EQUAL(wiped.reused.load(), 0U);
     }
+}
+
+BOOST_AUTO_TEST_CASE(post_ibd_shrink_discards_only_ram_evidence)
+{
+    CacheBudget restore{DEFAULT_YESPOWER_CACHE_BYTES};
+    InitYespowerVerificationCache(1 << 20, true);
+    auto headers{Headers(920, 1024)};
+    HeaderPoWVerifier verifier{8};
+    BOOST_REQUIRE(verifier.CheckEach(headers, params));
+    const auto before{GetYespowerVerificationCacheUsage()};
+    BOOST_REQUIRE_GT(before.tiers, 1U);
+    {
+        Observation observation;
+        BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+        BOOST_CHECK_EQUAL(GetYespowerVerificationCacheUsage().proof_storage_bytes, before.proof_storage_bytes);
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+        BOOST_CHECK_EQUAL(calls.load(), 0U);
+#endif
+    }
+    BOOST_REQUIRE(ShrinkYespowerVerificationCache());
+    const auto after{GetYespowerVerificationCacheUsage()};
+    BOOST_CHECK_EQUAL(after.budget_bytes, before.budget_bytes);
+    BOOST_CHECK_EQUAL(after.tiers, 1U);
+    BOOST_CHECK_LT(after.proof_storage_bytes, before.proof_storage_bytes);
+    BOOST_CHECK(!ShrinkYespowerVerificationCache());
+    {
+        Observation observation;
+        BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+        // The first verified header allocates a proof page in the fresh tier.
+        BOOST_CHECK_GT(GetYespowerVerificationCacheUsage().proof_storage_bytes, after.proof_storage_bytes);
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+        BOOST_CHECK_EQUAL(calls.load(), 1U);
+#endif
+        auto invalid{headers.back()};
+        invalid.nBits = 0;
+        BOOST_CHECK(!CheckBlockProofOfWork(invalid, params));
+    }
+    InitYespowerVerificationCache(1 << 20, false);
+    BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+    BOOST_CHECK(!ShrinkYespowerVerificationCache());
+    {
+        Observation observation;
+        BOOST_REQUIRE(CheckBlockProofOfWork(headers.back(), params));
+#ifdef ENABLE_YESPOWER_TEST_WRAP
+        BOOST_CHECK_EQUAL(calls.load(), 0U);
+#endif
+    }
+}
+
+BOOST_AUTO_TEST_CASE(post_ibd_shrink_is_safe_during_parallel_checks)
+{
+    CacheBudget restore{DEFAULT_YESPOWER_CACHE_BYTES};
+    InitYespowerVerificationCache(1 << 20, true);
+    auto headers{Headers(921, 256)};
+    HeaderPoWVerifier initial{2};
+    BOOST_REQUIRE(initial.CheckEach(headers, params));
+    std::atomic<unsigned> failures{0}, ready{0}, shrinks{0};
+    std::atomic<bool> start{false};
+    {
+        JoiningThread shrinking{[&] {
+            while (ready.load() != 2) std::this_thread::yield();
+            start = true;
+            for (int i{0}; i < 100; ++i) {
+                if (ShrinkYespowerVerificationCache()) ++shrinks;
+                GetYespowerVerificationCacheUsage();
+            }
+        }};
+        std::vector<JoiningThread> readers;
+        for (int n{0}; n < 2; ++n) readers.emplace_back([&] {
+            HeaderPoWVerifier verifier{2};
+            ++ready;
+            while (!start.load()) std::this_thread::yield();
+            for (int i{0}; i < 8; ++i) {
+                if (!verifier.CheckEach(headers, params)) ++failures;
+                auto invalid{headers.back()};
+                invalid.nBits = 0;
+                if (CheckBlockProofOfWork(invalid, params)) ++failures;
+            }
+        });
+    }
+    BOOST_CHECK_EQUAL(failures.load(), 0U);
+    BOOST_CHECK_GT(shrinks.load(), 0U);
+    BOOST_CHECK_EQUAL(GetYespowerVerificationCacheUsage().budget_bytes, 1U << 20);
 }
 
 BOOST_AUTO_TEST_CASE(block_index_owned_batch_survives_reopen)
