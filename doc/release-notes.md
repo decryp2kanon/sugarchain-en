@@ -1,3 +1,7 @@
+<!-- Upstream reference: preserved intentionally. -->
+
+> **Upstream Bitcoin Core release notes.** This file preserves the Bitcoin Core 31.1 release notes as upstream history. The download links, upgrade instructions, support claims, and announcements below apply to Bitcoin Core, not to a Sugarchain En release. See the [Sugarchain En README](../README.md) for this fork.
+
 v31.1 Release Notes
 ===================
 

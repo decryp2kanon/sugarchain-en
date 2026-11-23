@@ -1,45 +1,47 @@
-Bitcoin Core
+Sugarchain En
 =============
 
 Setup
 ---------------------
-Bitcoin Core is the original Bitcoin client and it builds the backbone of the network. It downloads and, by default, stores the entire history of Bitcoin transactions, which requires several hundred gigabytes or more of disk space. Depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to several days or more.
+Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet networking and consensus. Its mainnet downloads and validates Sugarchain blocks and transactions, not the Bitcoin blockchain. The current mainnet parameters are defined in [`src/kernel/chainparams.cpp`](../src/kernel/chainparams.cpp). Initial synchronization time and storage depend on the chain size, pruning settings, hardware, and network connection. The inherited non-main networks are separate test environments; do not assume that their parameters match Sugarchain mainnet.
 
-To download Bitcoin Core, visit [bitcoincore.org](https://bitcoincore.org/en/download/).
+The Sugarchain homepage is https://sugarchain.org/.
+
+This directory also retains upstream Bitcoin Core technical references, BIPs,
+example transactions, and historical release notes. Their Bitcoin names,
+addresses, and external service links identify the upstream material; they
+do not describe Sugarchain En releases or guarantee support by an external tool.
 
 Running
 ---------------------
-The following are some helpful notes on how to run Bitcoin Core on your native platform.
+The following are some helpful notes on how to run Sugarchain En on your native platform.
 
 ### Unix
 
 Unpack the files into a directory and run:
 
-- `bin/bitcoin-qt` (GUI) or
-- `bin/bitcoind` (headless)
-- `bin/bitcoin` (wrapper command)
+- `bin/sugarchain-qt` (GUI) or
+- `bin/sugarchaind` (headless)
+- `bin/sugarchain` (wrapper command)
 
-The `bitcoin` command supports subcommands like `bitcoin gui`, `bitcoin node`, and `bitcoin rpc` exposing different functionality. Subcommands can be listed with `bitcoin help`.
+The `sugarchain` command supports subcommands like `sugarchain gui`, `sugarchain node`, and `sugarchain rpc` exposing different functionality. Subcommands can be listed with `sugarchain help`.
 
 ### Windows
 
-Unpack the files into a directory, and then run bitcoin-qt.exe.
+Unpack the files into a directory, and then run sugarchain-qt.exe.
 
 ### macOS
 
-Drag Bitcoin Core to your applications folder, and then run Bitcoin Core.
+Drag Sugarchain En to your applications folder, and then run Sugarchain En.
 
 ### Need Help?
 
-* See the documentation at the [Bitcoin Wiki](https://en.bitcoin.it/wiki/Main_Page)
-for help and more information.
-* Ask for help on [Bitcoin StackExchange](https://bitcoin.stackexchange.com).
-* Ask for help on #bitcoin on Libera Chat. If you don't have an IRC client, you can use [web.libera.chat](https://web.libera.chat/#bitcoin).
-* Ask for help on the [BitcoinTalk](https://bitcointalk.org/) forums, in the [Technical Support board](https://bitcointalk.org/index.php?board=4.0).
+* Contact/community: https://t.me/sugarchain
+* Bug reports: https://github.com/decryp2kanon/sugarchain-en/issues
 
 Building
 ---------------------
-The following are developer notes on how to build Bitcoin Core on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+The following are developer notes on how to build Sugarchain En on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
 - [Dependencies](dependencies.md)
 - [macOS Build Notes](build-osx.md)
@@ -51,12 +53,12 @@ The following are developer notes on how to build Bitcoin Core on your native pl
 
 Development
 ---------------------
-The Bitcoin repo's [root README](/README.md) contains relevant information on the development process and automated testing.
+See this repository's [contribution guide](/CONTRIBUTING.md) for the development process and testing expectations.
 
 - [Developer Notes](developer-notes.md)
 - [Productivity Notes](productivity.md)
 - [Release Process](release-process.md)
-- [Source Code Documentation (External Link)](https://doxygen.bitcoincore.org/)
+- [Upstream Bitcoin Core Source Documentation (External Link)](https://doxygen.bitcoincore.org/)
 - [Translation Process](translation_process.md)
 - [Translation Strings Policy](translation_strings_policy.md)
 - [JSON-RPC Interface](JSON-RPC-interface.md)
@@ -67,8 +69,8 @@ The Bitcoin repo's [root README](/README.md) contains relevant information on th
 - [Internal Design Docs](design/)
 
 ### Resources
-* Discuss on the [BitcoinTalk](https://bitcointalk.org/) forums, in the [Development & Technical Discussion board](https://bitcointalk.org/index.php?board=6.0).
-* Discuss project-specific development on #bitcoin-core-dev on Libera Chat. If you don't have an IRC client, you can use [web.libera.chat](https://web.libera.chat/#bitcoin-core-dev).
+* Discuss Sugarchain En changes in the [project issues](https://github.com/decryp2kanon/sugarchain-en/issues) and pull requests.
+* Upstream Bitcoin Core technical discussions remain useful references; they are not Sugarchain En support channels.
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)

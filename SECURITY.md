@@ -1,3 +1,16 @@
+# Sugarchain En Contact
+
+Homepage: https://sugarchain.org/
+
+Contact/community: https://t.me/sugarchain
+
+Bug reports: https://github.com/decryp2kanon/sugarchain-en/issues
+
+## Upstream Bitcoin Core reference
+
+The policy below is retained as an upstream reference. Its support schedule,
+security address, and keys apply to Bitcoin Core, not Sugarchain En.
+
 # Security Policy
 
 ## Supported Versions

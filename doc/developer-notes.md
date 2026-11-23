@@ -190,7 +190,7 @@ Refer to [/test/functional/README.md#style-guidelines](/test/functional/README.m
 
 ## Coding Style (Doxygen-compatible comments)
 
-Bitcoin Core uses [Doxygen](https://www.doxygen.nl/) to generate its official documentation.
+Sugarchain En uses [Doxygen](https://www.doxygen.nl/) to generate its official documentation.
 
 Use Doxygen-compatible comment blocks for functions, methods, and fields.
 
@@ -311,8 +311,8 @@ If the code is behaving strangely, take a look in the `debug.log` file in the da
 error and debugging messages are written there.
 
 Debug logging can be enabled on startup with the `-debug` and `-loglevel`
-configuration options and toggled while bitcoind is running with the `logging`
-RPC.  For instance, launching bitcoind with `-debug` or `-debug=1` will turn on
+configuration options and toggled while sugarchaind is running with the `logging`
+RPC.  For instance, launching sugarchaind with `-debug` or `-debug=1` will turn on
 all log categories and `-loglevel=trace` will turn on all log severity levels.
 
 The Qt code routes `qDebug()` output to `debug.log` under category "qt": run with `-debug=qt`
@@ -330,7 +330,7 @@ see [test/functional/](/test/functional) for tests that run in `-regtest` mode.
 
 ### DEBUG_LOCKORDER
 
-Bitcoin Core is a multi-threaded application, and deadlocks or other
+Sugarchain En is a multi-threaded application, and deadlocks or other
 multi-threading bugs can be very difficult to track down. The `-DCMAKE_BUILD_TYPE=Debug`
 build option adds `-DDEBUG_LOCKORDER` to the compiler flags. This inserts
 run-time checks to keep track of which locks are held and adds warnings to the
@@ -346,9 +346,9 @@ The `-DCMAKE_BUILD_TYPE=Debug` build option adds `-DDEBUG_LOCKCONTENTION` to the
 compiler flags. You may also enable it manually by building with `-DDEBUG_LOCKCONTENTION`
 added to your CPPFLAGS, i.e. `-DAPPEND_CPPFLAGS="-DDEBUG_LOCKCONTENTION"`.
 
-You can then use the `-debug=lock` configuration option at bitcoind startup or
-`bitcoin-cli logging '["lock"]'` at runtime to turn on lock contention logging.
-It can be toggled off again with `bitcoin-cli logging [] '["lock"]'`.
+You can then use the `-debug=lock` configuration option at sugarchaind startup or
+`sugarchain-cli logging '["lock"]'` at runtime to turn on lock contention logging.
+It can be toggled off again with `sugarchain-cli logging [] '["lock"]'`.
 
 ### Assertions and Checks
 
@@ -392,7 +392,7 @@ in-tree. Example use:
 $ valgrind --suppressions=test/sanitizer_suppressions/valgrind.supp build/bin/test_bitcoin
 $ valgrind --suppressions=test/sanitizer_suppressions/valgrind.supp --leak-check=full \
       --show-leak-kinds=all build/bin/test_bitcoin --log_level=test_suite
-$ valgrind -v --leak-check=full build/bin/bitcoind -printtoconsole
+$ valgrind -v --leak-check=full build/bin/sugarchaind -printtoconsole
 $ ./build/test/functional/test_runner.py --valgrind
 ```
 
@@ -469,7 +469,7 @@ Generating the coverage report:
 ```shell
 llvm-cov show \
     --object=build/bin/test_bitcoin \
-    --object=build/bin/bitcoind \
+    --object=build/bin/sugarchaind \
     -Xdemangler=llvm-cxxfilt \
     --instr-profile=build/coverage.profdata \
     --ignore-filename-regex="src/crc32c/|src/leveldb/|src/minisketch/|src/secp256k1/|src/test/" \
@@ -478,7 +478,7 @@ llvm-cov show \
     --show-line-counts-or-regions \
     --show-expansions \
     --output-dir=build/coverage_report \
-    --project-title="Bitcoin Core Coverage Report"
+    --project-title="Sugarchain En Coverage Report"
 ```
 
 > **Note:** The "functions have mismatched data" warning can be safely ignored, the coverage report will still be generated correctly despite this warning.
@@ -522,7 +522,7 @@ llvm-cov show \
     --show-line-counts-or-regions \
     --show-expansions \
     --output-dir=build/coverage_report \
-    --project-title="Bitcoin Core Fuzz Coverage Report"
+    --project-title="Sugarchain En Fuzz Coverage Report"
 ```
 
 The generated coverage report can be accessed at `build/coverage_report/index.html`.
@@ -566,13 +566,13 @@ Make sure you [understand the security
 trade-offs](https://lwn.net/Articles/420403/) of setting these kernel
 parameters.
 
-To profile a running bitcoind process for 60 seconds, you could use an
+To profile a running sugarchaind process for 60 seconds, you could use an
 invocation of `perf record` like this:
 
 ```sh
 $ perf record \
     -g --call-graph dwarf --per-thread -F 140 \
-    -p `pgrep bitcoind` -- sleep 60
+    -p `pgrep sugarchaind` -- sleep 60
 ```
 
 You could then analyze the results by running:
@@ -588,7 +588,7 @@ See the functional test documentation for how to invoke perf within tests.
 
 ### Sanitizers
 
-Bitcoin Core can be compiled with various "sanitizers" enabled, which add
+Sugarchain En can be compiled with various "sanitizers" enabled, which add
 instrumentation for issues regarding things like memory safety, thread race
 conditions, or undefined behavior. This is controlled with the
 `-DSANITIZERS` cmake build flag, which should be a comma separated list of
@@ -712,9 +712,9 @@ and its `cs_KeyStore` lock for example).
 # Development guidelines
 
 A few non-style-related recommendations for developers, as well as points to
-pay attention to for reviewers of Bitcoin Core code.
+pay attention to for reviewers of Sugarchain En code.
 
-## General Bitcoin Core
+## General Sugarchain En
 
 - New features should be exposed on RPC first, then can be made available in the GUI.
 
@@ -882,7 +882,7 @@ int GetInt(Tabs tab)
 
 - For `strprintf`, `LogInfo`, `LogDebug`, etc formatting characters don't need size specifiers (hh, h, l, ll, j, z, t, L) for arithmetic types.
 
-  - *Rationale*: Bitcoin Core uses tinyformat, which is type safe. Leave them out to avoid confusion.
+  - *Rationale*: Sugarchain En uses tinyformat, which is type safe. Leave them out to avoid confusion.
 
 - Use `.c_str()` sparingly. Its only valid use is to pass C++ strings to C functions that take NULL-terminated
   strings.
@@ -1136,7 +1136,7 @@ you must be aware of.
 
 In most configurations, we use the default LevelDB value for `max_open_files`,
 which is 1000 at the time of this writing. If LevelDB actually uses this many
-file descriptors, it will cause problems with Bitcoin's `select()` loop, because
+file descriptors, it will cause problems with Sugarchain En's `select()` loop, because
 it may cause new sockets to be created where the fd value is >= 1024. For this
 reason, on 64-bit Unix systems, we rely on an internal LevelDB optimization that
 uses `mmap()` + `close()` to open table files without actually retaining
@@ -1147,7 +1147,7 @@ In addition to reviewing the upstream changes in `env_posix.cc`, you can use `ls
 check this. For example, on Linux this command will show open `.ldb` file counts:
 
 ```bash
-$ lsof -p $(pidof bitcoind) |\
+$ lsof -p $(pidof sugarchaind) |\
     awk 'BEGIN { fd=0; mem=0; } /ldb$/ { if ($4 == "mem") mem++; else fd++ } END { printf "mem = %s, fd = %s\n", mem, fd}'
 mem = 119, fd = 0
 ```
@@ -1284,7 +1284,7 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 - Try not to overload methods on argument type. E.g. don't make `getblock(true)` and `getblock("hash")`
   do different things.
 
-  - *Rationale*: This is impossible to use with `bitcoin-cli`, and can be surprising to users.
+  - *Rationale*: This is impossible to use with `sugarchain-cli`, and can be surprising to users.
 
   - *Exception*: Some RPC calls can take both an `int` and `bool`, most notably when a bool was switched
     to a multi-value, or due to other historical reasons. **Always** have false map to 0 and
@@ -1298,7 +1298,7 @@ A few guidelines for introducing and reviewing new RPC interfaces:
 
 - Add every non-string RPC argument `(method, idx, name)` to the table `vRPCConvertParams` in `rpc/client.cpp`.
 
-  - *Rationale*: `bitcoin-cli` and the GUI debug console use this table to determine how to
+  - *Rationale*: `sugarchain-cli` and the GUI debug console use this table to determine how to
     convert a plaintext command line to JSON. If the types don't match, the method can be unusable
     from there.
 

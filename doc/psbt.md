@@ -1,3 +1,7 @@
+<!-- Upstream reference: preserved intentionally. -->
+
+> **Upstream PSBT tutorial.** The PSBT format and worked examples below are inherited from Bitcoin Core. Bitcoin addresses, descriptors, and transaction data remain upstream reference examples, not Sugarchain transaction data.
+
 # PSBT Howto for Bitcoin Core
 
 Since Bitcoin Core 0.17, an RPC interface exists for Partially Signed Bitcoin

@@ -1,3 +1,7 @@
+<!-- Upstream reference: preserved intentionally. -->
+
+> **Upstream external-signer examples.** This API reference and its hardware-wallet examples are inherited from Bitcoin Core. Example tools, descriptors, addresses, and derivation paths below describe Bitcoin; they do not establish Sugarchain support for an external signer or hardware wallet.
+
 # Support for signing transactions outside of Bitcoin Core
 
 Bitcoin Core can be launched with `-signer=<cmd>` where `<cmd>` is an external tool which can sign transactions and perform other functions. For example, it can be used to communicate with a hardware wallet.
@@ -11,10 +15,10 @@ When using a hardware wallet, consult the manufacturer website for (alternative)
 Start Bitcoin Core:
 
 ```sh
-$ bitcoind -signer=../HWI/hwi.py
+$ sugarchaind -signer=../HWI/hwi.py
 ```
 
-`bitcoin node` can also be substituted for `bitcoind`.
+`sugarchain node` can also be substituted for `sugarchaind`.
 
 ### Device setup
 
@@ -25,7 +29,7 @@ Follow the hardware manufacturers instructions for the initial device setup, as 
 Get a list of signing devices / services:
 
 ```
-$ bitcoin-cli enumeratesigners
+$ sugarchain-cli enumeratesigners
 {
   "signers": [
     {
@@ -39,18 +43,18 @@ The master key fingerprint is used to identify a device.
 Create a wallet, this automatically imports the public keys:
 
 ```sh
-$ bitcoin-cli createwallet "hww" true true "" true true true
+$ sugarchain-cli createwallet "hww" true true "" true true true
 ```
 
-`bitcoin rpc` can also be substituted for `bitcoin-cli`.
+`sugarchain rpc` can also be substituted for `sugarchain-cli`.
 
 ### Verify an address
 
 Display an address on the device:
 
 ```sh
-$ bitcoin-cli -rpcwallet=<wallet> getnewaddress
-$ bitcoin-cli -rpcwallet=<wallet> walletdisplayaddress <address>
+$ sugarchain-cli -rpcwallet=<wallet> getnewaddress
+$ sugarchain-cli -rpcwallet=<wallet> walletdisplayaddress <address>
 ```
 
 Replace `<address>` with the result of `getnewaddress`.
@@ -60,7 +64,7 @@ Replace `<address>` with the result of `getnewaddress`.
 Under the hood this uses a [Partially Signed Bitcoin Transaction](psbt.md).
 
 ```sh
-$ bitcoin-cli -rpcwallet=<wallet> sendtoaddress <address> <amount>
+$ sugarchain-cli -rpcwallet=<wallet> sendtoaddress <address> <amount>
 ```
 
 This prompts your hardware wallet to sign, and fail if it's not connected. If successful

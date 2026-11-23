@@ -3,10 +3,12 @@
 The `macdeployqtplus` script should not be run manually. Instead, after building as usual:
 
 ```bash
-make deploy
+cmake --build build --target deploy
 ```
 
-When complete, it will have produced `Bitcoin-Core.zip`.
+When complete, it produces `Sugarchain-En-<version>-macos.zip` containing
+`Sugarchain En.app`. The configured `macos-archive-path.txt` in the build
+directory records the archive path for the selected build environment.
 
 ## SDK Extraction
 
