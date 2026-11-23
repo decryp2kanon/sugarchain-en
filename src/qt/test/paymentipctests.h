@@ -12,7 +12,12 @@ class PaymentIpcTests : public QObject
     Q_OBJECT
 private Q_SLOTS:
     void namesAreScoped();
+    void preferEnOnce_data();
+    void preferEnOnce();
+    void legacyFallbackOnce();
+    void noListener();
     void concurrentStartupClaim();
+    void incompleteDeliveryDoesNotFallback();
 };
 
 #endif // BITCOIN_QT_TEST_PAYMENTIPCTESTS_H
