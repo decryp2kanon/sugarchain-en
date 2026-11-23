@@ -117,7 +117,7 @@ bool BlockTreeDB::ReadFlag(const std::string& name, bool& fValue)
     return true;
 }
 
-bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt)
+bool BlockTreeDB::LoadBlockIndexGuts(const Consensus::Params& consensusParams, std::function<CBlockIndex*(const uint256&)> insertBlockIndex, const util::SignalInterrupt& interrupt, int pow_workers)
 {
     AssertLockHeld(::cs_main);
     std::unique_ptr<CDBIterator> pcursor(NewIterator());
@@ -423,7 +423,7 @@ CBlockIndex* BlockManager::InsertBlockIndex(const uint256& hash)
 bool BlockManager::LoadBlockIndex(const std::optional<uint256>& snapshot_blockhash)
 {
     if (!m_block_tree_db->LoadBlockIndexGuts(
-            GetConsensus(), [this](const uint256& hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main) { return this->InsertBlockIndex(hash); }, m_interrupt)) {
+            GetConsensus(), [this](const uint256& hash) EXCLUSIVE_LOCKS_REQUIRED(cs_main) { return this->InsertBlockIndex(hash); }, m_interrupt, m_opts.startup_pow_workers)) {
         return false;
     }
 
