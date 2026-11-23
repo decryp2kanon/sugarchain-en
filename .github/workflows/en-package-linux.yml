@@ -1,0 +1,96 @@
+name: En release packages (Linux)
+permissions:
+  contents: read
+jobs:
+  linux:
+    name: Linux / ${{ matrix.host }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - host: x86_64-linux-gnu
+          runner: ubuntu-24.04
+          emulator: native
+        - host: aarch64-linux-gnu
+          runner: ubuntu-24.04-arm
+          emulator: native
+        - host: arm-linux-gnueabihf
+          runner: ubuntu-24.04
+          emulator: qemu-arm
+        - host: riscv64-linux-gnu
+          runner: ubuntu-24.04
+          emulator: qemu-riscv64
+        - host: powerpc64-linux-gnu
+          runner: ubuntu-24.04
+          emulator: qemu-ppc64
+    env:
+      RELEASE_HOST: ${{ matrix.host }}
+      RELEASE_EMULATOR: ${{ matrix.emulator }}
+      SOURCE_REVISION: b29420e32a4bf8b8331359885407a83f10aa960d
+    steps:
+    - name: Check out release source
+      uses: actions/checkout@v6
+      with:
+        ref: b29420e32a4bf8b8331359885407a83f10aa960d
+        path: source
+        persist-credentials: false
+    - name: Verify pinned source revision
+      shell: bash
+      run: 'set -euo pipefail
+
+        actual=$(git rev-parse HEAD)
+
+        test "$actual" = "b29420e32a4bf8b8331359885407a83f10aa960d"
+
+        test "$(git rev-parse HEAD^{tree})" = "b9bbd0f3f7f12ac0dfeda0901333adc06524b0a4"
+
+        printf "Source SHA: %s\n" "$actual" >> "$GITHUB_STEP_SUMMARY"'
+      working-directory: source
+    - name: Check out package tools
+      uses: actions/checkout@v6
+      with:
+        ref: ${{ github.sha }}
+        path: build-tools
+        sparse-checkout: .github/release
+        persist-credentials: false
+    - name: Install target toolchain
+      shell: bash
+      run: "set -euo pipefail\npackages=(bison build-essential curl file gperf ninja-build patch pkgconf python3 xz-utils xauth xvfb fonts-dejavu-core)\nif [[ \"$RELEASE_EMULATOR\" != native ]]; then\n  packages+=(\"g++-$RELEASE_HOST\" \"binutils-$RELEASE_HOST\" qemu-user)\nfi\nsudo apt-get update -qq\nsudo apt-get install -y --no-install-recommends \"${packages[@]}\"\n"
+    - name: Restore dependency build cache
+      uses: actions/cache@v5
+      with:
+        path: 'source/depends/built
+
+          source/depends/sources
+
+          '
+        key: sugarchain-en-linux-depends-v1-${{ matrix.host }}-${{ hashFiles('source/depends/**') }}
+    - name: Build and verify release archive
+      shell: bash
+      run: 'cd source
+
+        xvfb-run -a bash ../build-tools/.github/release/package-linux.sh
+
+        '
+    - name: Record package inputs
+      shell: bash
+      run: git -C source rev-parse HEAD > source/out/release-source-sha.txt
+    - name: Retain verified Linux archive
+      uses: actions/upload-artifact@v7
+      with:
+        name: release-linux-${{ matrix.host }}
+        path: source/out/*
+        if-no-files-found: error
+        compression-level: 0
+'on':
+  push:
+    branches:
+    - release-packaging/31.1.0-en.1
+    paths:
+    - .github/workflows/en-package-linux.yml
+    - .github/release/**
+  workflow_dispatch: null

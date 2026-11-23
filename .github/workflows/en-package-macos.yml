@@ -1,0 +1,119 @@
+name: En release packages (macOS)
+permissions:
+  contents: read
+jobs:
+  macos-cross:
+    name: Build macOS ${{ matrix.arch }} from the release source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 240
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - arch: arm64
+          profile: ./ci/test/00_setup_env_mac_cross.sh
+        - arch: x86_64
+          profile: ./ci/test/00_setup_env_mac_cross_intel.sh
+    env:
+      FILE_ENV: ${{ matrix.profile }}
+      DANGER_CI_ON_HOST_FOLDERS: 1
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        ref: b29420e32a4bf8b8331359885407a83f10aa960d
+        persist-credentials: false
+    - name: Verify pinned source revision
+      shell: bash
+      run: 'set -euo pipefail
+
+        actual=$(git rev-parse HEAD)
+
+        test "$actual" = "b29420e32a4bf8b8331359885407a83f10aa960d"
+
+        test "$(git rev-parse HEAD^{tree})" = "b9bbd0f3f7f12ac0dfeda0901333adc06524b0a4"
+
+        printf "Source SHA: %s\n" "$actual" >> "$GITHUB_STEP_SUMMARY"'
+    - uses: ./.github/actions/configure-environment
+    - uses: ./.github/actions/clear-files
+    - uses: ./.github/actions/cache/restore
+      with:
+        provider: gha
+    - uses: ./.github/actions/configure-docker
+      with:
+        provider: gha
+    - name: Cross-build with the repository's Darwin depends toolchain
+      shell: bash
+      run: "test \"$(git rev-parse HEAD)\" = b29420e32a4bf8b8331359885407a83f10aa960d\nsource ./ci/test/00_setup_env.sh\nexport GOAL=\"install deploy\"\nexport BASE_OUTDIR=\"$BASE_BUILD_DIR/installed\"\nexport BITCOIN_CONFIG=\"\n  -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DREDUCE_EXPORTS=ON\n  -DBUILD_GUI=ON -DENABLE_WALLET=ON -DENABLE_IPC=OFF\n  -DBUILD_TESTS=OFF -DBUILD_GUI_TESTS=OFF -DBUILD_BENCH=OFF -DBUILD_FUZZ_BINARY=OFF\n  -DBUILD_TX=ON -DBUILD_UTIL=ON -DBUILD_WALLET_TOOL=ON\n  -DINSTALL_MAN=ON -DWITH_USDT=OFF\"\n# The container receives its configuration in a line-oriented Docker env file.\nexport BITCOIN_CONFIG=\"$(echo \"$BITCOIN_CONFIG\" | xargs)\"\npython3 ./ci/test/02_run_container.py\n"
+    - name: Collect the cross-built GUI and command-line programs
+      shell: bash
+      run: "mkdir -p transfer/cli/bin transfer/cli/share/man/man1\ncp \"$(cat \"$BASE_BUILD_DIR/macos-archive-path.txt\")\" transfer/app.zip\npython3 contrib/macdeploy/verify_bundle.py transfer/app.zip \"${{ matrix.arch }}\"\nfor exe in sugarchain sugarchaind sugarchain-cli sugarchain-wallet sugarchain-tx sugarchain-util; do\n  install -m755 \"$BASE_BUILD_DIR/installed/bin/$exe\" \"transfer/cli/bin/$exe\"\n  install -m644 \"doc/man/$exe.1\" \"transfer/cli/share/man/man1/$exe.1\"\ndone\ncp COPYING contrib/debian/copyright transfer/cli/\ntar -czf transfer/cli.tar.gz -C transfer cli\n"
+    - uses: actions/upload-artifact@v7
+      with:
+        name: cross-macos-${{ matrix.arch }}
+        path: 'transfer/app.zip
+
+          transfer/cli.tar.gz
+
+          '
+        if-no-files-found: error
+        compression-level: 0
+        retention-days: 7
+  macos-pack:
+    name: Package and run macOS ${{ matrix.arch }}
+    needs: macos-cross
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - arch: arm64
+          runner: macos-15
+        - arch: x86_64
+          runner: macos-15-intel
+    env:
+      ARCH: ${{ matrix.arch }}
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        ref: b29420e32a4bf8b8331359885407a83f10aa960d
+        persist-credentials: false
+    - name: Verify pinned source revision
+      shell: bash
+      run: 'set -euo pipefail
+
+        actual=$(git rev-parse HEAD)
+
+        test "$actual" = "b29420e32a4bf8b8331359885407a83f10aa960d"
+
+        test "$(git rev-parse HEAD^{tree})" = "b9bbd0f3f7f12ac0dfeda0901333adc06524b0a4"
+
+        printf "Source SHA: %s\n" "$actual" >> "$GITHUB_STEP_SUMMARY"'
+    - uses: actions/download-artifact@v8
+      with:
+        name: cross-macos-${{ matrix.arch }}
+        path: incoming
+    - name: Ad-hoc sign and archive the platform binaries
+      shell: bash
+      run: "test \"$(uname -m)\" = \"$ARCH\"\nprefix=\"sugarchain-en-31.1.0-macos-$ARCH\"\nmkdir -p staged release\ntar -xzf incoming/cli.tar.gz -C staged\nmv staged/cli \"staged/$prefix-cli\"\nditto -x -k incoming/app.zip staged\napp=\"staged/Sugarchain En.app\"\ncp COPYING contrib/debian/copyright \"$app/Contents/Resources/\"\nfor exe in \"staged/$prefix-cli/bin\"/* \"$app/Contents/MacOS/Sugarchain-Qt\"; do\n  test \"$(lipo -archs \"$exe\")\" = \"$ARCH\"\n  dylibs=$(otool -L \"$exe\" | sed -n '2,$p' | awk '{print $1}')\n  test -n \"$dylibs\"\n  if echo \"$dylibs\" | grep -Ev '^(/usr/lib/|/System/Library/)'; then\n    echo \"::error::Non-system shared library in $exe\"\n    exit 1\n  fi\ndone\nfor exe in \"staged/$prefix-cli/bin\"/*; do\n  strip -S \"$exe\"\n  codesign --force --sign - --timestamp=none \"$exe\"\ndone\ncodesign --force --sign - --timestamp=none \"$app\"\nditto -c -k --norsrc --keepParent \"$app\" \"release/$prefix.zip\"\nCOPYFILE_DISABLE=1 tar -czf \"release/$prefix-cli.tar.gz\" -C staged \"$prefix-cli\"\n"
+    - name: Run the final signed archives on matching hardware
+      shell: bash
+      run: "prefix=\"sugarchain-en-31.1.0-macos-$ARCH\"\nmkdir checked\nditto -x -k \"release/$prefix.zip\" checked\ntar -xzf \"release/$prefix-cli.tar.gz\" -C checked\npython3 contrib/macdeploy/verify_bundle.py \"release/$prefix.zip\" \"$ARCH\"\ncodesign --verify --deep --strict \"checked/Sugarchain En.app\"\nfor exe in \"checked/$prefix-cli/bin\"/*; do codesign --verify --strict \"$exe\"; done\npython3 - <<'PY'\nimport os, runpy, subprocess, sys\nfrom pathlib import Path\nverify = Path(\"contrib/macdeploy\").resolve()\nsys.path.insert(0, str(verify))\nhelpers = runpy.run_path(str(verify / \"verify-native.py\"))\nwork = Path(os.environ[\"RUNNER_TEMP\"]) / \"en-release-runtime\"\nwork.mkdir()\nroot = Path(\"checked\").resolve()\nbindir = next(root.glob(\"*-cli/bin\"))\nfor program in sorted(bindir.iterdir()):\n    helpers[\"check_version\"](program, work / \"versions\")\ndaemon = bindir / \"sugarchaind\"\ngui = root / \"Sugarchain En.app/Contents/MacOS/Sugarchain-Qt\"\nfor program, chain in ((daemon, \"main\"), (gui, \"regtest\")):\n    folder = work / chain\n    with helpers[\"Node\"](program, folder, chain, gui=program == gui) as node:\n        info = helpers[\"check_chain\"](node,\
+        \ chain)\n        assert info[\"blocks\"] == 0\n        out = subprocess.check_output([str(bindir / \"sugarchain-cli\"), f\"-datadir={folder}\",\n                                       f\"-chain={chain}\", f\"-rpcport={node.port}\", \"getblockcount\"], text=True)\n        assert out.strip() == \"0\"\n        node.rpc(\"createwallet\", \"release-test\")\n        address = node.rpc(\"getnewaddress\", \"\", \"bech32\")\n        if chain == \"main\":\n            assert address.startswith(\"sugar1q\")\n        else:\n            assert len(node.rpc(\"generatetoaddress\", 1, address)) == 1\nPY\n"
+    - name: Record package inputs
+      shell: bash
+      run: git rev-parse HEAD > release/release-source-sha.txt
+    - uses: actions/upload-artifact@v7
+      with:
+        name: release-mac-${{ matrix.arch }}
+        path: release/*
+        if-no-files-found: error
+        compression-level: 0
+        retention-days: 30
+'on':
+  push:
+    branches:
+    - release-packaging/31.1.0-en.1
+    paths:
+    - .github/workflows/en-package-macos.yml
+  workflow_dispatch: null
