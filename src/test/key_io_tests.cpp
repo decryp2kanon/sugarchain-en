@@ -119,6 +119,26 @@ BOOST_AUTO_TEST_CASE(key_io_valid_gen)
 }
 
 
+// Native mainnet encodings must not be accepted on the inherited test networks.
+BOOST_AUTO_TEST_CASE(key_io_mainnet_cross_network)
+{
+    const UniValue tests = read_json(json_tests::key_io_valid);
+    for (unsigned int idx = 0; idx < tests.size(); ++idx) {
+        const UniValue& test = tests[idx];
+        const UniValue& metadata = test[2].get_obj();
+        if (metadata.find_value("chain").get_str() != "main" || metadata.find_value("isPrivkey").get_bool()) continue;
+
+        const std::string address = test[0].get_str();
+        SelectParams(ChainType::MAIN);
+        BOOST_REQUIRE_MESSAGE(IsValidDestination(DecodeDestination(address)), "Invalid native mainnet fixture: " + address);
+        for (const auto chain : {ChainType::TESTNET, ChainType::TESTNET4, ChainType::SIGNET, ChainType::REGTEST}) {
+            SelectParams(chain);
+            BOOST_CHECK_MESSAGE(!IsValidDestination(DecodeDestination(address)), "Native mainnet address accepted on another network: " + address);
+        }
+    }
+    SelectParams(ChainType::MAIN);
+}
+
 // Goal: check that base58 parsing code is robust against a variety of corrupted data
 BOOST_AUTO_TEST_CASE(key_io_invalid)
 {
