@@ -5,6 +5,7 @@
 #include <chain.h>
 #include <chainparams.h>
 #include <node/blockstorage.h>
+#include <pow.h>
 #include <test/fuzz/FuzzedDataProvider.h>
 #include <test/fuzz/fuzz.h>
 #include <test/fuzz/util.h>
@@ -12,13 +13,15 @@
 #include <txdb.h>
 #include <validation.h>
 
+#include <limits>
+
 using kernel::CBlockFileInfo;
 
 namespace {
 
 const BasicTestingSetup* g_setup;
 
-// Hardcoded block hash and nBits to make sure the blocks we store pass the pow check.
+// All generated entries use the same database key and a valid mainnet target.
 uint256 g_block_hash;
 
 bool operator==(const CBlockFileInfo& a, const CBlockFileInfo& b)
@@ -90,8 +93,23 @@ FUZZ_TARGET(block_index, .init = init_block_index)
         blocks_info.push_back(blocks.back().get());
     }
 
+    // Every generated index uses the same key, so the final entry overwrites
+    // the others. The inserter below also supplies that entry as its parent;
+    // reconstruct the header exactly as the loader will before fixing its PoW.
+    // Retain all fuzzed fields except the nonce needed by the existing fuzz
+    // proof predicate. Native mainnet headers use Yespower, not their block ID.
+    const auto& params{Params().GetConsensus()};
+    assert(params.fYespowerSugar);
+    auto stored_header{blocks.back()->GetBlockHeader()};
+    stored_header.hashPrevBlock = g_block_hash;
+    while (!CheckProofOfWork(stored_header.GetPoWHash(), stored_header.nBits, params)) {
+        stored_header.nNonce = stored_header.nNonce == std::numeric_limits<uint32_t>::max() ? 0 : stored_header.nNonce + 1;
+    }
+    blocks.back()->nNonce = stored_header.nNonce;
+    assert(CheckBlockProofOfWork(stored_header, params));
+
     // Store these files and blocks in the block index. It should not fail.
-    block_index.WriteBatchSync(files_info, files_count - 1, blocks_info);
+    WITH_LOCK(cs_main, block_index.WriteBatchSync(files_info, files_count - 1, blocks_info));
 
     // We should be able to read every block file info we stored. Its value should correspond to
     // what we stored above.
@@ -127,7 +145,6 @@ FUZZ_TARGET(block_index, .init = init_block_index)
 
     // We should be able to load everything we've previously stored. Note to assert on the
     // return value we need to make sure all blocks pass the pow check.
-    const auto params{Params().GetConsensus()};
     const auto inserter = [&](const uint256&) {
         return blocks.back().get();
     };

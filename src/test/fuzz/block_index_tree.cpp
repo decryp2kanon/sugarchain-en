@@ -13,6 +13,7 @@
 #include <test/fuzz/util.h>
 #include <test/util/setup_common.h>
 #include <test/util/validation.h>
+#include <util/time.h>
 #include <validation.h>
 
 #include <ranges>
@@ -34,6 +35,8 @@ CBlockHeader ConsumeBlockHeader(FuzzedDataProvider& provider, uint256 prev_hash,
 
 void initialize_block_index_tree()
 {
+    // Connecting genesis also updates the tip log using the steady clock.
+    MockableSteadyClock::SetMockTime(MockableSteadyClock::INITIAL_MOCK_TIME);
     static const auto testing_setup = MakeNoLogFileContext<const TestingSetup>();
     g_setup = testing_setup.get();
 }
@@ -42,6 +45,7 @@ FUZZ_TARGET(block_index_tree, .init = initialize_block_index_tree)
 {
     FuzzedDataProvider fuzzed_data_provider(buffer.data(), buffer.size());
     SetMockTime(ConsumeTime(fuzzed_data_provider));
+    MockableSteadyClock::SetMockTime(MockableSteadyClock::INITIAL_MOCK_TIME);
     auto& chainman = static_cast<TestChainstateManager&>(*g_setup->m_node.chainman);
     auto& blockman = static_cast<TestBlockManager&>(chainman.m_blockman);
     CBlockIndex* genesis = chainman.ActiveChainstate().m_chain[0];

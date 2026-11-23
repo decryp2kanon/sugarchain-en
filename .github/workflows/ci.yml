@@ -38,6 +38,7 @@ jobs:
     outputs:
       provider: ${{ steps.runners.outputs.provider }}
       ancestor-batches: ${{ steps.ancestors.outputs.batches }}
+      qa-assets-commit: ${{ steps.qa-assets.outputs.commit }}
     steps:
       - &ANNOTATION_PR_NUMBER
         name: Annotate with pull request number
@@ -58,6 +59,19 @@ jobs:
             echo "provider=gha" >> "$GITHUB_OUTPUT"
             echo "::notice title=Runner Selection::Using GitHub-hosted runners"
           fi
+      - name: Resolve the QA corpus revision for this run
+        id: qa-assets
+        # Replay jobs require this revision. Other profiles can still run if the archive is unavailable.
+        continue-on-error: true
+        run: |
+          for delay in 1 2 4; do
+            if revision=$(git ls-remote --exit-code https://github.com/bitcoin-core/qa-assets HEAD | cut -f1) && [[ "$revision" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "commit=$revision" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+            sleep "$delay"
+          done
+          exit 1
       - name: Size ancestor test batches
         id: ancestors
         env:
@@ -479,6 +493,8 @@ jobs:
       DANGER_CI_ON_HOST_FOLDERS: 1
       FILE_ENV: ${{ matrix.file-env }}
       ARMHF_PROBE_IMAGE: ${{ matrix.armhf-probe-image }}
+      FUZZ_TESTS_CONFIG: ${{ matrix.replay-args }}
+      REPLAY_CORPUS_SHARD: ${{ matrix.replay-shard }}
 
     strategy:
       fail-fast: false
@@ -533,6 +549,44 @@ jobs:
             fallback-runner: 'ubuntu-latest'
             timeout-minutes: 360
             file-env: './ci/test/00_setup_env_native_fuzz.sh'
+            replay-args: '--exclude=p2p_headers_presync'
+
+          # Split the full header pre-sync corpus across independent runners.
+          - name: 'fuzzer,address,undefined,integer (header pre-sync 1/4)'
+            warp-runner: 'warp-ubuntu-latest-x64-16x'
+            fallback-runner: 'ubuntu-latest'
+            timeout-minutes: 360
+            file-env: './ci/test/00_setup_env_native_fuzz.sh'
+            replay-args: 'p2p_headers_presync'
+            replay-shard: '1/4'
+            cache-restore-only: true
+
+          - name: 'fuzzer,address,undefined,integer (header pre-sync 2/4)'
+            warp-runner: 'warp-ubuntu-latest-x64-16x'
+            fallback-runner: 'ubuntu-latest'
+            timeout-minutes: 360
+            file-env: './ci/test/00_setup_env_native_fuzz.sh'
+            replay-args: 'p2p_headers_presync'
+            replay-shard: '2/4'
+            cache-restore-only: true
+
+          - name: 'fuzzer,address,undefined,integer (header pre-sync 3/4)'
+            warp-runner: 'warp-ubuntu-latest-x64-16x'
+            fallback-runner: 'ubuntu-latest'
+            timeout-minutes: 360
+            file-env: './ci/test/00_setup_env_native_fuzz.sh'
+            replay-args: 'p2p_headers_presync'
+            replay-shard: '3/4'
+            cache-restore-only: true
+
+          - name: 'fuzzer,address,undefined,integer (header pre-sync 4/4)'
+            warp-runner: 'warp-ubuntu-latest-x64-16x'
+            fallback-runner: 'ubuntu-latest'
+            timeout-minutes: 360
+            file-env: './ci/test/00_setup_env_native_fuzz.sh'
+            replay-args: 'p2p_headers_presync'
+            replay-shard: '4/4'
+            cache-restore-only: true
 
           - name: 'Sugarchain legacy wallet compatibility'
             warp-runner: 'warp-ubuntu-latest-x64-8x'
@@ -574,6 +628,17 @@ jobs:
       - *ANNOTATION_PR_NUMBER
 
       - *CHECKOUT
+
+      - name: Use the frozen QA corpus revision
+        if: ${{ matrix.replay-args }}
+        env:
+          QA_ASSETS_COMMIT: ${{ needs.runners.outputs.qa-assets-commit }}
+        run: |
+          if [[ ! "$QA_ASSETS_COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error::Unable to resolve the QA corpus revision for this run"
+            exit 1
+          fi
+          echo "QA_ASSETS_COMMIT=$QA_ASSETS_COMMIT" >> "$GITHUB_ENV"
 
       - name: Configure environment
         uses: ./.github/actions/configure-environment
@@ -630,6 +695,7 @@ jobs:
         run: ./ci/test_run_all.sh
 
       - name: Save caches
+        if: ${{ !matrix.cache-restore-only }}
         uses: ./.github/actions/cache/save
         with:
           provider: ${{ matrix.provider || needs.runners.outputs.provider }}
