@@ -56,32 +56,46 @@ endfunction()
 
 function(add_macos_deploy_target)
   if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND TARGET bitcoin-qt)
-    set(macos_app "Sugarchain-Qt.app")
+    set(macos_app "Sugarchain En.app")
     # Populate Contents subdirectory.
-    configure_file(${PROJECT_SOURCE_DIR}/share/qt/Info.plist.in ${macos_app}/Contents/Info.plist NO_SOURCE_PERMISSIONS)
-    file(CONFIGURE OUTPUT ${macos_app}/Contents/PkgInfo CONTENT "APPL????")
+    configure_file(${PROJECT_SOURCE_DIR}/share/qt/Info.plist.in "${macos_app}/Contents/Info.plist" NO_SOURCE_PERMISSIONS)
+    file(CONFIGURE OUTPUT "${macos_app}/Contents/PkgInfo" CONTENT "APPL????")
     # Populate Contents/Resources subdirectory.
-    file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/empty.lproj CONTENT "")
-    configure_file(${PROJECT_SOURCE_DIR}/src/qt/res/icons/sugarchain.icns ${macos_app}/Contents/Resources/sugarchain.icns NO_SOURCE_PERMISSIONS COPYONLY)
-    file(CONFIGURE OUTPUT ${macos_app}/Contents/Resources/Base.lproj/InfoPlist.strings
+    file(CONFIGURE OUTPUT "${macos_app}/Contents/Resources/empty.lproj" CONTENT "")
+    configure_file(${PROJECT_SOURCE_DIR}/src/qt/res/icons/sugarchain.icns "${macos_app}/Contents/Resources/sugarchain.icns" NO_SOURCE_PERMISSIONS COPYONLY)
+    file(CONFIGURE OUTPUT "${macos_app}/Contents/Resources/Base.lproj/InfoPlist.strings"
       CONTENT "{ CFBundleDisplayName = \"@CLIENT_NAME@\"; CFBundleName = \"@CLIENT_NAME@\"; }"
+    )
+    set(macos_bundle_resources
+      "${PROJECT_BINARY_DIR}/${macos_app}/Contents/Info.plist"
+      "${PROJECT_BINARY_DIR}/${macos_app}/Contents/PkgInfo"
+      "${PROJECT_BINARY_DIR}/${macos_app}/Contents/Resources/empty.lproj"
+      "${PROJECT_BINARY_DIR}/${macos_app}/Contents/Resources/sugarchain.icns"
+      "${PROJECT_BINARY_DIR}/${macos_app}/Contents/Resources/Base.lproj/InfoPlist.strings"
     )
 
     add_custom_command(
-      OUTPUT ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Sugarchain-Qt
-      COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component bitcoin-qt --prefix ${macos_app}/Contents/MacOS --strip
-      COMMAND ${CMAKE_COMMAND} -E rename ${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:bitcoin-qt> ${macos_app}/Contents/MacOS/Sugarchain-Qt
-      COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/bin
-      COMMAND ${CMAKE_COMMAND} -E rm -rf ${macos_app}/Contents/MacOS/share
+      OUTPUT "${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Sugarchain-Qt"
+      COMMAND ${CMAKE_COMMAND} --install ${PROJECT_BINARY_DIR} --config $<CONFIG> --component bitcoin-qt --prefix "${macos_app}/Contents/MacOS" --strip
+      COMMAND ${CMAKE_COMMAND} -E rename "${macos_app}/Contents/MacOS/bin/$<TARGET_FILE_NAME:bitcoin-qt>" "${macos_app}/Contents/MacOS/Sugarchain-Qt"
+      COMMAND ${CMAKE_COMMAND} -E rm -rf "${macos_app}/Contents/MacOS/bin"
+      COMMAND ${CMAKE_COMMAND} -E rm -rf "${macos_app}/Contents/MacOS/share"
+      # Resource-only changes also refresh the bundle's dependency timestamp.
+      COMMAND ${CMAKE_COMMAND} -E touch "${macos_app}/Contents/MacOS/Sugarchain-Qt"
+      DEPENDS bitcoin-qt ${macos_bundle_resources}
       VERBATIM
     )
 
-    set(macos_zip "sugarchain-macos-app")
+    set(macos_zip "Sugarchain-En-${CLIENT_VERSION_STRING}-macos")
     if(CMAKE_HOST_APPLE)
+      file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/macos-archive-path.txt
+        CONTENT "${PROJECT_BINARY_DIR}/${macos_zip}.zip\n"
+      )
       add_custom_command(
         OUTPUT ${PROJECT_BINARY_DIR}/${macos_zip}.zip
-        COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} -translations-dir=${QT_TRANSLATIONS_DIR} -zip=${macos_zip}
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Sugarchain-Qt
+        COMMAND Python3::Interpreter ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus "${macos_app}" -translations-dir=${QT_TRANSLATIONS_DIR} -zip=${macos_zip}
+        DEPENDS "${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Sugarchain-Qt"
+                ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus
         VERBATIM
       )
       add_custom_target(deploydir
@@ -91,14 +105,19 @@ function(add_macos_deploy_target)
         DEPENDS ${PROJECT_BINARY_DIR}/${macos_zip}.zip
       )
     else()
+      file(GENERATE OUTPUT ${PROJECT_BINARY_DIR}/macos-archive-path.txt
+        CONTENT "${PROJECT_BINARY_DIR}/dist/${macos_zip}.zip\n"
+      )
       add_custom_command(
-        OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Sugarchain-Qt
-        COMMAND ${CMAKE_COMMAND} -E env OBJDUMP=${CMAKE_OBJDUMP} $<TARGET_FILE:Python3::Interpreter> ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus ${macos_app} -translations-dir=${QT_TRANSLATIONS_DIR}
-        DEPENDS ${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Sugarchain-Qt
+        OUTPUT "${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Sugarchain-Qt"
+        COMMAND ${CMAKE_COMMAND} -E env OBJDUMP=${CMAKE_OBJDUMP} $<TARGET_FILE:Python3::Interpreter> ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus "${macos_app}" -translations-dir=${QT_TRANSLATIONS_DIR}
+        COMMAND ${CMAKE_COMMAND} -E touch "${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Sugarchain-Qt"
+        DEPENDS "${PROJECT_BINARY_DIR}/${macos_app}/Contents/MacOS/Sugarchain-Qt"
+                ${PROJECT_SOURCE_DIR}/contrib/macdeploy/macdeployqtplus
         VERBATIM
       )
       add_custom_target(deploydir
-        DEPENDS ${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Sugarchain-Qt
+        DEPENDS "${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Sugarchain-Qt"
       )
 
       find_program(ZIP_EXECUTABLE zip)
@@ -111,6 +130,8 @@ function(add_macos_deploy_target)
           OUTPUT ${PROJECT_BINARY_DIR}/dist/${macos_zip}.zip
           WORKING_DIRECTORY dist
           COMMAND ${PROJECT_SOURCE_DIR}/cmake/script/macos_zip.sh ${ZIP_EXECUTABLE} ${macos_zip}.zip
+          DEPENDS "${PROJECT_BINARY_DIR}/dist/${macos_app}/Contents/MacOS/Sugarchain-Qt"
+                  ${PROJECT_SOURCE_DIR}/cmake/script/macos_zip.sh
           VERBATIM
         )
         add_custom_target(deploy
