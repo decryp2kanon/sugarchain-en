@@ -25,6 +25,33 @@ GUI settings migration retains the previous Komorebi profile and avoids overwrit
 
 Host-built Linux candidates may require matching shared libraries and Qt platform plugins.
 
+## Windows and macOS package checks
+
+### Integration candidate `108163098c18`
+
+Windows Server 2022 ran the mainnet Qt wallet from the build directory and the installation directory for each x86_64 package. Both installers passed fresh installation, in-place upgrade, and removal with user files preserved. The following hashes identify the installer executables inside the Actions archives.
+
+| Windows runtime | Installer bytes | Installer SHA-256 | Evidence |
+| --- | ---: | --- | --- |
+| MSVCRT | 28,680,752 | `5868c7c4c11cacece755012c65d042b4d8ce7a798dcca9b233d67cc7335bda7d` | [Archive](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44872574212/artifacts/14700071881) · [Windows lifecycle](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44872574212/job/136792252778#step:10:1) |
+| UCRT | 28,669,310 | `dd71d06b25e6aa845c548f96f3d2c04db076f4c2fe82693b32ec2cb7ee368772` | [Archive](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44872574212/artifacts/14699393704) · [Windows lifecycle](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44872574212/job/136792252836#step:10:1) |
+
+On Apple Silicon, the packaged Cocoa app reopened a regtest wallet and restored its backup. The confirmed transaction survived both operations. All 161 CTest cases passed. The functional suite passed 443 cases and skipped 19 conditionally. Cross-builds verified the ARM64 and Intel x86_64 application archives and their executable architectures. Native execution was verified on Apple Silicon. [Native macOS](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44872574212/job/136750153354) · [ARM64 archive check](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44872574212/job/136750184392) · [Intel archive check](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44872574212/job/136750184346)
+
+An earlier MSVCRT package at `267f3688ff72` exited with `0xc0000005` after returning from `GuiMain` in two Windows checks. A subsequent instrumented run of the same executable exited successfully. The faulting module remains unknown. [Original native check](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44864273197/job/136760866312) · [Native-shell check](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44878691390/job/136768988990) · [Source observation](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44882494063/job/136780612041)
+
+### Earlier packaged artifacts
+
+The following candidate files were built from `20f63ff768a8`. On Windows Server 2022, both installers passed installation, in-place upgrade, installed Qt wallet startup and shutdown, and uninstall with user files preserved. On Apple Silicon, the packaged Qt application started with Cocoa, backed up a wallet and passed the bundle signature check.
+
+| Candidate file | SHA-256 | Native validation |
+| --- | --- | --- |
+| Windows x86_64 MSVCRT installer | `dc8f423565b552c5f1ef0749ed6ebddae1806c3d7e11559276a693b562b94121` | [Windows job](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44790544547/job/136521017767) |
+| Windows x86_64 UCRT installer | `ffe2924588f742ad705bfdfb9cbb609b44befb83ca1d1816043551c612732328` | [Windows job](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44790544547/job/136521017725) |
+| macOS arm64 application ZIP | `d2f89a4df5d946aaf25582d65f33dc4168580790423acf9f20f3606e43ad7ea1` | [macOS job](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44790812935/job/136477657681) |
+
+The Intel macOS cross-build at `4d16aa069e09` verified the archive layout and x86_64 executable on Linux. The native macOS results above cover Apple Silicon. [Intel cross-build](https://github.com/decryp2kanon/sugarchain-en/actions/runs/44753835460/job/136348360337)
+
 ## Validation and publication gates
 
 - Complete the integrated production build and isolated installed-runtime/package checks.
