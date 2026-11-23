@@ -52,7 +52,24 @@ void InitYespowerVerificationCache(size_t bytes, bool grow_on_demand = false);
 /** With cs_main held, restore an evicted proof from a genuinely checked live index. */
 void CacheVerifiedBlockIndexProof(const CBlockIndex& index, const Consensus::Params& params) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
 
+inline constexpr int DEFAULT_HEADER_POW_WORKERS{8};
+inline constexpr int MAX_HEADER_POW_WORKERS{8};
 
+/** Bounded, node-owned verification workers; no trust from peer/index status. */
+class HeaderPoWVerifier {
+    struct Impl;
+    std::unique_ptr<Impl> m_impl;
+
+public:
+    explicit HeaderPoWVerifier(int workers);
+    ~HeaderPoWVerifier();
+    HeaderPoWVerifier(const HeaderPoWVerifier&) = delete;
+    HeaderPoWVerifier& operator=(const HeaderPoWVerifier&) = delete;
+    bool Check(std::span<const CBlockHeader> headers, const Consensus::Params& params);
+    /** Check every header once, including on warm-cache hits; used for startup block-index validation. */
+    // Background historical scans persist evidence on disk instead of filling the RAM cache.
+    bool CheckEach(std::span<const CBlockHeader> headers, const Consensus::Params& params, bool cache_result = true);
+};
 
 /**
  * Return false if the proof-of-work requirement specified by new_nbits at a

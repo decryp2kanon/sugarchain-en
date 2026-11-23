@@ -793,6 +793,7 @@ private:
     TimeOffsets m_outbound_time_offsets{m_warnings};
 
     const Options m_opts;
+    HeaderPoWVerifier m_header_pow_verifier;
 
     bool RejectIncomingTxs(const CNode& peer) const;
 
@@ -2015,7 +2016,8 @@ PeerManagerImpl::PeerManagerImpl(CConnman& connman, AddrMan& addrman,
       m_mempool(pool),
       m_txdownloadman(node::TxDownloadOptions{pool, m_rng, opts.deterministic_rng}),
       m_warnings{warnings},
-      m_opts{opts}
+      m_opts{opts},
+      m_header_pow_verifier{m_chainparams.GetConsensus().fYespowerSugar ? opts.header_pow_workers : 1}
 {
     // While Erlay support is incomplete, it must be enabled explicitly via -txreconciliation.
     // This argument can go away after Erlay support is complete.
@@ -2618,8 +2620,18 @@ void PeerManagerImpl::SendBlockTransactions(CNode& pfrom, Peer& peer, const CBlo
 
 bool PeerManagerImpl::CheckHeadersPoW(const std::vector<CBlockHeader>& headers, Peer& peer)
 {
+    if (m_chainparams.GetConsensus().fYespowerSugar) {
+        LOCK(cs_main);
+        for (const auto& header : headers) {
+            if (const auto* index{m_chainman.m_blockman.LookupBlockIndex(header.GetHash())}) {
+                // Only live, genuinely checked proof evidence can refill the
+                // bounded cache; disk/TREE status alone cannot authorize this.
+                CacheVerifiedBlockIndexProof(*index, m_chainparams.GetConsensus());
+            }
+        }
+    }
     // Do these headers have proof-of-work matching what's claimed?
-    if (!HasValidProofOfWork(headers, m_chainparams.GetConsensus())) {
+    if (!m_header_pow_verifier.Check(headers, m_chainparams.GetConsensus())) {
         Misbehaving(peer, "header with invalid proof of work");
         return false;
     }
