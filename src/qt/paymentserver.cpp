@@ -7,6 +7,7 @@
 #include <qt/bitcoinunits.h>
 #include <qt/guiutil.h>
 #include <qt/optionsmodel.h>
+#include <qt/paymentipc.h>
 
 #include <chainparams.h>
 #include <common/args.h>
@@ -29,6 +30,7 @@
 #include <QList>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QLockFile>
 #include <QStringList>
 #include <QUrlQuery>
 
@@ -42,15 +44,7 @@ const QString BITCOIN_IPC_PREFIX("sugarchain:");
 //
 static QString ipcServerName()
 {
-    QString name("SugarchainKomorebi");
-
-    // Append a simple hash of the datadir
-    // Note that gArgs.GetDataDirNet() returns a different path
-    // for -testnet versus main net
-    QString ddir(GUIUtil::PathToQString(gArgs.GetDataDirNet()));
-    name.append(QString::number(qHash(ddir)));
-
-    return name;
+    return PaymentIpcServerName(GUIUtil::PathToQString(gArgs.GetDataDirNet()));
 }
 
 //
@@ -131,27 +125,32 @@ PaymentServer::PaymentServer(QObject* parent, bool startLocalServer)
     if (parent)
         parent->installEventFilter(this);
 
-    QString name = ipcServerName();
-
-    // Clean up old socket leftover from a crash:
-    QLocalServer::removeServer(name);
-
-    if (startLocalServer)
-    {
+    if (startLocalServer) {
+        const QString name = ipcServerName();
+        // The claim follows the network datadir, even when launchers use
+        // different GUI configuration directories. The node's .lock stays
+        // untouched and remains the authority for wallet/database ownership.
+        const QString lock_path = GUIUtil::PathToQString(gArgs.GetDataDirNet() / ".en-gui-startup.lock");
         uriServer = new QLocalServer(this);
-
-        if (!uriServer->listen(name)) {
-            // constructor is called early in init, so don't use "Q_EMIT message()" here
-            QMessageBox::critical(nullptr, tr("Payment request error"),
-                tr("Cannot start sugarchain: click-to-pay handler"));
-        }
-        else {
+        QString error;
+        if (!ListenPaymentIpc(*uriServer, name, lock_path, ipcClaim, error)) {
+            QMessageBox::critical(nullptr, tr("Payment request error"), error);
+        } else {
             connect(uriServer, &QLocalServer::newConnection, this, &PaymentServer::handleURIConnection);
         }
     }
 }
 
-PaymentServer::~PaymentServer() = default;
+PaymentServer::~PaymentServer()
+{
+    // Close/remove our socket before releasing the lifetime startup claim.
+    delete uriServer;
+}
+
+bool PaymentServer::isListening() const
+{
+    return uriServer && uriServer->isListening();
+}
 
 //
 // OSX-specific way of handling sugarchain: URIs
