@@ -30,12 +30,12 @@ jobs:
     env:
       RELEASE_HOST: ${{ matrix.host }}
       RELEASE_EMULATOR: ${{ matrix.emulator }}
-      SOURCE_REVISION: 9bab43ca7edadabc63cb72c1b7c9da38f899c451
+      SOURCE_REVISION: 91268d052374f9639ddbc0e88122918f5fcea546
     steps:
     - name: Check out release source
       uses: actions/checkout@v6
       with:
-        ref: 9bab43ca7edadabc63cb72c1b7c9da38f899c451
+        ref: 91268d052374f9639ddbc0e88122918f5fcea546
         path: source
         persist-credentials: false
     - name: Verify pinned source revision
@@ -44,7 +44,7 @@ jobs:
 
         actual=$(git rev-parse HEAD)
 
-        test "$actual" = "9bab43ca7edadabc63cb72c1b7c9da38f899c451"
+        test "$actual" = "91268d052374f9639ddbc0e88122918f5fcea546"
 
         test "$(git rev-parse HEAD^{tree})" = "b9bbd0f3f7f12ac0dfeda0901333adc06524b0a4"
 

@@ -1,0 +1,155 @@
+name: En release packages (Windows)
+'on':
+  push:
+    branches:
+    - release-packaging/31.1.0-en.1
+    paths:
+    - .github/workflows/en-package-windows.yml
+permissions:
+  contents: read
+defaults:
+  run:
+    shell: bash
+env:
+  CI_FAILFAST_TEST_LEAVE_DANGLING: 1
+jobs:
+  windows-cross:
+    name: Windows-cross to x86_64, ${{ matrix.crt }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        crt:
+        - msvcrt
+        - ucrt
+        include:
+        - crt: msvcrt
+          file-env: ./ci/test/00_setup_env_win64_msvcrt.sh
+          artifact-name: x86_64-w64-mingw32-executables
+        - crt: ucrt
+          file-env: ./ci/test/00_setup_env_win64.sh
+          artifact-name: x86_64-w64-mingw32ucrt-executables
+    env:
+      FILE_ENV: ${{ matrix.file-env }}
+      DANGER_CI_ON_HOST_FOLDERS: 1
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        ref: 91268d052374f9639ddbc0e88122918f5fcea546
+        persist-credentials: false
+    - name: Verify pinned source revision
+      shell: bash
+      run: 'set -euo pipefail
+
+        actual=$(git rev-parse HEAD)
+
+        test "$actual" = "91268d052374f9639ddbc0e88122918f5fcea546"
+
+        test "$(git rev-parse HEAD^{tree})" = "b9bbd0f3f7f12ac0dfeda0901333adc06524b0a4"
+
+        printf "Source SHA: %s\n" "$actual" >> "$GITHUB_STEP_SUMMARY"'
+    - name: Configure environment
+      uses: ./.github/actions/configure-environment
+    - name: Restore caches
+      id: restore-cache
+      uses: ./.github/actions/cache/restore
+      with:
+        provider: gha
+    - name: Configure Docker
+      uses: ./.github/actions/configure-docker
+      with:
+        provider: gha
+    - name: CI script
+      run: ./ci/test_run_all.sh
+    - name: Save caches
+      uses: ./.github/actions/cache/save
+      with:
+        provider: gha
+    - name: Record package inputs
+      run: git rev-parse HEAD > "$BASE_BUILD_DIR/release-source-sha.txt"
+    - name: Upload built executables
+      uses: actions/upload-artifact@v7
+      with:
+        name: ${{ matrix.artifact-name }}-${{ github.run_id }}
+        path: '${{ env.BASE_BUILD_DIR }}/bin/*.dll
+
+          ${{ env.BASE_BUILD_DIR }}/bin/*.exe
+
+          ${{ env.BASE_BUILD_DIR }}/src/secp256k1/bin/*.exe
+
+          ${{ env.BASE_BUILD_DIR }}/src/univalue/*.exe
+
+          ${{ env.BASE_BUILD_DIR }}/test/config.ini
+
+          ${{ env.BASE_BUILD_DIR }}/*-win64-setup.exe
+
+          ${{ env.BASE_BUILD_DIR }}/windows-installer-path.txt
+
+          ${{ env.BASE_BUILD_DIR }}/release-source-sha.txt
+
+          '
+  windows-native-test:
+    name: Windows, ${{ matrix.crt }}, test cross-built
+    runs-on: windows-2022
+    needs: windows-cross
+    strategy:
+      fail-fast: false
+      matrix:
+        crt:
+        - msvcrt
+        - ucrt
+        include:
+        - crt: msvcrt
+          artifact-name: x86_64-w64-mingw32-executables
+        - crt: ucrt
+          artifact-name: x86_64-w64-mingw32ucrt-executables
+    env:
+      PYTHONUTF8: 1
+      TEST_RUNNER_TIMEOUT_FACTOR: 40
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+      with:
+        ref: 91268d052374f9639ddbc0e88122918f5fcea546
+        persist-credentials: false
+    - name: Verify pinned source revision
+      shell: bash
+      run: 'set -euo pipefail
+
+        actual=$(git rev-parse HEAD)
+
+        test "$actual" = "91268d052374f9639ddbc0e88122918f5fcea546"
+
+        test "$(git rev-parse HEAD^{tree})" = "b9bbd0f3f7f12ac0dfeda0901333adc06524b0a4"
+
+        printf "Source SHA: %s\n" "$actual" >> "$GITHUB_STEP_SUMMARY"'
+    - name: Download built executables
+      uses: actions/download-artifact@v8
+      with:
+        name: ${{ matrix.artifact-name }}-${{ github.run_id }}
+    - name: Verify downloaded package provenance
+      shell: bash
+      run: test "$(cat release-source-sha.txt)" = "91268d052374f9639ddbc0e88122918f5fcea546"
+    - name: Run sugarchaind.exe
+      run: py -3 .github/ci-windows-cross.py print_version
+    - name: Import Visual Studio env vars
+      run: py -3 .github/ci-windows.py "standard" github_import_vs_env
+    - name: Check executable manifests
+      run: py -3 .github/ci-windows-cross.py check_manifests
+    - name: Prepare Windows test environment
+      run: py -3 .github/ci-windows-cross.py prepare_tests
+    - name: Run native network, GUI and wallet smoke checks
+      run: py -3 .github/ci-windows-smoke.py --bindir bin --work-dir "${RUNNER_TEMP}/en-cross-smoke-${{ matrix.crt }}"
+    - name: Reopen a saved wallet in the native GUI
+      run: py -3 .github/ci-windows-smoke.py --verify-wallet-restart --bindir bin --work-dir "${RUNNER_TEMP}/en-cross-wallet-restart-${{ matrix.crt }}"
+    - name: Verify installed applications and installer lifecycle
+      run: "py -3 .github/ci-windows-installer.py --with-wallet-restart \\\n  --installer \"$(basename \"$(cat windows-installer-path.txt)\")\" \\\n  --work-dir \"${RUNNER_TEMP}/en-installer-${{ matrix.crt }}\"\n"
+    - name: Run unit tests
+      run: py -3 .github/ci-windows-cross.py run_unit_tests
+    - name: Run functional tests
+      env:
+        TEST_RUNNER_EXTRA: --timeout-factor=${{ env.TEST_RUNNER_TIMEOUT_FACTOR }} ${{ case(github.event_name == 'pull_request', '', '--extended') }}
+      run: 'py -3 .github/ci-windows-cross.py run_functional_tests
+
+        '
