@@ -260,7 +260,8 @@ mkdir -p "$DISTSRC"
     case "$HOST" in
         *mingw*)
             cmake --build build -j "$JOBS" -t deploy ${V:+--verbose}
-            mv build/sugarchain-win64-setup.exe "${OUTDIR}/${DISTNAME}-win64-setup-unsigned.exe"
+            read -r installer_path < build/windows-installer-path.txt
+            mv "$installer_path" "${OUTDIR}/${DISTNAME}-win64-setup-unsigned.exe"
             ;;
     esac
 
