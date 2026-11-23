@@ -276,6 +276,14 @@ target_link_libraries(bitcoin-qt
 import_plugins(bitcoin-qt)
 install_binary_component(bitcoin-qt HAS_MANPAGE)
 if(UNIX AND NOT APPLE)
+  install(FILES ${PROJECT_SOURCE_DIR}/share/applications/org.sugarchain.SugarchainEn.desktop
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
+    COMPONENT bitcoin-qt
+  )
+  install(FILES ${PROJECT_SOURCE_DIR}/share/metainfo/org.sugarchain.SugarchainEn.metainfo.xml
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/metainfo
+    COMPONENT bitcoin-qt
+  )
   foreach(icon_size IN ITEMS 16 32 64 128 256)
     install(FILES ${PROJECT_SOURCE_DIR}/share/pixmaps/sugarchain${icon_size}.png
       DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/${icon_size}x${icon_size}/apps
