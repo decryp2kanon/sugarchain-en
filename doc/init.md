@@ -20,8 +20,8 @@ The macOS configuration assumes sugarchaind will be set up for the current user.
 Configuration
 ---------------------------------
 
-Running bitcoind as a daemon does not require any manual configuration. You may
-set the `rpcauth` setting in the `bitcoin.conf` configuration file to override
+Running sugarchaind as a daemon does not require any manual configuration. You may
+set the `rpcauth` setting in the `sugarchain.conf` configuration file to override
 the default behaviour of using a special cookie for authentication.
 
 This password does not have to be remembered or typed as it is mostly used
@@ -55,12 +55,12 @@ Paths
 
 All three configurations assume several paths that might need to be adjusted.
 
-    Binary:              /usr/bin/bitcoind
-    Configuration file:  /etc/bitcoin/bitcoin.conf
-    Data directory:      /var/lib/bitcoind
-    PID file:            /var/run/bitcoind/bitcoind.pid (OpenRC and Upstart) or
-                         /run/bitcoind/bitcoind.pid (systemd)
-    Lock file:           /var/lock/subsys/bitcoind (CentOS)
+    Binary:              /usr/bin/sugarchaind
+    Configuration file:  /etc/sugarchain/sugarchain.conf
+    Data directory:      /var/lib/sugarchaind
+    PID file:            /var/run/sugarchaind/sugarchaind.pid (OpenRC and Upstart) or
+                         /run/sugarchaind/sugarchaind.pid (systemd)
+    Lock file:           /var/lock/subsys/sugarchaind (CentOS)
 
 The PID directory (if applicable) and data directory should both be owned by the
 sugarchain user and group. It is advised for security reasons to make the
@@ -76,20 +76,20 @@ sugarchain group to do so. This does not allow
 for the listing of files under the directory.
 
 NOTE: It is not currently possible to override `datadir` in
-`/etc/bitcoin/bitcoin.conf` with the current systemd, OpenRC, and Upstart init
+`/etc/sugarchain/sugarchain.conf` with the current systemd, OpenRC, and Upstart init
 files out-of-the-box. This is because the command line options specified in the
 init files take precedence over the configurations in
-`/etc/bitcoin/bitcoin.conf`. However, some init systems have their own
+`/etc/sugarchain/sugarchain.conf`. However, some init systems have their own
 configuration mechanisms that would allow for overriding the command line
 options specified in the init files (e.g. setting `BITCOIND_DATADIR` for
 OpenRC).
 
 ### macOS
 
-    Binary:              /usr/local/bin/bitcoind
-    Configuration file:  ~/Library/Application Support/Bitcoin/bitcoin.conf
-    Data directory:      ~/Library/Application Support/Bitcoin
-    Lock file:           ~/Library/Application Support/Bitcoin/.lock
+    Binary:              /usr/local/bin/sugarchaind
+    Configuration file:  ~/Library/Application Support/Sugarchain/sugarchain.conf
+    Data directory:      ~/Library/Application Support/Sugarchain
+    Lock file:           ~/Library/Application Support/Sugarchain/.lock
 
 Installing Service Configuration
 -----------------------------------
