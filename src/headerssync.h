@@ -190,6 +190,14 @@ private:
      */
     void Finalize();
 
+    // SugarShield needs the target average and MTP, not just two adjacent nBits.
+    // Keep bounded history for the current pass; commitments/redownload stay unchanged.
+    void ResetDifficultyHistory();
+    bool CheckDifficultyAndAppend(const CBlockHeader& header);
+    std::deque<CBlockIndex> m_difficulty_history;
+    // Sum of the newest averaging-window targets (all available targets near genesis).
+    arith_uint256 m_difficulty_target_sum{0};
+
     /**
      *  Only called in PRESYNC.
      *  Validate the work on the headers we received from the network, and
