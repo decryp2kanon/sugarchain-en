@@ -3,9 +3,14 @@ Sugarchain En
 
 Setup
 ---------------------
-Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet networking and consensus. Its mainnet downloads and validates Sugarchain blocks and transactions, not the Bitcoin blockchain. The current mainnet parameters are defined in [`src/kernel/chainparams.cpp`](../src/kernel/chainparams.cpp). Initial synchronization time and storage depend on the chain size, pruning settings, hardware, and network connection. The inherited non-main networks are separate test environments; do not assume that their parameters match Sugarchain mainnet.
+Sugarchain En is based on Bitcoin Core v31.1 and implements Sugarchain mainnet networking and consensus. Its mainnet downloads and validates Sugarchain blocks and transactions, not the Bitcoin blockchain. The current mainnet parameters are defined in [`src/kernel/chainparams.cpp`](../src/kernel/chainparams.cpp). Initial synchronization time and storage depend on the chain size, pruning settings, hardware, and network connection. This candidate exposes mainnet and isolated regtest. Inherited testnet and Signet modes are disabled until native parameters are ported and verified.
 
 The Sugarchain homepage is https://sugarchain.org/.
+
+Current release preparation targets Linux first; Windows and macOS are deferred.
+See the [Linux candidate build/package guide](sugarchain-en-linux-release.md) and
+[En draft release notes](sugarchain-en-draft-release-notes.md). No public En release
+or download is announced by these preparation documents.
 
 This directory also retains upstream Bitcoin Core technical references, BIPs,
 example transactions, and historical release notes. Their Bitcoin names,
@@ -14,11 +19,11 @@ do not describe Sugarchain En releases or guarantee support by an external tool.
 
 Running
 ---------------------
-The following are some helpful notes on how to run Sugarchain En on your native platform.
+The following notes describe source builds and private candidates. See the Linux candidate guide for validation and package scope.
 
-### Unix
+### Linux
 
-Unpack the files into a directory and run:
+After building or staging a candidate, run:
 
 - `bin/sugarchain-qt` (GUI) or
 - `bin/sugarchaind` (headless)
@@ -28,11 +33,11 @@ The `sugarchain` command supports subcommands like `sugarchain gui`, `sugarchain
 
 ### Windows
 
-Unpack the files into a directory, and then run sugarchain-qt.exe.
+Native execution and installation are deferred. The Windows build notes are retained for follow-up work; no current En Windows release support is claimed.
 
 ### macOS
 
-Drag Sugarchain En to your applications folder, and then run Sugarchain En.
+Native execution and packaging are deferred. The macOS build notes are retained for follow-up work; no current En macOS release support is claimed.
 
 ### Need Help?
 

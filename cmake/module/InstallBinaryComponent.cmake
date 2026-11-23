@@ -27,6 +27,14 @@ function(install_binary_component component)
     RUNTIME DESTINATION ${runtime_dest}
     COMPONENT ${component}
   )
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    install(FILES
+      ${PROJECT_SOURCE_DIR}/COPYING
+      ${PROJECT_SOURCE_DIR}/contrib/debian/copyright
+      DESTINATION ${CMAKE_INSTALL_DOCDIR}
+      COMPONENT ${component}
+    )
+  endif()
   if(INSTALL_MAN AND IC_HAS_MANPAGE)
     install(FILES ${PROJECT_SOURCE_DIR}/doc/man/${output_name}.1
       DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
