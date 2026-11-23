@@ -7,9 +7,12 @@
 #include <cstdint>
 #include <future>
 #include <memory>
+#include <optional>
 #include <vector>
+#include <variant>
 
 #include <addresstype.h>
+#include <chainparams.h>
 #include <interfaces/chain.h>
 #include <key_io.h>
 #include <node/blockstorage.h>
@@ -22,14 +25,18 @@
 #include <test/util/random.h>
 #include <test/util/setup_common.h>
 #include <util/translation.h>
+#include <util/chaintype.h>
+#include <util/result.h>
 #include <validation.h>
 #include <validationinterface.h>
 #include <wallet/coincontrol.h>
 #include <wallet/context.h>
 #include <wallet/receive.h>
+#include <wallet/scriptpubkeyman.h>
 #include <wallet/spend.h>
 #include <wallet/test/util.h>
 #include <wallet/test/wallet_test_fixture.h>
+#include <wallet/walletdb.h>
 
 #include <boost/test/unit_test.hpp>
 #include <univalue.h>
@@ -487,6 +494,125 @@ BOOST_FIXTURE_TEST_CASE(BasicOutputTypesTest, ListCoinsTest)
         expected_coins_sizes[out_type] = 2U;
         TestCoinsResult(*this, out_type, 1 * COIN, expected_coins_sizes);
     }
+}
+
+// Keep the imported/previously generated Taproot managers usable as stored
+// descriptor data while preventing native mainnet receive/change generation.
+BOOST_FIXTURE_TEST_CASE(native_mainnet_output_policy, TestingSetup)
+{
+    BOOST_REQUIRE(Params().GetChainType() == ChainType::MAIN);
+    BOOST_REQUIRE(Params().GetConsensus().fYespowerSugar);
+    CWallet wallet(m_node.chain.get(), "", CreateMockableWalletDatabase());
+    LOCK(wallet.cs_wallet);
+    wallet.SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+    wallet.m_keypool_size = 2;
+    wallet.m_default_address_type = OutputType::BECH32;
+    CExtKey master;
+    master.SetSeed(GenerateRandomKey());
+    {
+        WalletBatch batch(wallet.GetDatabase());
+        wallet.SetupDescriptorScriptPubKeyMans(batch, master);
+    }
+    BOOST_CHECK_EQUAL(wallet.GetAllScriptPubKeyMans().size(), 6U);
+    BOOST_CHECK(!wallet.IsOutputTypeSupported(OutputType::BECH32M));
+    for (const auto type : {OutputType::LEGACY, OutputType::P2SH_SEGWIT, OutputType::BECH32}) {
+        BOOST_CHECK(wallet.IsOutputTypeSupported(type));
+        BOOST_REQUIRE(wallet.GetScriptPubKeyMan(type, false));
+        BOOST_REQUIRE(wallet.GetScriptPubKeyMan(type, true));
+        BOOST_CHECK(wallet.GetNewDestination(type, "native-policy"));
+    }
+    BOOST_CHECK(!wallet.GetScriptPubKeyMan(OutputType::BECH32M, false));
+    BOOST_CHECK(!wallet.GetScriptPubKeyMan(OutputType::BECH32M, true));
+
+    // Model a retained active tr() descriptor, as can exist after import or
+    // restore. Its presence must not bypass the wallet's central policy guard.
+    DescriptorScriptPubKeyMan* receive_tr;
+    DescriptorScriptPubKeyMan* change_tr;
+    {
+        WalletBatch batch(wallet.GetDatabase());
+        receive_tr = &wallet.SetupDescriptorScriptPubKeyMan(batch, master, OutputType::BECH32M, false);
+        change_tr = &wallet.SetupDescriptorScriptPubKeyMan(batch, master, OutputType::BECH32M, true);
+    }
+    BOOST_REQUIRE(wallet.GetScriptPubKeyMan(OutputType::BECH32M, false));
+    BOOST_REQUIRE(wallet.GetScriptPubKeyMan(OutputType::BECH32M, true));
+    const auto receive_index{WITH_LOCK(receive_tr->cs_desc_man, return receive_tr->GetWalletDescriptor().next_index)};
+    const auto change_index{WITH_LOCK(change_tr->cs_desc_man, return change_tr->GetWalletDescriptor().next_index)};
+    const auto receive_pool{receive_tr->GetKeyPoolSize()};
+    const auto change_pool{change_tr->GetKeyPoolSize()};
+    const std::string unsupported{"Address type 'bech32m' is not supported on this network."};
+    auto receive = wallet.GetNewDestination(OutputType::BECH32M, "blocked");
+    BOOST_REQUIRE(!receive);
+    BOOST_CHECK_EQUAL(util::ErrorString(receive).original, unsupported);
+    {
+        ReserveDestination reserve(&wallet, OutputType::BECH32M);
+        auto change = reserve.GetReservedDestination(true);
+        BOOST_REQUIRE(!change);
+        BOOST_CHECK_EQUAL(util::ErrorString(change).original, unsupported);
+    }
+    {
+        ReserveDestination reserve(&wallet, OutputType::BECH32M);
+        auto external = reserve.GetReservedDestination(false);
+        BOOST_REQUIRE(!external);
+        BOOST_CHECK_EQUAL(util::ErrorString(external).original, unsupported);
+    }
+    BOOST_CHECK_EQUAL(WITH_LOCK(receive_tr->cs_desc_man, return receive_tr->GetWalletDescriptor().next_index), receive_index);
+    BOOST_CHECK_EQUAL(WITH_LOCK(change_tr->cs_desc_man, return change_tr->GetWalletDescriptor().next_index), change_index);
+    BOOST_CHECK_EQUAL(receive_tr->GetKeyPoolSize(), receive_pool);
+    BOOST_CHECK_EQUAL(change_tr->GetKeyPoolSize(), change_pool);
+
+    // These recipients exercise destination selection only; no transaction is
+    // created. An existing Taproot manager must not force Taproot change.
+    const std::vector<CRecipient> taproot{{WitnessV1Taproot{}, COIN, false}};
+    const std::vector<CRecipient> native_segwit{{WitnessV0KeyHash{}, COIN, false}};
+    const std::vector<CRecipient> nested_segwit{{ScriptHash{}, COIN, false}};
+    const std::vector<CRecipient> legacy{{PKHash{}, COIN, false}};
+    BOOST_CHECK(wallet.TransactionChangeType(std::nullopt, {}) == OutputType::BECH32);
+    BOOST_CHECK(wallet.TransactionChangeType(std::nullopt, taproot) == OutputType::BECH32);
+    BOOST_CHECK(wallet.TransactionChangeType(std::nullopt, native_segwit) == OutputType::BECH32);
+    BOOST_CHECK(wallet.TransactionChangeType(std::nullopt, nested_segwit) == OutputType::P2SH_SEGWIT);
+    BOOST_CHECK(wallet.TransactionChangeType(std::nullopt, legacy) == OutputType::LEGACY);
+    // Explicit selection remains an override; ReserveDestination above is the
+    // final admission guard, including when callers request bech32m explicitly.
+    BOOST_CHECK(wallet.TransactionChangeType(OutputType::BECH32M, taproot) == OutputType::BECH32M);
+    {
+        ReserveDestination reserve(&wallet, OutputType::BECH32);
+        auto change = reserve.GetReservedDestination(true);
+        BOOST_REQUIRE(change);
+        BOOST_CHECK(std::holds_alternative<WitnessV0KeyHash>(*change));
+        reserve.KeepDestination();
+    }
+}
+
+struct RegtestOutputPolicySetup : TestingSetup {
+    RegtestOutputPolicySetup() : TestingSetup(ChainType::REGTEST) {}
+};
+
+BOOST_FIXTURE_TEST_CASE(regtest_output_policy_unchanged, RegtestOutputPolicySetup)
+{
+    BOOST_REQUIRE(Params().GetChainType() == ChainType::REGTEST);
+    CWallet wallet(m_node.chain.get(), "", CreateMockableWalletDatabase());
+    LOCK(wallet.cs_wallet);
+    wallet.SetWalletFlag(WALLET_FLAG_DESCRIPTORS);
+    wallet.m_keypool_size = 2;
+    CExtKey master;
+    master.SetSeed(GenerateRandomKey());
+    {
+        WalletBatch batch(wallet.GetDatabase());
+        wallet.SetupDescriptorScriptPubKeyMans(batch, master);
+    }
+    BOOST_CHECK(wallet.IsOutputTypeSupported(OutputType::BECH32M));
+    BOOST_CHECK_EQUAL(wallet.GetAllScriptPubKeyMans().size(), 8U);
+    BOOST_REQUIRE(wallet.GetScriptPubKeyMan(OutputType::BECH32M, false));
+    BOOST_REQUIRE(wallet.GetScriptPubKeyMan(OutputType::BECH32M, true));
+    auto receive = wallet.GetNewDestination(OutputType::BECH32M, "regtest-policy");
+    BOOST_REQUIRE(receive);
+    BOOST_CHECK(std::holds_alternative<WitnessV1Taproot>(*receive));
+    BOOST_CHECK(wallet.TransactionChangeType(std::nullopt, {}) == OutputType::BECH32M);
+    ReserveDestination reserve(&wallet, OutputType::BECH32M);
+    auto change = reserve.GetReservedDestination(true);
+    BOOST_REQUIRE(change);
+    BOOST_CHECK(std::holds_alternative<WitnessV1Taproot>(*change));
+    reserve.KeepDestination();
 }
 
 BOOST_FIXTURE_TEST_CASE(wallet_disableprivkeys, TestChain100Setup)
