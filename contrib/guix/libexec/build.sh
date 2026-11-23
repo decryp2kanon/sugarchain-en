@@ -378,7 +378,8 @@ mkdir -p "$DISTSRC"
             ;;
         *darwin*)
             cmake --build build --target deploy ${V:+--verbose}
-            mv build/dist/sugarchain-macos-app.zip "${OUTDIR}/${DISTNAME}-${HOST}-unsigned.zip"
+            read -r macos_archive_path < build/macos-archive-path.txt
+            mv "$macos_archive_path" "${OUTDIR}/${DISTNAME}-${HOST}-unsigned.zip"
             mkdir -p "unsigned-app-${HOST}"
             cp  --target-directory="unsigned-app-${HOST}" \
                 contrib/macdeploy/detached-sig-create.sh

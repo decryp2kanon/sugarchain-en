@@ -13,7 +13,7 @@
 - (NSString *)__bundleIdentifier
 {
     if (self == [NSBundle mainBundle]) {
-        return @"org.sugarchain.SugarchainKomorebi";
+        return @"org.sugarchain.SugarchainEn";
     } else {
         return [self __bundleIdentifier];
     }
