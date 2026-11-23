@@ -11,6 +11,8 @@ export PIP_PACKAGES="--break-system-packages pycapnp zmq"
 export GOAL="install deploy"
 export CMAKE_GENERATOR="Ninja"
 export CI_OS_NAME="macos"
+# Exercise the native Qt groups that skip the minimal platform on macOS.
+export QT_QPA_PLATFORM="cocoa"
 export NO_DEPENDS=1
 export OSX_SDK=""
 export BITCOIN_CONFIG="\
@@ -19,4 +21,4 @@ export BITCOIN_CONFIG="\
   -DREDUCE_EXPORTS=ON \
   -DCMAKE_EXE_LINKER_FLAGS='-Wl,-stack_size -Wl,0x80000' \
 "
-export BITCOIN_CMD="bitcoin -m" # Used in functional tests
+export BITCOIN_CMD="sugarchain -m" # Used in functional tests
