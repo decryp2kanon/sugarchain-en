@@ -104,9 +104,14 @@ public:
 /** Access to the block database (blocks/index/) */
 class BlockTreeDB : public CDBWrapper
 {
+    void PopulateBatch(CDBBatch& batch, const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo,
+        int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+
 public:
     using CDBWrapper::CDBWrapper;
     void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, const std::vector<const CBlockIndex*>& blockinfo, const Consensus::Params* consensus = nullptr) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
+    /** Consume a temporary pointer vector after serialization, before DB insertion. */
+    void WriteBatchSync(const std::vector<std::pair<int, const CBlockFileInfo*>>& fileInfo, int nLastFile, std::vector<const CBlockIndex*>&& blockinfo, const Consensus::Params* consensus = nullptr) EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
     bool HasYespowerEvidence(const CBlockHeader& header, const Consensus::Params& consensus) const;
     /** Bounded background DB scan; caller keeps this DB alive until joined. */
     std::optional<std::string> VerifyHistoricalPoW(const Consensus::Params& consensus,
@@ -315,8 +320,37 @@ private:
 protected:
     std::vector<CBlockFileInfo> m_blockfile_info;
 
-    /** Dirty block index entries. */
-    std::set<CBlockIndex*> m_dirty_blockindex;
+    /** Dirty indexes and their node storage are released together after each batch. */
+    class DirtyBlockIndexSet {
+        using Allocator = PoolAllocator<CBlockIndex*, 64, 8>;
+        struct Storage {
+            PoolResource<64, 8> pool;
+            // Destroy the set first: an empty MSVC tree still owns an allocated sentinel.
+            std::set<CBlockIndex*, std::less<CBlockIndex*>, Allocator> indexes;
+
+            Storage() : indexes(Allocator{&pool}) {}
+        };
+        std::optional<Storage> m_storage;
+
+    public:
+        void insert(CBlockIndex* index)
+        {
+            if (!m_storage) m_storage.emplace();
+            m_storage->indexes.insert(index);
+        }
+        size_t size() const { return m_storage ? m_storage->indexes.size() : 0; }
+        bool empty() const { return size() == 0; }
+        void clear() { m_storage.reset(); }
+
+        std::vector<const CBlockIndex*> Take()
+        {
+            if (!m_storage) return {};
+            std::vector<const CBlockIndex*> indexes(m_storage->indexes.begin(), m_storage->indexes.end());
+            clear();
+            return indexes;
+        }
+    };
+    DirtyBlockIndexSet m_dirty_blockindex;
 
     /** Dirty block file entries. */
     std::set<int> m_dirty_fileinfo;
@@ -365,6 +399,27 @@ public:
     std::multimap<CBlockIndex*, CBlockIndex*> m_blocks_unlinked;
 
     std::unique_ptr<BlockTreeDB> m_block_tree_db GUARDED_BY(::cs_main);
+
+    // Bound dirty-header accumulation before the first block arrives. This is
+    // a scheduling threshold, not a limit on resident indexes or batch bytes.
+    // Keep the atomic batch small as LevelDB may temporarily exceed its write
+    // buffer budget while inserting an entire batch into the memtable.
+    // Benchmarks compared 262144, 65536, 32768, 16384 and 8192 entries. At 12M
+    // synthetic inputs, 32768 reduced write-phase peak RSS by 20.42% versus
+    // 262144, but increased ingest/flush time by 148.02%. In the 4M screening,
+    // 16384 saved only another 55.48 MiB of whole-helper peak RSS while nearly
+    // doubling ingest/flush time, so retain 32768 as the measured compromise.
+    // These are component results, not whole-IBD performance guarantees. See
+    // doc/ibd-rss-management.md#follow-up-32768-entry-persistence-threshold
+    // for setup, repeated measurements, private-node comparisons and limits.
+    // Benchmark permalink:
+    // https://github.com/decryp2kanon/sugarchain-komorebi/blob/c6ad3c0c5f/doc/ibd-rss-management.md#follow-up-32768-entry-persistence-threshold
+    static constexpr size_t MAX_DIRTY_BLOCK_INDEX{32768};
+    bool BlockIndexWriteDue() const EXCLUSIVE_LOCKS_REQUIRED(::cs_main)
+    {
+        AssertLockHeld(::cs_main);
+        return m_dirty_blockindex.size() >= MAX_DIRTY_BLOCK_INDEX;
+    }
 
     void WriteBlockIndexDB() EXCLUSIVE_LOCKS_REQUIRED(::cs_main);
     /** On success, optionally return all indexes in height order for this load. */

@@ -1847,6 +1847,30 @@ BOOST_AUTO_TEST_CASE(historical_evidence_durable_reopen_and_reindex)
     }
 }
 
+BOOST_AUTO_TEST_CASE(block_index_owned_batch_survives_reopen)
+{
+    const auto header{Headers(803, 1).front()};
+    const auto hash{header.GetHash()};
+    const fs::path path{m_path_root / "owned-index-batch"};
+    CBlockIndex index{header}; index.phashBlock = &hash; WITH_LOCK(cs_main, index.nStatus = BLOCK_VALID_TREE);
+    {
+        kernel::BlockTreeDB db{DBParams{.path = path, .cache_bytes = 1 << 20}};
+        const std::vector<const CBlockIndex*> borrowed{&index};
+        WITH_LOCK(cs_main, db.WriteBatchSync({}, 0, borrowed));
+        BOOST_CHECK_EQUAL(borrowed.size(), 1U);
+        std::vector<const CBlockIndex*> owned{&index};
+        WITH_LOCK(cs_main, db.WriteBatchSync({}, 0, std::move(owned)));
+        BOOST_CHECK(owned.empty());
+    }
+    {
+        kernel::BlockTreeDB db{DBParams{.path = path, .cache_bytes = 1 << 20}};
+        CDiskBlockIndex saved;
+        BOOST_REQUIRE(db.Read(std::make_pair(uint8_t{'b'}, hash), saved));
+        BOOST_CHECK(saved.ConstructBlockHash() == hash);
+        WITH_LOCK(cs_main, BOOST_CHECK_EQUAL(saved.nStatus, index.nStatus));
+    }
+}
+
 BOOST_AUTO_TEST_CASE(persistent_evidence_records_bind_header_rules_and_version)
 {
     const auto header{Headers(802, 1).front()};
