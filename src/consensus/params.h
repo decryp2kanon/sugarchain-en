@@ -7,7 +7,6 @@
 #define BITCOIN_CONSENSUS_PARAMS_H
 
 #include <consensus/amount.h>
-
 #include <script/verify_flags.h>
 #include <uint256.h>
 
@@ -87,6 +86,7 @@ struct Params {
     uint256 hashGenesisBlock;
     int nSubsidyHalvingInterval;
     CAmount nInitialSubsidy{50 * COIN};
+    int64_t max_future_block_time{2 * 60 * 60};
     bool enforce_taproot_on_all_blocks{true};
     /**
      * Hashes of blocks that
