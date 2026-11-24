@@ -1,0 +1,80 @@
+name: macOS release audit
+
+on:
+  push:
+    branches: [qa/macos-en-release-20261124]
+    paths: [.github/workflows/macos-release-audit.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: Audit macOS ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: arm64
+            runner: macos-15
+          - arch: x86_64
+            runner: macos-15-intel
+    env:
+      AUDIT_ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download and verify the published release
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(uname -m)" = "$AUDIT_ARCH"
+          mkdir -p evidence packages
+          cd packages
+          release=https://github.com/decryp2kanon/sugarchain-en/releases/download/v31.1.0-en.1
+          prefix="sugarchain-en-31.1.0-macos-$AUDIT_ARCH"
+          curl -fsSLO "$release/SHA256SUMS"
+          printf "%s  %s\n" 051ac0995b5c85c10e75aa4f13eb668a45bb3f97c8908a651e50a8a075e4f5db SHA256SUMS | shasum -a 256 -c
+          curl -fsSLO "$release/$prefix.zip"
+          curl -fsSLO "$release/$prefix-cli.tar.gz"
+          awk -v prefix="$prefix" '$2 == prefix ".zip" || $2 == prefix "-cli.tar.gz"' SHA256SUMS > mac.sha256
+          test "$(wc -l < mac.sha256 | tr -d ' ')" = 2
+          shasum -a 256 -c mac.sha256
+          ditto -x -k "$prefix.zip" .
+          tar -xzf "$prefix-cli.tar.gz"
+          if [[ "$AUDIT_ARCH" == x86_64 ]]; then
+            mkdir legacy
+            older=https://github.com/sugarchain-project/sugarchain/releases/download/v0.16.5.2-visioneye
+            asset=sugarchain-0.16.5.2-visioneye-osx64.tar.gz
+            curl -fsSLO "$older/$asset"
+            printf "%s  %s\n" b2c80970141e8c4b383a9759eff1a4a825c35a4fb589cc7915d1d6a73cbce6a5 "$asset" | shasum -a 256 -c
+            tar -C legacy -xzf "$asset"
+          fi
+      - name: Verify package identity and validate macOS desktop availability
+        shell: bash
+        run: |
+          set -euo pipefail
+          app='packages/Sugarchain En.app'
+          codesign --verify --deep --strict "$app"
+          codesign -dv --verbose=2 "$app" > evidence/signature.txt 2>&1
+          plutil -p "$app/Contents/Info.plist" > evidence/bundle.txt
+          set +e
+          spctl --assess --type execute --verbose=4 "$app" > evidence/gatekeeper.txt 2>&1
+          printf '\nExit code: %s\n' "$?" >> evidence/gatekeeper.txt
+          pgrep -x WindowServer > evidence/windowserver.txt 2>&1
+          set -e
+          dest='/Applications/Sugarchain En.app'
+          test ! -e "$dest"
+          sudo ditto "$app" "$dest"
+          swiftc .github/qa/macos-window-id.swift -o "$RUNNER_TEMP/macos-window-id"
+      - name: Exercise First Run, shared data, wallets, shutdown and GUI rendering
+        shell: bash
+        run: python3 .github/qa/macos-release-audit.py
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-release-audit-${{ matrix.arch }}
+          path: evidence/
+          if-no-files-found: warn
