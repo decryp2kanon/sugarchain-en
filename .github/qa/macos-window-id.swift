@@ -9,7 +9,7 @@ if let windows = CGWindowListCopyWindowInfo(.optionOnScreenOnly, kCGNullWindowID
         let pid = $0[kCGWindowOwnerPID as String] as? Int32 ?? 0
         let path = NSRunningApplication(processIdentifier: pid)?.bundleURL?.path ?? ""
         return (owner.contains(name) || path == "/Applications/\(name).app")
-            && ($0[kCGWindowLayer as String] as? Int ?? -1) == 0
+            && ($0[kCGWindowLayer as String] as? Int ?? -1) >= 0
     }
     for window in matches {
         let id = window[kCGWindowNumber as String] as? Int ?? 0

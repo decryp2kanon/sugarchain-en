@@ -3,7 +3,10 @@ name: macOS release audit
 on:
   push:
     branches: [qa/macos-en-release-20261124]
-    paths: [.github/workflows/macos-release-audit.yml]
+    paths:
+      - .github/workflows/macos-release-audit.yml
+      - .github/qa/macos-*
+
 
 permissions:
   contents: read

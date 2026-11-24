@@ -34,7 +34,7 @@ def desktop_processes():
     return [int(pid) for pid, executable in parts if executable == str(GUI)]
 
 
-def screenshot(label, timeout=14):
+def screenshot(label, timeout=14, exclude=()):
     helper = Path(os.environ["RUNNER_TEMP"]) / "macos-window-id"
     end = time.monotonic() + timeout
     last = "No app window found"
@@ -42,6 +42,8 @@ def screenshot(label, timeout=14):
         windows = run([helper, APP.stem]).stdout.strip().splitlines()
         for line in windows:
             window, _width, _height = line.split()
+            if window in exclude:
+                continue
             png = REPORT / f"{label}.png"
             capture = run(["screencapture", "-x", "-l", window, str(png)])
             if capture.returncode == 0 and png.exists() and png.stat().st_size > 3000:
@@ -52,24 +54,53 @@ def screenshot(label, timeout=14):
     EVIDENCE[label] = {"captured": False, "detail": last}
 
 
-def screenshot_first_run():
-    open_process = subprocess.Popen(
-        ["open", "-n", "-W", "-a", APP, "--args", "-regtest", "-listen=0",
-         "-connect=0", "-dnsseed=0", "-discover=0", "-networkactive=0"],
-        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
-    )
+def capture_menu(label, menu_name, item_name):
+    helper = Path(os.environ["RUNNER_TEMP"]) / "macos-window-id"
+    windows = run([helper, APP.stem]).stdout.strip().splitlines()
+    exclude = [line.split()[0] for line in windows]
+    script = f"""
+        tell application "System Events"
+            set matches to (every application process whose name contains "Sugarchain")
+            set p to first item of matches
+            set frontmost of p to true
+            tell menu bar 1 of p
+                set m to menu 1 of menu bar item "{menu_name}"
+                click first menu item of m whose name contains "{item_name}"
+            end tell
+        end tell
+    """
     try:
-        screenshot("first-run")
-    finally:
-        for pid in desktop_processes():
-            os.kill(pid, signal.SIGTERM)
+        selected = run(["osascript", "-e", script], timeout=12)
+    except subprocess.TimeoutExpired:
+        EVIDENCE[label] = {"captured": False, "detail": "macOS accessibility call timed out"}
+        return
+    if selected.returncode:
+        EVIDENCE[label] = {"captured": False, "detail": selected.stderr.strip()[:240]}
+        return
+    screenshot(label, timeout=8, exclude=exclude)
+
+
+def screenshot_first_run():
+    with (REPORT / "first-run-process.log").open("wb") as log:
+        open_process = subprocess.Popen(
+            ["open", "-n", "-W", "-a", APP, "--args", "-choosedatadir=1", "-listen=0",
+             "-connect=0", "-dnsseed=0", "-discover=0", "-networkactive=0"],
+            stdout=log, stderr=subprocess.STDOUT,
+        )
         try:
-            open_process.wait(timeout=12)
-        except subprocess.TimeoutExpired:
+            screenshot("first-run", timeout=18)
+            EVIDENCE["first-run"]["pids"] = desktop_processes()
+            EVIDENCE["first-run"]["launch_services_exit"] = open_process.poll()
+        finally:
             for pid in desktop_processes():
-                os.kill(pid, signal.SIGKILL)
-            open_process.kill()
-            open_process.wait(timeout=5)
+                os.kill(pid, signal.SIGTERM)
+            try:
+                open_process.wait(timeout=12)
+            except subprocess.TimeoutExpired:
+                for pid in desktop_processes():
+                    os.kill(pid, signal.SIGKILL)
+                open_process.kill()
+                open_process.wait(timeout=5)
 
 
 @contextmanager
@@ -128,6 +159,9 @@ def node(label, binary, cli, chain, *, gui=False, legacy=False):
                     process.wait(timeout=8)
                     stage["shutdown_timeout"] = True
                 stage["shutdown_seconds"] = round(time.monotonic() - start, 2)
+            stage["launch_process_exit"] = process.returncode
+            if gui:
+                stage["gui_process_gone"] = not desktop_processes()
             stage["exit_code"] = process.returncode
             if stage.get("shutdown_timeout") or stage["exit_code"] != 0:
                 stage["shutdown_problem"] = True
@@ -159,6 +193,8 @@ def default_directory_roundtrip():
             stage.update({"matched_daemon_tip": True, "reopened_korean_wallet": True, "standard_data_path": True})
             if label == "default-gui":
                 screenshot("wallet-gui")
+                capture_menu("node-window", "Window", "Information")
+                capture_menu("about", APP.stem, "About")
     with node("restarted-daemon", daemon, cli, "regtest") as (rpc, stage):
         expect(rpc("getbestblockhash").stdout.strip() == tip, "Daemon tip differed after GUI shutdown")
         expect(name in json.loads(rpc("listwallets").stdout), "Daemon failed to reopen wallet")
@@ -173,7 +209,7 @@ def legacy_wallet():
     old = files[0]
     new, cli = CLI_DIR / "sugarchaind", CLI_DIR / "sugarchain-cli"
     with node("visioneye-daemon", old, old.with_name("sugarchain-cli"), "main", legacy=True) as (rpc, stage):
-        address = rpc("getnewaddress").stdout.strip()
+        address = rpc("getnewaddress", "", "legacy").stdout.strip()
         expect(address.startswith("S"), "Legacy address format differs")
         stage["created_legacy_wallet"] = True
     expect((DATA / "wallet.dat").is_file() or (DATA / "wallets/wallet.dat").is_file(),
