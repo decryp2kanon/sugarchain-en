@@ -214,7 +214,7 @@ class Node:
         self.chain = chain
         self.gui = gui
         datadir.mkdir(parents=True)
-        self.cookie = datadir / ("regtest/.cookie" if chain == "regtest" else ".cookie")
+        self.cookie = datadir / {"main": ".cookie", "test": "testnet7/.cookie", "regtest": "regtest/.cookie"}[chain]
         self._start()
 
     def _start(self, *, restart=False):
@@ -223,15 +223,13 @@ class Node:
             listener.bind(("127.0.0.1", 0))
             self.port = listener.getsockname()[1]
         command = [
-            str(self.binary), f"-datadir={self.datadir}", f"-rpcport={self.port}",
+            str(self.binary), f"-datadir={self.datadir}", f"-rpcport={self.port}", f"-chain={self.chain}",
             "-server=1", "-listen=0", "-connect=0", "-dnsseed=0", "-discover=0",
             "-debug=http", "-debug=rpc", "-debug=coindb",
             "-networkactive=0", "-maxconnections=0", "-keypool=10",
             "-fallbackfee=0.0002", "-printtoconsole=0",
         ]
-        if self.chain == "regtest":
-            command.append("-regtest")
-        else:
+        if self.chain == "main":
             # The offline mainnet fixture never downloads the chain.
             command.append("-prune=550")
         if self.gui:
@@ -324,21 +322,21 @@ def check_node(binary, cli, datadir, chain, gui=False):
         assert info["chain"] == chain and info["blocks"] == 0, info
         expected_genesis = {
             "main": "7d5eaec2dbb75f99feadfa524c78b7cabc1d8c8204f79d4f3a83381b811b0adc",
+            "test": "14f06e88eec9b21214a1eb54eee3cc03ceaf78ead1b16e40d8a383a5ff3e5e24",
             "regtest": "0f9188f13cb7b2c71f2a335e3a4fc328bf5beb436012afca590b1a11466e2206",
         }
         assert node.rpc("getblockhash", 0) == expected_genesis[chain]
         network = node.rpc("getnetworkinfo")
         assert network["networkactive"] is False and network["connections"] == 0
-        command = [str(cli), f"-datadir={datadir}", f"-rpcport={node.port}"]
-        if chain == "regtest":
-            command.append("-regtest")
+        command = [str(cli), f"-datadir={datadir}", f"-rpcport={node.port}", f"-chain={chain}"]
         command.append("getblockcount")
         assert subprocess.check_output(command, text=True).strip() == "0"
 
         node.rpc("createwallet", "smoke", False, False, "", False, True, False)
         node.wallet = "smoke"
         address = node.rpc("getnewaddress", "", "bech32")
-        assert address.startswith("sugar1q" if chain == "main" else "rugar1q"), address
+        prefix = {"main": "sugar1q", "test": "tugar1q", "regtest": "rugar1q"}[chain]
+        assert address.startswith(prefix), address
         assert node.rpc("getaddressinfo", address)["ismine"]
         legacy = node.rpc("getnewaddress", "", "legacy")
         if chain == "main":
@@ -346,13 +344,13 @@ def check_node(binary, cli, datadir, chain, gui=False):
         message = "Sugarchain En native Windows wallet smoke"
         signature = node.rpc("signmessage", legacy, message)
         assert node.rpc("verifymessage", legacy, signature, message)
-        if chain == "main":
+        if chain != "regtest":
             try:
                 node.rpc("getnewaddress", "", "bech32m")
             except RuntimeError as error:
                 assert "not supported on this network" in str(error), error
             else:
-                raise AssertionError("Inactive mainnet Taproot unexpectedly generated an address")
+                raise AssertionError(f"Inactive Taproot unexpectedly generated an address on {chain}")
         else:
             blocks = node.rpc("generatetoaddress", 101, address)
             assert len(blocks) == 101
@@ -432,15 +430,17 @@ def main():
     results = [
         check_node(daemon, cli, workdir / "main", "main"),
         check_node(daemon, cli, workdir / "regtest", "regtest"),
+        check_node(daemon, cli, workdir / "testnet7", "test"),
         check_node(binaries["sugarchain-qt"], cli, workdir / "gui-main", "main", gui=True),
+        check_node(binaries["sugarchain-qt"], cli, workdir / "gui-testnet7", "test", gui=True),
     ]
-    for chain in ("test", "testnet4", "signet"):
+    for chain in ("testnet4", "signet"):
         datadir = workdir / f"unsupported-{chain}"
         datadir.mkdir()
         result = subprocess.run([str(daemon), f"-datadir={datadir}", f"-chain={chain}"], capture_output=True, text=True, timeout=30)
         assert result.returncode != 0 and "not supported" in result.stderr, result
         assert not list(datadir.iterdir()), f"Rejected {chain} created persistent data"
-    report = {"binaries": len(programs), "runtime": results, "unsupported_chains_rejected": 3, "status": "passed"}
+    report = {"binaries": len(programs), "runtime": results, "unsupported_chains_rejected": 2, "status": "passed"}
     (workdir / "results.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report))
 
