@@ -43,7 +43,8 @@ class OrderedCheckWindow
     const size_t m_limit;
     std::mutex m_call_mutex;
     std::mutex m_mutex;
-    std::condition_variable m_changed;
+    std::condition_variable m_work_available;
+    std::condition_variable m_caller_changed;
     std::array<Slot, Capacity> m_slots;
     std::vector<std::thread> m_workers;
     Next m_next;
@@ -51,7 +52,8 @@ class OrderedCheckWindow
     size_t m_started{0};
     size_t m_admitted{0};
     size_t m_active{0};
-    size_t m_waiters{0};
+    size_t m_worker_waiters{0};
+    bool m_caller_waiting{false};
     Result m_failure;
     bool m_exhausted{true};
     bool m_shutdown{false};
@@ -59,16 +61,16 @@ class OrderedCheckWindow
     bool HasWork() const { return !m_failure && m_started < m_admitted; }
     bool Complete() const { return (m_exhausted || m_failure) && !HasWork() && m_active == 0; }
 
-    void Wake()
+    void WakeForWork(size_t published)
     {
-        if (m_waiters != 0) m_changed.notify_all();
-    }
-
-    void Wait(Lock& lock)
-    {
-        ++m_waiters;
-        m_changed.wait(lock);
-        --m_waiters;
+        if (!HasWork() || published == 0) return;
+        // A waiting caller can also take a new job.
+        if (m_caller_waiting) {
+            m_caller_changed.notify_one();
+            --published;
+        }
+        const size_t wakes{std::min(published, m_worker_waiters)};
+        for (size_t i{0}; i < wakes; ++i) m_work_available.notify_one();
     }
 
     void Fail(std::exception_ptr error)
@@ -116,6 +118,7 @@ class OrderedCheckWindow
         lock.lock();
         --m_active;
 
+        const size_t previous_admitted{m_admitted};
         if (result) Fail(std::move(*result));
         if (!m_failure) {
             slot.passed = true;
@@ -125,15 +128,21 @@ class OrderedCheckWindow
             }
             Refill();
         }
-        if (HasWork() || Complete()) Wake();
+        WakeForWork(m_admitted - previous_admitted);
+        if (m_caller_waiting && Complete()) m_caller_changed.notify_one();
     }
 
     void WorkerLoop()
     {
         Lock lock{m_mutex};
         while (!m_shutdown) {
-            if (HasWork()) CheckOne(lock);
-            else Wait(lock);
+            if (HasWork()) {
+                CheckOne(lock);
+            } else {
+                ++m_worker_waiters;
+                m_work_available.wait(lock, [this] { return m_shutdown || HasWork(); });
+                --m_worker_waiters;
+            }
         }
     }
 
@@ -142,7 +151,7 @@ class OrderedCheckWindow
         {
             Lock lock{m_mutex};
             m_shutdown = true;
-            Wake();
+            m_work_available.notify_all();
         }
         for (auto& worker : m_workers) worker.join();
     }
@@ -180,10 +189,16 @@ public:
         m_next = std::move(next);
         m_exhausted = false;
         Refill();
-        Wake();
+        // Initially publish the whole first window to the workers.
+        if (HasWork() && m_worker_waiters != 0) m_work_available.notify_all();
         while (!Complete()) {
-            if (HasWork()) CheckOne(lock);
-            else Wait(lock);
+            if (HasWork()) {
+                CheckOne(lock);
+            } else {
+                m_caller_waiting = true;
+                m_caller_changed.wait(lock, [this] { return HasWork() || Complete(); });
+                m_caller_waiting = false;
+            }
         }
 
         auto failure{std::exchange(m_failure, std::nullopt)};

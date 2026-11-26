@@ -1443,6 +1443,67 @@ BOOST_AUTO_TEST_CASE(apple_ordered_checks_drain_and_reuse_after_failure)
     BOOST_CHECK_EQUAL(remaining, 0U);
 }
 
+BOOST_AUTO_TEST_CASE(apple_ordered_checks_wake_caller_and_worker_after_refill)
+{
+    for (const bool delay_worker : {false, true}) {
+        util::OrderedCheckWindow<WindowJob, 8> window{2};
+        std::promise<void> delayed_started, release_delayed, reached_gap, both_refills_started, release_refills;
+        auto delayed{delayed_started.get_future()};
+        auto resume{release_delayed.get_future()};
+        auto gap{reached_gap.get_future()};
+        auto refilled{both_refills_started.get_future()};
+        auto finish{release_refills.get_future().share()};
+        const size_t delay_index{delay_worker ? 1U : 0U};
+        const size_t count{delay_index + 4};
+        size_t admitted{0};
+        std::atomic_size_t refills_started{0};
+        auto check{std::async(std::launch::async, [&] {
+            return window.Run([&]() -> std::optional<WindowJob> {
+                if (admitted == count) return std::nullopt;
+                const size_t index{admitted++};
+                if (index == delay_index) {
+                    return WindowJob{[&]() -> WindowResult {
+                        delayed_started.set_value();
+                        resume.wait();
+                        return std::nullopt;
+                    }};
+                }
+                if (index == delay_index + 1) {
+                    // The queue destroys the finished job under its mutex,
+                    // before waiting for the earlier proof to unblock refill.
+                    auto signal{std::shared_ptr<void>{nullptr, [&](void*) { reached_gap.set_value(); }}};
+                    return WindowJob{[signal = std::move(signal)]() -> WindowResult {
+                        (void)signal;
+                        return std::nullopt;
+                    }};
+                }
+                if (index < delay_index) {
+                    return WindowJob{[&]() -> WindowResult {
+                        // The caller takes job zero and lets the worker enter job one.
+                        if (delayed.wait_for(std::chrono::seconds{5}) != std::future_status::ready) {
+                            return std::exception_ptr{};
+                        }
+                        return std::nullopt;
+                    }};
+                }
+                return WindowJob{[&]() -> WindowResult {
+                    if (++refills_started == 2) both_refills_started.set_value();
+                    finish.wait();
+                    return std::nullopt;
+                }};
+            });
+        })};
+        const bool reached_refill_gap{gap.wait_for(std::chrono::seconds{5}) == std::future_status::ready};
+        release_delayed.set_value();
+        const bool woke_participant{refilled.wait_for(std::chrono::seconds{5}) == std::future_status::ready};
+        release_refills.set_value();
+        BOOST_CHECK(check.get());
+        BOOST_CHECK(reached_refill_gap);
+        BOOST_CHECK(woke_participant);
+        BOOST_CHECK_EQUAL(admitted, count);
+    }
+}
+
 BOOST_AUTO_TEST_CASE(apple_network_presync_validates_cold_and_cached_proofs)
 {
     CacheBudget budget{1 << 20};
