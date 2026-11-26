@@ -207,7 +207,7 @@ class BlockManager
 {
     friend Chainstate;
     friend ChainstateManager;
-#if (defined(__APPLE__) && defined(__x86_64__)) || (defined(WIN32) && (defined(__x86_64__) || defined(_M_X64)))
+#if (defined(__APPLE__) && (defined(__x86_64__) || defined(__aarch64__))) || (defined(WIN32) && (defined(__x86_64__) || defined(_M_X64)))
     friend struct BlockManagerTestAccess;
 #endif
 
@@ -252,7 +252,7 @@ private:
 #ifdef __APPLE__
         std::optional<int64_t> m_file_pos;
 #endif
-#if defined(__APPLE__) && defined(__x86_64__)
+#if defined(__APPLE__) && (defined(__x86_64__) || defined(__aarch64__))
         friend struct BlockManagerTestAccess;
         static constexpr size_t MAX_PENDING_BYTES{64 * 1024};
         // Outlives the FILE stream, which Close() releases before destruction.
@@ -270,7 +270,7 @@ private:
         AutoFile Open(const FlatFileSeq& sequence, const FlatFilePos& pos, const Obfuscation& obfuscation);
         [[nodiscard]] bool Keep(AutoFile& file, int file_num);
         [[nodiscard]] bool Close(int file_num = -1);
-#if defined(__APPLE__) && defined(__x86_64__)
+#if defined(__APPLE__) && (defined(__x86_64__) || defined(__aarch64__))
         [[nodiscard]] bool Flush(int file_num = -1, bool commit = false);
         void RecordError();
         void Abort(AutoFile& file);

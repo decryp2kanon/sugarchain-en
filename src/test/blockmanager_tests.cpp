@@ -17,7 +17,7 @@
 #include <validation.h>
 #include <streams.h>
 #include <undo.h>
-#if defined(__APPLE__) && defined(__x86_64__)
+#if defined(__APPLE__) && (defined(__x86_64__) || defined(__aarch64__))
 #include <unistd.h>
 #endif
 
@@ -41,7 +41,7 @@ using node::BlockManager;
 using node::KernelNotifications;
 using node::MAX_BLOCKFILE_SIZE;
 
-#if defined(__APPLE__) && defined(__x86_64__)
+#if defined(__APPLE__) && (defined(__x86_64__) || defined(__aarch64__))
 namespace node {
 struct BlockManagerTestAccess {
     static size_t Pending(BlockManager& manager, bool undo = false)
@@ -829,7 +829,7 @@ BOOST_AUTO_TEST_CASE(blockmanager_flush_block_file)
     }
 }
 
-#if defined(__APPLE__) && defined(__x86_64__)
+#if defined(__APPLE__) && (defined(__x86_64__) || defined(__aarch64__))
 BOOST_FIXTURE_TEST_CASE(buffered_block_read_visibility, BufferedBlockStorageSetup)
 {
     CBlock block;

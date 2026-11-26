@@ -61,7 +61,7 @@ public:
 
     /** Open a handle to the file at the given position. */
     FILE* Open(const FlatFilePos& pos, bool read_only = false) const;
-#if defined(__APPLE__) && defined(__x86_64__)
+#if defined(__APPLE__) && (defined(__x86_64__) || defined(__aarch64__))
     /** Configure a caller-owned buffer before any stream I/O or seeking. */
     FILE* Open(const FlatFilePos& pos, bool read_only, std::span<char> buffer) const;
 #endif
