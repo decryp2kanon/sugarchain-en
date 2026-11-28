@@ -260,7 +260,7 @@ BOOST_AUTO_TEST_CASE(sha256d_batch_runs_lead_only_after_valid_first_proof)
     };
     const auto invalid_first{invalid(0)};
     const auto invalid_tail{invalid(1)};
-    HeaderPoWVerifier verifier{8, /*network=*/true};
+    HeaderPoWVerifier verifier{8};
     int leads{0};
     const auto check = [&](std::span<const CBlockHeader> batch) {
         return verifier.Check(batch, consensus, /*established_presync=*/true, [&] { ++leads; });
