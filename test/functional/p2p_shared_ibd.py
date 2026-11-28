@@ -10,6 +10,7 @@ from test_framework.util import assert_equal
 
 class SharedIbdTest(BitcoinTestFramework):
     def set_test_params(self):
+        self.use_bitcoin_regtest = False
         self.setup_clean_chain = True
         self.num_nodes = 2
         self.extra_args = [
