@@ -291,7 +291,14 @@ private:
     // writes, truncation, and pruning.
     mutable std::unique_ptr<std::FILE, decltype(&std::fclose)> m_block_read_stream GUARDED_BY(cs_LastBlockFile){nullptr, std::fclose};
     mutable int m_block_read_stream_num GUARDED_BY(cs_LastBlockFile){-1};
+    // The requested position and the kernel cursor differ after read-ahead.
     mutable int64_t m_block_read_stream_offset GUARDED_BY(cs_LastBlockFile){0};
+    mutable int64_t m_block_read_handle_offset GUARDED_BY(cs_LastBlockFile){0};
+    // These bytes remain obfuscated until copied into the caller's buffer.
+    mutable std::array<std::byte, 64 * 1024> m_block_read_ahead GUARDED_BY(cs_LastBlockFile);
+    mutable int64_t m_block_read_ahead_start GUARDED_BY(cs_LastBlockFile){0};
+    mutable size_t m_block_read_ahead_size GUARDED_BY(cs_LastBlockFile){0};
+    mutable bool m_block_read_ahead_enabled GUARDED_BY(cs_LastBlockFile){true};
     void CloseBlockReadStream(int file_num = -1) const EXCLUSIVE_LOCKS_REQUIRED(cs_LastBlockFile);
 #endif
 

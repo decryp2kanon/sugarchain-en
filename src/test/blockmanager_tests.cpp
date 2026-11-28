@@ -108,6 +108,16 @@ struct BlockManagerTestAccess {
         LOCK(manager.cs_LastBlockFile);
         return manager.m_block_read_stream_offset;
     }
+    static std::pair<int64_t, size_t> ReadAhead(const BlockManager& manager)
+    {
+        LOCK(manager.cs_LastBlockFile);
+        return {manager.m_block_read_ahead_start, manager.m_block_read_ahead_size};
+    }
+    static void CloseReadStream(const BlockManager& manager)
+    {
+        LOCK(manager.cs_LastBlockFile);
+        manager.CloseBlockReadStream();
+    }
     static bool WriteUndo(BlockManager& manager, const CBlockUndo& undo, BlockValidationState& state, CBlockIndex& index) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
     {
         return manager.WriteBlockUndo(undo, state, index);
@@ -769,6 +779,109 @@ BOOST_FIXTURE_TEST_CASE(windows_block_and_undo_write_buffer_boundaries, LargeWin
     }
 }
 
+BOOST_FIXTURE_TEST_CASE(windows_raw_read_cache_bounds_and_visibility, LargeWindowsBlockWriteSetup)
+{
+    using Access = node::BlockManagerTestAccess;
+    constexpr size_t buffer_size{64 * 1024};
+    CBlock small;
+    small.nVersion = 7;
+    DataStream expected_small;
+    expected_small << TX_WITH_WITNESS(small);
+    const auto first{blockman.WriteBlock(small, 1)};
+    BOOST_REQUIRE(!first.IsNull());
+    const auto first_raw{blockman.ReadRawBlock(first)};
+    BOOST_REQUIRE(first_raw);
+    BOOST_CHECK(std::ranges::equal(*first_raw, expected_small));
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
+
+    const auto second{blockman.WriteBlock(small, 2)};
+    BOOST_REQUIRE(!second.IsNull());
+    BOOST_REQUIRE_EQUAL(second.nFile, first.nFile);
+    BOOST_REQUIRE(blockman.ReadRawBlock(second));
+    const size_t written{second.nPos + expected_small.size()};
+    BOOST_REQUIRE_GT(fs::file_size(blockman.GetBlockPosFilename(second)), written);
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).first, second.nPos - STORAGE_HEADER_BYTES);
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, expected_small.size() + STORAGE_HEADER_BYTES);
+
+    CBlock large;
+    CMutableTransaction tx;
+    tx.vin.resize(1);
+    auto& script{tx.vin[0].scriptSig};
+    script.resize(96 * 1024);
+    for (size_t i{0}; i < script.size(); ++i) {
+        script[i] = static_cast<unsigned char>(i % 251);
+    }
+    large.vtx.push_back(MakeTransactionRef(tx));
+    DataStream expected_large;
+    expected_large << TX_WITH_WITNESS(large);
+    const auto large_pos{blockman.WriteBlock(large, 3)};
+    BOOST_REQUIRE(!large_pos.IsNull());
+    BOOST_REQUIRE_EQUAL(large_pos.nFile, first.nFile);
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
+
+    Access::CloseReadStream(blockman);
+    const auto random{blockman.ReadRawBlock(large_pos)};
+    BOOST_REQUIRE(random);
+    BOOST_CHECK(std::ranges::equal(*random, expected_large));
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
+
+    // A partial miss at an adjacent frame must not trigger a speculative read.
+    BOOST_REQUIRE(blockman.ReadRawBlock(first));
+    const auto partial_miss{blockman.ReadRawBlock(second, std::pair{size_t{4}, size_t{13}})};
+    BOOST_REQUIRE(partial_miss);
+    BOOST_CHECK(std::ranges::equal(*partial_miss, std::span{expected_small}.subspan(4, 13)));
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
+
+    Access::CloseReadStream(blockman);
+    BOOST_REQUIRE(blockman.ReadRawBlock(first));
+    BOOST_REQUIRE(blockman.ReadRawBlock(second));
+    const auto [window_start, window_size]{Access::ReadAhead(blockman)};
+    BOOST_REQUIRE_EQUAL(window_size, buffer_size);
+    BOOST_CHECK_EQUAL(window_start, second.nPos - STORAGE_HEADER_BYTES);
+
+    // A partial hit spanning the window keeps the cached prefix and reads the remainder.
+    const size_t offset{static_cast<size_t>(window_start) + buffer_size - large_pos.nPos - 11};
+    constexpr size_t length{29};
+    const auto part{blockman.ReadRawBlock(large_pos, std::pair{offset, length})};
+    BOOST_REQUIRE(part);
+    BOOST_CHECK(std::ranges::equal(*part, std::span{expected_large}.subspan(offset, length)));
+    BOOST_CHECK_EQUAL(Access::ReadOffset(blockman), large_pos.nPos + offset + length);
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).first, window_start);
+    const auto full{blockman.ReadRawBlock(large_pos)};
+    BOOST_REQUIRE(full);
+    BOOST_CHECK(std::ranges::equal(*full, expected_large));
+
+    const auto last{blockman.WriteBlock(small, 4)};
+    BOOST_REQUIRE(!last.IsNull());
+    BOOST_REQUIRE_EQUAL(last.nFile, first.nFile);
+    const auto appended{blockman.ReadRawBlock(last)};
+    BOOST_REQUIRE(appended);
+    BOOST_CHECK(std::ranges::equal(*appended, expected_small));
+    const auto [start, bytes]{Access::ReadAhead(blockman)};
+    const auto logical_end{last.nPos + expected_small.size()};
+    BOOST_CHECK_EQUAL(start + bytes, logical_end);
+    BOOST_REQUIRE_GT(fs::file_size(blockman.GetBlockPosFilename(last)), logical_end);
+
+    // A direct writable handle can mutate data after another exact read.
+    AutoFile writer{blockman.OpenBlockFile(last, /*fReadOnly=*/false)};
+    BOOST_REQUIRE(!writer.IsNull());
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
+    BOOST_REQUIRE(blockman.ReadRawBlock(large_pos));
+    BOOST_REQUIRE(blockman.ReadRawBlock(last));
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
+    small.nVersion = 8;
+    DataStream replacement;
+    replacement << TX_WITH_WITNESS(small);
+    writer.write(std::span{replacement});
+    const bool committed{writer.Commit()};
+    const auto replaced{blockman.ReadRawBlock(last)};
+    BOOST_REQUIRE_EQUAL(writer.fclose(), 0);
+    BOOST_REQUIRE(committed);
+    BOOST_REQUIRE(replaced);
+    BOOST_CHECK(std::ranges::equal(*replaced, replacement));
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
+}
+
 BOOST_FIXTURE_TEST_CASE(windows_mainnet_block_reader_rotation_prune_and_reload, MainnetBlockReaderSetup)
 {
     using Access = node::BlockManagerTestAccess;
@@ -778,26 +891,41 @@ BOOST_FIXTURE_TEST_CASE(windows_mainnet_block_reader_rotation_prune_and_reload, 
     BOOST_REQUIRE(!first.IsNull());
     BOOST_REQUIRE(blockman.ReadRawBlock(first));
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), first.nFile);
+    const auto adjacent{blockman.WriteBlock(block, 2)};
+    BOOST_REQUIRE(!adjacent.IsNull());
+    BOOST_REQUIRE_EQUAL(adjacent.nFile, first.nFile);
+    BOOST_REQUIRE(blockman.ReadRawBlock(adjacent));
+    BOOST_CHECK_GT(Access::ReadAhead(blockman).second, 0U);
 
     blockman.GetBlockFileInfo(first.nFile)->nSize = 0x10000;
     block.nVersion = 11;
-    const auto second{blockman.WriteBlock(block, 2)};
+    const auto second{blockman.WriteBlock(block, 3)};
     BOOST_REQUIRE(!second.IsNull());
     BOOST_REQUIRE_NE(first.nFile, second.nFile);
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), -1);
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
     BOOST_REQUIRE(blockman.ReadRawBlock(second));
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), second.nFile);
     BOOST_REQUIRE(blockman.ReadRawBlock(first));
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), first.nFile);
+    BOOST_REQUIRE(blockman.ReadRawBlock(adjacent));
+    BOOST_CHECK_GT(Access::ReadAhead(blockman).second, 0U);
     blockman.UnlinkPrunedFiles({first.nFile});
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), -1);
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
     BOOST_CHECK(!fs::exists(blockman.GetBlockPosFilename(first)));
     BOOST_CHECK(!blockman.ReadRawBlock(first));
     BOOST_REQUIRE(blockman.ReadRawBlock(second));
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), second.nFile);
+    const auto adjacent_second{blockman.WriteBlock(block, 4)};
+    BOOST_REQUIRE(!adjacent_second.IsNull());
+    BOOST_REQUIRE_EQUAL(adjacent_second.nFile, second.nFile);
+    BOOST_REQUIRE(blockman.ReadRawBlock(adjacent_second));
+    BOOST_CHECK_GT(Access::ReadAhead(blockman).second, 0U);
 
     BOOST_REQUIRE(WITH_LOCK(cs_main, return blockman.LoadBlockIndexDB(std::nullopt)));
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), -1);
+    BOOST_CHECK_EQUAL(Access::ReadAhead(blockman).second, 0U);
     BOOST_REQUIRE(blockman.ReadRawBlock(second));
 }
 #endif

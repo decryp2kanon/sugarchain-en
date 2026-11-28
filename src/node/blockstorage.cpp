@@ -1011,22 +1011,29 @@ bool BlockManager::LoadBlockIndexDB(const std::optional<uint256>& snapshot_block
     }
     // Legacy loading used a local sorting vector, released before file checks.
     if (!m_opts.startup_optimizations && !sorted_indices) std::vector<CBlockIndex*>{}.swap(loaded_indices);
-    int max_blockfile_num{0};
+    {
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+        // The raw reader also uses file sizes for the read-ahead limit.
+        LOCK(cs_LastBlockFile);
+        CloseBlockReadStream();
+#endif
+        int max_blockfile_num{0};
 
-    // Load block file info
-    m_block_tree_db->ReadLastBlockFile(max_blockfile_num);
-    m_blockfile_info.resize(max_blockfile_num + 1);
-    LogInfo("Loading block index db: last block file = %i", max_blockfile_num);
-    for (int nFile = 0; nFile <= max_blockfile_num; nFile++) {
-        m_block_tree_db->ReadBlockFileInfo(nFile, m_blockfile_info[nFile]);
-    }
-    LogInfo("Loading block index db: last block file info: %s", m_blockfile_info[max_blockfile_num].ToString());
-    for (int nFile = max_blockfile_num + 1; true; nFile++) {
-        CBlockFileInfo info;
-        if (m_block_tree_db->ReadBlockFileInfo(nFile, info)) {
-            m_blockfile_info.push_back(info);
-        } else {
-            break;
+        // Load block file info
+        m_block_tree_db->ReadLastBlockFile(max_blockfile_num);
+        m_blockfile_info.resize(max_blockfile_num + 1);
+        LogInfo("Loading block index db: last block file = %i", max_blockfile_num);
+        for (int nFile = 0; nFile <= max_blockfile_num; nFile++) {
+            m_block_tree_db->ReadBlockFileInfo(nFile, m_blockfile_info[nFile]);
+        }
+        LogInfo("Loading block index db: last block file info: %s", m_blockfile_info[max_blockfile_num].ToString());
+        for (int nFile = max_blockfile_num + 1; true; nFile++) {
+            CBlockFileInfo info;
+            if (m_block_tree_db->ReadBlockFileInfo(nFile, info)) {
+                m_blockfile_info.push_back(info);
+            } else {
+                break;
+            }
         }
     }
 
@@ -1509,6 +1516,20 @@ AutoFile BlockManager::OpenBlockFile(const FlatFilePos& pos, bool fReadOnly) con
         }
     }
 #endif
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+    if (!fReadOnly) {
+        LOCK(cs_LastBlockFile);
+        auto* opened{m_block_file_seq.Open(pos, fReadOnly)};
+        if (opened) {
+            // The returned writable handle can outlive this lock and overwrite
+            // existing records. Future reads must go directly to the file.
+            CloseBlockReadStream(pos.nFile);
+            m_block_read_ahead_enabled = false;
+            m_block_read_ahead_size = 0;
+        }
+        return AutoFile{opened, m_obfuscation};
+    }
+#endif
     return AutoFile{m_block_file_seq.Open(pos, fReadOnly), m_obfuscation};
 }
 
@@ -1836,6 +1857,8 @@ void BlockManager::CloseBlockReadStream(int file_num) const
         m_block_read_stream.reset();
         m_block_read_stream_num = -1;
         m_block_read_stream_offset = 0;
+        m_block_read_handle_offset = 0;
+        m_block_read_ahead_size = 0;
     }
 }
 #endif
@@ -1924,25 +1947,71 @@ BlockManager::ReadRawBlockResult BlockManager::ReadRawBlockImpl(const FlatFilePo
         LogError("Failed to obtain the raw block read handle for %s", pos.ToString());
         return util::Unexpected{ReadRawError::IO};
     }
-    // FILE owns the handle. Read the bytes directly from it so no CRT stream
-    // state survives a write into the same preallocated range.
-    const auto seek_cached = [&](int64_t offset) EXCLUSIVE_LOCKS_REQUIRED(cs_LastBlockFile) {
-        // Consecutive raw records are adjacent in the flat file.
-        if (m_block_read_stream_offset == offset) return;
+    // FILE owns the handle. Read directly through Windows so the CRT cannot
+    // retain bytes from a preallocated range that was written later.
+    // A first, nonadjacent, or partial read only requests its own bytes.
+    const bool prefetch_sequential{m_block_read_ahead_enabled && !block_part &&
+        m_block_read_stream_offset > 0 && m_block_read_stream_offset == pos.nPos - STORAGE_HEADER_BYTES};
+    const int64_t written_end{pos.nFile >= 0 && static_cast<size_t>(pos.nFile) < m_blockfile_info.size()
+        ? m_blockfile_info[static_cast<size_t>(pos.nFile)].nSize : 0};
+    if (m_block_read_ahead_start + static_cast<int64_t>(m_block_read_ahead_size) > written_end) {
+        m_block_read_ahead_size = 0;
+    }
+    const auto seek_handle = [&](int64_t offset) EXCLUSIVE_LOCKS_REQUIRED(cs_LastBlockFile) {
+        if (m_block_read_handle_offset == offset) return true;
         LARGE_INTEGER target{};
         target.QuadPart = offset;
-        if (!::SetFilePointerEx(handle, target, nullptr, FILE_BEGIN)) {
-            throw std::ios_base::failure("SetFilePointerEx failed: " + Win32ErrorString(::GetLastError()));
+        const bool success{::SetFilePointerEx(handle, target, nullptr, FILE_BEGIN) != 0};
+        m_block_read_handle_offset = success ? offset : -1;
+        return success;
+    };
+    const auto read_handle = [&](std::span<std::byte> output, DWORD& count) EXCLUSIVE_LOCKS_REQUIRED(cs_LastBlockFile) {
+        static_assert(MAX_SIZE <= std::numeric_limits<DWORD>::max());
+        if (!::ReadFile(handle, output.data(), static_cast<DWORD>(output.size()), &count, nullptr)) {
+            m_block_read_handle_offset = -1;
+            return false;
         }
+        m_block_read_handle_offset += count;
+        return true;
+    };
+    const auto seek_cached = [&](int64_t offset) EXCLUSIVE_LOCKS_REQUIRED(cs_LastBlockFile) {
         m_block_read_stream_offset = offset;
     };
+    const auto copy_ahead = [&](std::span<std::byte> output) EXCLUSIVE_LOCKS_REQUIRED(cs_LastBlockFile) {
+        const int64_t offset{m_block_read_stream_offset - m_block_read_ahead_start};
+        if (!m_block_read_ahead_enabled || offset < 0 || static_cast<uint64_t>(offset) >= m_block_read_ahead_size) {
+            return output;
+        }
+        const size_t start{static_cast<size_t>(offset)};
+        const size_t count{std::min(output.size(), m_block_read_ahead_size - start)};
+        std::copy_n(m_block_read_ahead.data() + start, count, output.data());
+        m_block_read_stream_offset += static_cast<int64_t>(count);
+        return output.subspan(count);
+    };
     const auto read_cached = [&](std::span<std::byte> dst) EXCLUSIVE_LOCKS_REQUIRED(cs_LastBlockFile) {
-        static_assert(MAX_SIZE <= std::numeric_limits<DWORD>::max());
         const int64_t start{m_block_read_stream_offset};
-        auto remaining = dst;
+        auto remaining{copy_ahead(dst)};
+        const int64_t unread_written{written_end - m_block_read_stream_offset};
+        if (prefetch_sequential && !remaining.empty() && unread_written > 0) {
+            const size_t prefetch{std::min(m_block_read_ahead.size(), static_cast<size_t>(unread_written))};
+            if (prefetch > remaining.size() && seek_handle(m_block_read_stream_offset)) {
+                DWORD count{};
+                m_block_read_ahead_size = 0;
+                if (read_handle(std::span{m_block_read_ahead}.first(prefetch), count) && count != 0) {
+                    m_block_read_ahead_start = m_block_read_stream_offset;
+                    m_block_read_ahead_size = count;
+                    remaining = copy_ahead(remaining);
+                }
+            }
+        }
+        // A speculative read can fail even when the requested bytes are present.
+        // Continue at the first requested byte not already copied.
+        if (!remaining.empty() && !seek_handle(m_block_read_stream_offset)) {
+            throw std::ios_base::failure("SetFilePointerEx failed: " + Win32ErrorString(::GetLastError()));
+        }
         while (!remaining.empty()) {
             DWORD count{};
-            if (!::ReadFile(handle, remaining.data(), static_cast<DWORD>(remaining.size()), &count, nullptr)) {
+            if (!read_handle(remaining, count)) {
                 throw std::ios_base::failure("ReadFile failed: " + Win32ErrorString(::GetLastError()));
             }
             if (count == 0) throw std::ios_base::failure("Unexpected end of block file");
@@ -2022,12 +2091,20 @@ FlatFilePos BlockManager::WriteBlock(const CBlock& block, int nHeight)
 #if defined(WIN32) || defined(__APPLE__)
     LOCK(cs_LastBlockFile);
 #endif
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+    // Position allocation advances nSize before the record is written.
+    // A failed write must leave subsequent reads on the exact path.
+    const bool resume_read_ahead{std::exchange(m_block_read_ahead_enabled, false)};
+#endif
     const unsigned int block_size{static_cast<unsigned int>(GetSerializeSize(TX_WITH_WITNESS(block)))};
     FlatFilePos pos{FindNextBlockPos(block_size + STORAGE_HEADER_BYTES, nHeight, block.GetBlockTime())};
     if (pos.IsNull()) {
         LogError("FindNextBlockPos failed for %s while writing block", pos.ToString());
         return FlatFilePos();
     }
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+    if (m_block_read_stream_num == pos.nFile) m_block_read_ahead_size = 0;
+#endif
 #if defined(WIN32) || defined(__APPLE__)
     AutoFile file{m_block_writer.Open(m_block_file_seq, pos, m_obfuscation)};
 #else
@@ -2079,6 +2156,9 @@ FlatFilePos BlockManager::WriteBlock(const CBlock& block, int nHeight)
     }
 #endif
 
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+    m_block_read_ahead_enabled = resume_read_ahead;
+#endif
     return pos;
 }
 
