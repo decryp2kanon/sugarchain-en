@@ -662,6 +662,12 @@ bool HeaderPoWVerifier::Check(std::span<const CBlockHeader> headers, const Conse
                               [[maybe_unused]] bool established_presync, const std::function<void()>& after_first_proof)
 {
     if (!params.fYespowerSugar || EnableFuzzDeterminism()) {
+        // Regtest can exercise the same lead request without changing its proof algorithm.
+        if (!params.fYespowerSugar && after_first_proof && headers.size() > 1) {
+            if (!CheckBlockProofOfWork(headers.front(), params)) return false;
+            after_first_proof();
+            headers = headers.subspan(1);
+        }
         return std::ranges::all_of(headers, [&](const auto& header) { return CheckBlockProofOfWork(header, params); });
     }
     std::unique_lock<std::mutex> call_lock;
