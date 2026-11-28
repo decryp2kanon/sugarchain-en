@@ -97,26 +97,56 @@ BOOST_AUTO_TEST_CASE(ibd_request_budget_defaults_to_platform_and_ram_policy)
     constexpr uint64_t eight_gib{8ULL << 30};
 #if (defined(_WIN32) && (defined(__x86_64__) || defined(_M_X64))) || \
     (defined(__APPLE__) && (defined(__aarch64__) || defined(__x86_64__)))
-    constexpr int mainnet_4_gib_limit{64};
-    constexpr int mainnet_8_gib_limit{128};
+    constexpr int shared_4_gib_limit{64};
+    constexpr int shared_8_gib_limit{128};
 #else
-    constexpr int mainnet_4_gib_limit{16};
-    constexpr int mainnet_8_gib_limit{16};
+    constexpr int shared_4_gib_limit{16};
+    constexpr int shared_8_gib_limit{16};
 #endif
     const ArgsManager args;
     for (const auto& [total_ram, expected] : std::vector<std::pair<uint64_t, int>>{
-             {0, 16}, {four_gib - 1, 16}, {four_gib, mainnet_4_gib_limit},
-             {eight_gib - 1, mainnet_4_gib_limit}, {eight_gib, mainnet_8_gib_limit},
-             {std::numeric_limits<uint64_t>::max(), mainnet_8_gib_limit}}) {
-        PeerManager::Options options;
-        node::ApplyArgsManOptions(args, options, ChainType::MAIN, total_ram);
-        BOOST_CHECK_EQUAL(options.ibd_block_request_limit, expected);
+             {0, 16}, {four_gib - 1, 16}, {four_gib, shared_4_gib_limit},
+             {eight_gib - 1, shared_4_gib_limit}, {eight_gib, shared_8_gib_limit},
+             {std::numeric_limits<uint64_t>::max(), shared_8_gib_limit}}) {
+        for (const auto chain : {ChainType::MAIN, ChainType::TESTNET}) {
+            PeerManager::Options options;
+            node::ApplyArgsManOptions(args, options, chain, total_ram);
+            BOOST_CHECK_EQUAL(options.ibd_block_request_limit, expected);
+            BOOST_CHECK(!options.regtest_shared_ibd);
+        }
     }
-    for (ChainType chain : {ChainType::TESTNET, ChainType::TESTNET4, ChainType::SIGNET, ChainType::REGTEST}) {
+    for (ChainType chain : {ChainType::TESTNET4, ChainType::SIGNET, ChainType::REGTEST}) {
         PeerManager::Options options;
         node::ApplyArgsManOptions(args, options, chain, eight_gib);
         BOOST_CHECK_EQUAL(options.ibd_block_request_limit, 16);
+        BOOST_CHECK(!options.regtest_shared_ibd);
     }
+}
+
+BOOST_AUTO_TEST_CASE(shared_ibd_test_option_is_regtest_only)
+{
+    constexpr uint64_t four_gib{4ULL << 30};
+    constexpr uint64_t eight_gib{8ULL << 30};
+    ArgsManager args;
+    args.ForceSetArg("-test", "sharedibd");
+    for (const auto& [total_ram, expected] : std::vector<std::pair<uint64_t, int>>{
+             {0, 16}, {four_gib - 1, 16}, {four_gib, 64},
+             {eight_gib - 1, 64}, {eight_gib, 128}}) {
+        PeerManager::Options options;
+        node::ApplyArgsManOptions(args, options, ChainType::REGTEST, total_ram);
+        BOOST_CHECK(options.regtest_shared_ibd);
+        BOOST_CHECK_EQUAL(options.ibd_block_request_limit, expected);
+    }
+    for (const auto chain : {ChainType::MAIN, ChainType::TESTNET, ChainType::TESTNET4, ChainType::SIGNET}) {
+        PeerManager::Options options;
+        node::ApplyArgsManOptions(args, options, chain, eight_gib);
+        BOOST_CHECK(!options.regtest_shared_ibd);
+    }
+    args.ForceSetArg("-maxibdblocksinflight", "32");
+    PeerManager::Options options;
+    node::ApplyArgsManOptions(args, options, ChainType::REGTEST, eight_gib);
+    BOOST_CHECK(options.regtest_shared_ibd);
+    BOOST_CHECK_EQUAL(options.ibd_block_request_limit, 32);
 }
 
 BOOST_AUTO_TEST_CASE(ibd_request_budget_explicit_override_is_bounded)

@@ -4,6 +4,7 @@
 
 #include <node/peerman_args.h>
 
+#include <chainparams.h>
 #include <common/args.h>
 #include <net_processing.h>
 #include <util/chaintype.h>
@@ -41,9 +42,10 @@ void ApplyArgsManOptions(const ArgsManager& argsman, PeerManager::Options& optio
     if (auto value{argsman.GetIntArg("-parpow")}) {
         options.header_pow_workers = std::clamp<int64_t>(*value, 1, MAX_HEADER_POW_WORKERS);
     }
+    options.regtest_shared_ibd = chain == ChainType::REGTEST && HasTestOption(argsman, "sharedibd");
     if (auto value{argsman.GetIntArg("-maxibdblocksinflight")}) {
         options.ibd_block_request_limit = std::clamp<int64_t>(*value, DEFAULT_IBD_BLOCK_REQUEST_LIMIT, MAX_IBD_BLOCK_REQUEST_LIMIT);
-    } else if (USE_RAM_BASED_IBD_REQUEST_LIMIT && chain == ChainType::MAIN) {
+    } else if (UseSharedIbdPolicy(chain, options.regtest_shared_ibd, USE_RAM_BASED_IBD_REQUEST_LIMIT)) {
         if (total_ram >= IBD_REQUEST_LIMIT_128_MIN_RAM) {
             options.ibd_block_request_limit = MAX_IBD_BLOCK_REQUEST_LIMIT;
         } else if (total_ram >= IBD_REQUEST_LIMIT_64_MIN_RAM) {

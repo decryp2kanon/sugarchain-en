@@ -4,7 +4,7 @@
 
 #include <headerssync.h>
 
-#include <kernel/chainparams.h>
+#include <chainparams.h>
 #include <logging.h>
 #include <pow.h>
 #include <util/check.h>
@@ -18,9 +18,9 @@
 static_assert(sizeof(CompressedHeader) == 48);
 
 const CBlockIndex& GetInitialHeadersSyncStart(const CBlockIndex& start, const CBlockIndex& best_header, const CChainParams& params,
-        const arith_uint256& minimum_chain_work, uint32_t batch_size, bool align_low_work_sync)
+        const arith_uint256& minimum_chain_work, uint32_t batch_size, bool align_low_work_sync, bool regtest_shared_ibd)
 {
-    if (!align_low_work_sync || params.GetChainType() != ChainType::MAIN || !params.GetConsensus().fYespowerSugar ||
+    if (!align_low_work_sync || !node::UseSharedPresyncPolicy(params, regtest_shared_ibd) ||
         best_header.nChainWork >= minimum_chain_work || batch_size == 0) {
         return start;
     }

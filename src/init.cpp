@@ -519,7 +519,7 @@ void SetupServerArgs(ArgsManager& argsman, bool can_listen_ipc)
     argsman.AddArg("-background-pow-pause=<ms>", "Pause between computed historical DB batches of at most 512 entries (0-1000 ms, default: 0). Previously this pause applied per header. Does not delay warm evidence reuse or foreground verification", ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION, OptionsCategory::OPTIONS);
     argsman.AddArg("-background-pow-workers=<n>", "Historical Yespower worker count (1-8, default: -parpow). Uses a separate background pool; lower this to leave CPU capacity for foreground validation", ArgsManager::ALLOW_ANY | ArgsManager::DISALLOW_NEGATION, OptionsCategory::OPTIONS);
     argsman.AddArg("-maxibdblocksinflight=<n>", strprintf("Maximum outstanding block requests per peer during IBD (%d-%d). The default is %d. "
-                   "On mainnet on Windows x86-64 and Apple Silicon, the default is 64 with at least 4 GiB of detected RAM, or %d with at least 8 GiB.",
+                   "On Windows x86-64 and Intel and Apple Silicon Macs, mainnet and testnet7 default to 64 with at least 4 GiB of detected RAM, or %d with at least 8 GiB.",
                    DEFAULT_IBD_BLOCK_REQUEST_LIMIT, MAX_IBD_BLOCK_REQUEST_LIMIT, DEFAULT_IBD_BLOCK_REQUEST_LIMIT, MAX_IBD_BLOCK_REQUEST_LIMIT),
                    ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);
     argsman.AddArg("-mempoolexpiry=<n>", strprintf("Do not keep transactions in the mempool longer than <n> hours (default: %u)", DEFAULT_MEMPOOL_EXPIRY_HOURS), ArgsManager::ALLOW_ANY, OptionsCategory::OPTIONS);

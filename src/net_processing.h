@@ -104,6 +104,8 @@ public:
         int header_pow_workers{DEFAULT_HEADER_POW_WORKERS};
         //! Opt-in IBD pipeline budget; normal relay/direct-fetch limits are unchanged.
         int ibd_block_request_limit{DEFAULT_IBD_BLOCK_REQUEST_LIMIT};
+        //! Exercise the shared initial-sync policy on regtest, with regtest consensus.
+        bool regtest_shared_ibd{false};
     };
 
     static std::unique_ptr<PeerManager> make(CConnman& connman, AddrMan& addrman,
