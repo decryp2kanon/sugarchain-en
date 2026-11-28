@@ -144,10 +144,12 @@ std::vector<CBlockHeader> HeadersGeneratorSetup::GenerateHeaders(
 //    when the chain a peer provides has too little work.
 BOOST_FIXTURE_TEST_SUITE(headers_sync_chainwork_tests, HeadersGeneratorSetup)
 
-BOOST_AUTO_TEST_CASE(initial_headers_locator_aligns_only_low_work_mainnet)
+BOOST_AUTO_TEST_CASE(initial_headers_locator_aligns_shared_low_work_sync)
 {
     const auto mainnet{CChainParams::Main()};
     const auto testnet{CChainParams::TestNet()};
+    const auto testnet4{CChainParams::TestNet4()};
+    const auto signet{CChainParams::SigNet({})};
     constexpr arith_uint256 minimum_work{100};
     std::vector<CBlockIndex> index(2783);
     for (size_t height{0}; height < index.size(); ++height) {
@@ -162,17 +164,24 @@ BOOST_AUTO_TEST_CASE(initial_headers_locator_aligns_only_low_work_mainnet)
     for (const auto& [best, parent, aligned] : {Start{0, 0, 0}, Start{1, 0, 0}, Start{1999, 1998, 0},
             Start{2000, 1999, 0}, Start{2001, 2000, 2000}, Start{2782, 2781, 2000}}) {
         BOOST_TEST_CONTEXT("best header height=" << best) {
-            const auto choose = [&](const CChainParams& network, uint32_t size, bool align) {
-                return &GetInitialHeadersSyncStart(index[parent], index[best], network, minimum_work, size, align);
+            const auto choose = [&](const CChainParams& network, uint32_t size, bool align, bool regtest_opt_in = false) {
+                return &GetInitialHeadersSyncStart(index[parent], index[best], network, minimum_work, size, align, regtest_opt_in);
             };
             BOOST_CHECK_EQUAL(choose(*mainnet, MAX_HEADERS_RESULTS, true), &index[aligned]);
             BOOST_CHECK_EQUAL(choose(*mainnet, MAX_HEADERS_RESULTS, false), &index[parent]);
-            BOOST_CHECK_EQUAL(choose(*testnet, MAX_HEADERS_RESULTS, true), &index[parent]);
+            BOOST_CHECK_EQUAL(choose(*testnet, MAX_HEADERS_RESULTS, true), &index[aligned]);
+            BOOST_CHECK_EQUAL(choose(*testnet, MAX_HEADERS_RESULTS, false), &index[parent]);
+            BOOST_CHECK_EQUAL(choose(*testnet4, MAX_HEADERS_RESULTS, true, true), &index[parent]);
+            BOOST_CHECK_EQUAL(choose(*signet, MAX_HEADERS_RESULTS, true, true), &index[parent]);
             BOOST_CHECK_EQUAL(choose(Params(), MAX_HEADERS_RESULTS, true), &index[parent]);
+            BOOST_CHECK_EQUAL(choose(Params(), MAX_HEADERS_RESULTS, true, true), &index[aligned]);
+            BOOST_CHECK_EQUAL(choose(Params(), MAX_HEADERS_RESULTS, false, true), &index[parent]);
             BOOST_CHECK_EQUAL(choose(*mainnet, 0, true), &index[parent]);
             BOOST_CHECK_EQUAL(choose(*mainnet, 1, true), &index[parent]);
             index[best].nChainWork = minimum_work;
             BOOST_CHECK_EQUAL(choose(*mainnet, MAX_HEADERS_RESULTS, true), &index[parent]);
+            BOOST_CHECK_EQUAL(choose(*testnet, MAX_HEADERS_RESULTS, true), &index[parent]);
+            BOOST_CHECK_EQUAL(choose(Params(), MAX_HEADERS_RESULTS, true, true), &index[parent]);
             index[best].nChainWork = minimum_work - 1;
         }
     }
@@ -186,7 +195,7 @@ BOOST_AUTO_TEST_CASE(initial_headers_locator_aligns_only_low_work_mainnet)
         };
         BOOST_CHECK_EQUAL(choose(*mainnet, true), &index[aligned]);
         BOOST_CHECK_EQUAL(choose(*mainnet, false), &index[best]);
-        BOOST_CHECK_EQUAL(choose(*testnet, true), &index[best]);
+        BOOST_CHECK_EQUAL(choose(*testnet, true), &index[aligned]);
     }
 }
 

@@ -243,6 +243,40 @@ extern "C" int __wrap_yespower(yespower_local_t* local, const uint8_t* input, si
 
 BOOST_FIXTURE_TEST_SUITE(header_pow_tests, HeaderPoWSetup)
 
+BOOST_AUTO_TEST_CASE(sha256d_batch_runs_lead_only_after_valid_first_proof)
+{
+    const auto regtest{CChainParams::RegTest({})};
+    const auto& consensus{regtest->GetConsensus()};
+    std::array<CBlockHeader, 2> headers{regtest->GenesisBlock(), regtest->GenesisBlock()};
+    headers[1].hashPrevBlock = headers[0].GetHash();
+    while (!CheckProofOfWorkImpl(headers[1].GetHash(), headers[1].nBits, consensus)) ++headers[1].nNonce;
+    const auto invalid = [&](size_t index) {
+        auto batch{headers};
+        auto& header{batch[index]};
+        do {
+            ++header.nNonce;
+        } while (CheckProofOfWorkImpl(header.GetHash(), header.nBits, consensus));
+        return batch;
+    };
+    const auto invalid_first{invalid(0)};
+    const auto invalid_tail{invalid(1)};
+    HeaderPoWVerifier verifier{8};
+    int leads{0};
+    const auto check = [&](std::span<const CBlockHeader> batch) {
+        return verifier.Check(batch, consensus, /*established_presync=*/true, [&] { ++leads; });
+    };
+
+    BOOST_CHECK(check({}));
+    BOOST_CHECK(check(std::span{headers}.first(1)));
+    BOOST_CHECK(!check(std::span{invalid_first}.first(1)));
+    BOOST_CHECK(!check(invalid_first));
+    BOOST_CHECK_EQUAL(leads, 0);
+    BOOST_CHECK(!check(invalid_tail));
+    BOOST_CHECK_EQUAL(leads, 1);
+    BOOST_CHECK(check(headers));
+    BOOST_CHECK_EQUAL(leads, 2);
+}
+
 BOOST_AUTO_TEST_CASE(joining_thread_cancels_before_join_on_exception)
 {
     std::mutex mutex;

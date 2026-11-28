@@ -12,6 +12,24 @@
 
 class ArgsManager;
 
+namespace node {
+/** Apply a native initial-sync policy to the two public Sugarchain chains. */
+constexpr bool UseSharedIbdPolicy(ChainType chain, bool regtest_opt_in, bool native_platform = true)
+{
+    // The explicit regtest option can exercise native paths on every test host.
+    if (chain == ChainType::REGTEST) return regtest_opt_in;
+    return native_platform && (chain == ChainType::MAIN || chain == ChainType::TESTNET);
+}
+
+/** Public PRESYNC optimizations are for Yespower chains. Regtest keeps its own proof rules. */
+inline bool UseSharedPresyncPolicy(const CChainParams& params, bool regtest_opt_in, bool native_platform = true)
+{
+    const auto chain{params.GetChainType()};
+    return UseSharedIbdPolicy(chain, regtest_opt_in, native_platform) &&
+        (params.GetConsensus().fYespowerSugar || chain == ChainType::REGTEST);
+}
+} // namespace node
+
 /**
  * Creates and returns a std::unique_ptr<CChainParams> of the chosen chain.
  */

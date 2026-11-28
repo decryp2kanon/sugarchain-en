@@ -98,9 +98,9 @@ TRACEPOINT_SEMAPHORE(net, misbehaving_connection);
 static constexpr auto HEADERS_DOWNLOAD_TIMEOUT_BASE = 15min;
 static constexpr auto HEADERS_DOWNLOAD_TIMEOUT_PER_HEADER = 1ms;
 #if (defined(_WIN32) && (defined(__x86_64__) || defined(_M_X64))) || (defined(__APPLE__) && defined(__aarch64__))
-static constexpr bool NATIVE_MAINNET_PRESYNC{true};
+static constexpr bool NATIVE_IBD_PRESYNC{true};
 #else
-static constexpr bool NATIVE_MAINNET_PRESYNC{false};
+static constexpr bool NATIVE_IBD_PRESYNC{false};
 #endif
 /** How long to wait for a peer to respond to a getheaders request */
 static constexpr auto HEADERS_RESPONSE_TIME{2min};
@@ -2062,7 +2062,7 @@ PeerManagerImpl::PeerManagerImpl(CConnman& connman, AddrMan& addrman,
       m_opts{opts},
 #if defined(__APPLE__) && defined(__aarch64__)
       m_header_pow_verifier{m_chainparams.GetConsensus().fYespowerSugar ? opts.header_pow_workers : 1,
-                            /*network=*/m_chainparams.GetChainType() == ChainType::MAIN}
+                            /*network=*/node::UseSharedPresyncPolicy(m_chainparams, opts.regtest_shared_ibd)}
 #else
       m_header_pow_verifier{m_chainparams.GetConsensus().fYespowerSugar ? opts.header_pow_workers : 1}
 #endif
@@ -2681,7 +2681,7 @@ bool PeerManagerImpl::CheckHeadersPoW(const std::vector<CBlockHeader>& headers, 
         }
     }
     // Do these headers have proof-of-work matching what's claimed?
-    const bool can_lead{NATIVE_MAINNET_PRESYNC && m_chainparams.GetChainType() == ChainType::MAIN &&
+    const bool can_lead{node::UseSharedPresyncPolicy(m_chainparams, m_opts.regtest_shared_ibd, NATIVE_IBD_PRESYNC) &&
         m_chainman.IsInitialBlockDownload() && !pfrom.HasPermission(NetPermissionFlags::NoBan) &&
         headers.size() == MAX_HEADERS_RESULTS && m_opts.max_headers_result == MAX_HEADERS_RESULTS};
 #if defined(__APPLE__) && defined(__aarch64__)
@@ -2734,13 +2734,11 @@ arith_uint256 PeerManagerImpl::GetAntiDoSWorkThreshold()
 
 bool PeerManagerImpl::CanAlignInitialHeadersSync(const CNode& node, Peer& peer) const
 {
-#if (defined(_WIN32) && (defined(__x86_64__) || defined(_M_X64))) || (defined(__APPLE__) && defined(__aarch64__))
-    if (m_chainparams.GetChainType() == ChainType::MAIN && m_chainman.IsInitialBlockDownload() &&
-        !node.HasPermission(NetPermissionFlags::NoBan)) {
+    if (node::UseSharedPresyncPolicy(m_chainparams, m_opts.regtest_shared_ibd, NATIVE_IBD_PRESYNC) &&
+        m_chainman.IsInitialBlockDownload() && !node.HasPermission(NetPermissionFlags::NoBan)) {
         LOCK(peer.m_headers_sync_mutex);
         return !peer.m_headers_sync;
     }
-#endif
     return false;
 }
 
@@ -2748,7 +2746,7 @@ const CBlockIndex* PeerManagerImpl::MaybeAlignInitialHeadersSyncStart(const CBlo
 {
     if (!start || !can_align || !m_chainman.IsInitialBlockDownload()) return start;
     return &GetInitialHeadersSyncStart(*start, *Assert(m_chainman.m_best_header), m_chainparams,
-        m_chainman.MinimumChainWork(), m_opts.max_headers_result, can_align);
+        m_chainman.MinimumChainWork(), m_opts.max_headers_result, can_align, m_opts.regtest_shared_ibd);
 }
 
 /**
@@ -5990,8 +5988,7 @@ bool PeerManagerImpl::SendMessages(CNode& node)
                         std::chrono::microseconds{HEADERS_DOWNLOAD_TIMEOUT_PER_HEADER} *
                         Ticks<std::chrono::seconds>(NodeClock::now() - m_chainman.m_best_header->Time()) / consensusParams.nPowTargetSpacing};
                     peer.m_headers_sync_timeout = current_time + HEADERS_DOWNLOAD_TIMEOUT_BASE + missing_headers_allowance;
-                    if (NATIVE_MAINNET_PRESYNC && m_chainparams.GetChainType() == ChainType::MAIN &&
-                        consensusParams.fYespowerSugar) {
+                    if (node::UseSharedPresyncPolicy(m_chainparams, m_opts.regtest_shared_ibd, NATIVE_IBD_PRESYNC)) {
                         // Bound total local credit without changing the peer's original network allowance.
                         peer.m_headers_sync_proof_credit = std::max(0us, missing_headers_allowance);
                     }
@@ -6298,7 +6295,8 @@ bool PeerManagerImpl::SendMessages(CNode& node)
                 // Local message processing may take longer than the download interval.
                 // Give a matching, timely frame at the head of the queue one normal dispatch pass.
                 if (!queuedBlock.timeout_deferred && !queuedBlock.partialBlock && !node.fPauseSend &&
-                    m_chainparams.GetChainType() == ChainType::MAIN && m_chainman.IsInitialBlockDownload()) {
+                    node::UseSharedIbdPolicy(m_chainparams.GetChainType(), m_opts.regtest_shared_ibd) &&
+                    m_chainman.IsInitialBlockDownload()) {
                     DataStream header;
                     header << queuedBlock.pindex->GetBlockHeader();
                     if (node.HasNextBlockMessage(std::span{header}, deadline)) {

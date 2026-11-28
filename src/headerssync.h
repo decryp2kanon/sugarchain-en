@@ -24,7 +24,8 @@ class CChainParams;
 
 /** Choose the locator start for a new headers download. */
 const CBlockIndex& GetInitialHeadersSyncStart(const CBlockIndex& start, const CBlockIndex& best_header, const CChainParams& params,
-    const arith_uint256& minimum_chain_work, uint32_t batch_size, bool align_low_work_sync);
+    const arith_uint256& minimum_chain_work, uint32_t batch_size, bool align_low_work_sync,
+    bool regtest_shared_ibd = false);
 
 // A compressed CBlockHeader, which leaves out the prevhash
 struct CompressedHeader {
