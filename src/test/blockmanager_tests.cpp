@@ -106,13 +106,17 @@ struct BlockManagerTestAccess {
         LOCK(manager.cs_LastBlockFile);
         return manager.m_block_read_stream_offset;
     }
+    static bool WriteUndo(BlockManager& manager, const CBlockUndo& undo, BlockValidationState& state, CBlockIndex& index) EXCLUSIVE_LOCKS_REQUIRED(cs_main)
+    {
+        return manager.WriteBlockUndo(undo, state, index);
+    }
 };
 } // namespace node
 
 struct MainnetBlockReaderSetup : BasicTestingSetup {
     KernelNotifications notifications{Assert(m_node.shutdown_request), m_node.exit_status, *Assert(m_node.warnings)};
     const fs::path path{m_args.GetDataDirNet() / "reader-blocks"};
-    BlockManager::Options ReaderOptions()
+    BlockManager::Options ReaderOptions(bool fast_prune)
     {
         fs::create_directories(path);
         // Use a deterministic nonzero key to exercise absolute offsets after
@@ -125,13 +129,19 @@ struct MainnetBlockReaderSetup : BasicTestingSetup {
         BOOST_REQUIRE_EQUAL(file.fclose(), 0);
         return {
             .chainparams = Params(),
-            .fast_prune = true,
+            .fast_prune = fast_prune,
             .blocks_dir = path,
             .notifications = notifications,
             .block_tree_db_params = {.path = m_args.GetDataDirNet() / "reader-index", .cache_bytes = 0},
         };
     }
-    BlockManager blockman{*Assert(m_node.shutdown_signal), ReaderOptions()};
+    BlockManager blockman;
+    explicit MainnetBlockReaderSetup(bool fast_prune = true)
+        : blockman{*Assert(m_node.shutdown_signal), ReaderOptions(fast_prune)} {}
+};
+
+struct LargeWindowsBlockWriteSetup : MainnetBlockReaderSetup {
+    LargeWindowsBlockWriteSetup() : MainnetBlockReaderSetup(false) {}
 };
 #endif
 
@@ -635,6 +645,73 @@ BOOST_FIXTURE_TEST_CASE(windows_mainnet_block_reader_append_seeks_and_short_read
     BOOST_CHECK_EQUAL(missing.error(), node::ReadRawError::IO);
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), -1);
     BOOST_REQUIRE(blockman.ReadRawBlock(first));
+}
+
+BOOST_FIXTURE_TEST_CASE(windows_block_and_undo_write_buffer_boundaries, LargeWindowsBlockWriteSetup)
+{
+    LOCK(cs_main);
+    constexpr size_t buffer_cap{64 * 1024};
+    const uint256 previous_hash{Params().GenesisBlock().GetHash()};
+    CBlockIndex previous;
+    previous.phashBlock = &previous_hash;
+
+    // Small records bracket one record exceeding the buffer capacity in both sequences.
+    std::array<FlatFilePos, 3> positions;
+    std::array<CBlockIndex, 3> indexes;
+    std::array<DataStream, 3> expected_blocks;
+    std::array<DataStream, 3> expected_undo;
+    for (size_t i{0}; i < positions.size(); ++i) {
+        const bool large{i == 1};
+        const int height{static_cast<int>(i + 1)};
+        CBlock block;
+        block.nNonce = static_cast<uint32_t>(height);
+        CMutableTransaction tx;
+        tx.vin.resize(1);
+        auto& script{tx.vin[0].scriptSig};
+        script.resize(large ? 96 * 1024 : 13);
+        for (size_t j{0}; j < script.size(); ++j) {
+            script[j] = static_cast<unsigned char>((j + i) % 251);
+        }
+        block.vtx.push_back(MakeTransactionRef(tx));
+        expected_blocks[i] << TX_WITH_WITNESS(block);
+        BOOST_REQUIRE_EQUAL(expected_blocks[i].size() + STORAGE_HEADER_BYTES > buffer_cap, large);
+        positions[i] = blockman.WriteBlock(block, height);
+        BOOST_REQUIRE(!positions[i].IsNull());
+
+        CBlockUndo undo;
+        auto& prevouts{undo.vtxundo.emplace_back().vprevout};
+        CScript undo_script;
+        undo_script.resize(24);
+        std::ranges::fill(undo_script, OP_TRUE);
+        for (size_t j{0}; j < (large ? 4096U : 1U); ++j) {
+            prevouts.emplace_back(CTxOut{static_cast<CAmount>(j + height), undo_script}, height, false);
+        }
+        expected_undo[i] << undo;
+        BOOST_REQUIRE_EQUAL(expected_undo[i].size() + node::UNDO_DATA_DISK_OVERHEAD > buffer_cap, large);
+        auto& index{indexes[i]};
+        index.pprev = &previous;
+        index.nFile = positions[i].nFile;
+        index.nHeight = height;
+        BlockValidationState state;
+        BOOST_REQUIRE(node::BlockManagerTestAccess::WriteUndo(blockman, undo, state, index));
+    }
+
+    for (size_t i{0}; i < positions.size(); ++i) {
+        BOOST_CHECK_EQUAL(positions[i].nFile, positions[0].nFile);
+        if (i > 0) {
+            BOOST_CHECK_EQUAL(positions[i].nPos, positions[i - 1].nPos + expected_blocks[i - 1].size() + STORAGE_HEADER_BYTES);
+            BOOST_CHECK_EQUAL(indexes[i].GetUndoPos().nPos, indexes[i - 1].GetUndoPos().nPos + expected_undo[i - 1].size() + node::UNDO_DATA_DISK_OVERHEAD);
+        }
+        const auto block{blockman.ReadRawBlock(positions[i])};
+        BOOST_REQUIRE(block);
+        BOOST_CHECK(std::ranges::equal(*block, expected_blocks[i]));
+
+        CBlockUndo undo;
+        BOOST_REQUIRE(blockman.ReadBlockUndo(undo, indexes[i]));
+        DataStream serialized_undo;
+        serialized_undo << undo;
+        BOOST_CHECK(std::ranges::equal(serialized_undo, expected_undo[i]));
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(windows_mainnet_block_reader_rotation_prune_and_reload, MainnetBlockReaderSetup)

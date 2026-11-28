@@ -1686,7 +1686,7 @@ bool BlockManager::WriteBlockUndo(const CBlockUndo& blockundo, BlockValidationSt
         try
 #endif
         {
-#ifdef __APPLE__
+#if defined(__APPLE__) || (defined(WIN32) && (defined(__x86_64__) || defined(_M_X64)))
             // A spare byte keeps smaller records on the scope-exit flush path.
             BufferedWriter fileout{file, std::min<size_t>(size_t{blockundo_size} + UNDO_DATA_DISK_OVERHEAD + 1, 64 * 1024)};
 #else
@@ -2024,7 +2024,7 @@ FlatFilePos BlockManager::WriteBlock(const CBlock& block, int nHeight)
     try
 #endif
     {
-#ifdef __APPLE__
+#if defined(__APPLE__) || (defined(WIN32) && (defined(__x86_64__) || defined(_M_X64)))
         BufferedWriter fileout{file, std::min<size_t>(size_t{block_size} + STORAGE_HEADER_BYTES + 1, 64 * 1024)};
 #else
         BufferedWriter fileout{file};
