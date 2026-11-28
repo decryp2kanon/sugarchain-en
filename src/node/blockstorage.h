@@ -249,7 +249,7 @@ private:
     {
         std::FILE* m_file{nullptr};
         int m_file_num{-1};
-#ifdef __APPLE__
+#if defined(__APPLE__) || (defined(WIN32) && (defined(__x86_64__) || defined(_M_X64)))
         std::optional<int64_t> m_file_pos;
 #endif
 #if defined(__APPLE__) && defined(__x86_64__)

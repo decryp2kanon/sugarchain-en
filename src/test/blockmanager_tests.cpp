@@ -92,6 +92,8 @@ struct LargeFileBufferedBlockStorageSetup : BufferedBlockStorageSetup {
 #if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
 namespace node {
 struct BlockManagerTestAccess {
+    using WriteFileCache = BlockManager::WriteFileCache;
+
     static int ReadFile(const BlockManager& manager)
     {
         LOCK(manager.cs_LastBlockFile);
@@ -645,6 +647,59 @@ BOOST_FIXTURE_TEST_CASE(windows_mainnet_block_reader_append_seeks_and_short_read
     BOOST_CHECK_EQUAL(missing.error(), node::ReadRawError::IO);
     BOOST_CHECK_EQUAL(Access::ReadFile(blockman), -1);
     BOOST_REQUIRE(blockman.ReadRawBlock(first));
+}
+
+BOOST_AUTO_TEST_CASE(windows_cached_writer_position_and_obfuscation)
+{
+    constexpr std::array nonzero_key{std::byte{0x47}, std::byte{0x15}, std::byte{0xcb}, std::byte{0x28},
+                                    std::byte{0xae}, std::byte{0x67}, std::byte{0x90}, std::byte{0x03}};
+    constexpr std::array first{std::byte{1}, std::byte{2}, std::byte{3}};
+    constexpr std::array second{std::byte{4}, std::byte{5}, std::byte{6}};
+    constexpr std::array last{std::byte{7}, std::byte{8}, std::byte{9}};
+    for (bool obfuscated : {false, true}) {
+        const auto key{obfuscated ? nonzero_key : decltype(nonzero_key){}};
+        const Obfuscation obfuscation{key};
+        const FlatFileSeq files{m_args.GetDataDirNet() / (obfuscated ? "writer-xor" : "writer-plain"),
+                                "blk", 4096};
+        node::BlockManagerTestAccess::WriteFileCache writer;
+        const auto check_bytes = [&](const FlatFilePos& pos, std::span<const std::byte> bytes) {
+            // Read through a different handle without using production deobfuscation.
+            AutoFile input{files.Open(pos, /*read_only=*/true)};
+            BOOST_REQUIRE(!input.IsNull());
+            std::vector<std::byte> physical(bytes.size());
+            input.read(physical);
+            for (size_t i{0}; i < bytes.size(); ++i) {
+                BOOST_CHECK(physical[i] == (bytes[i] ^ key[(pos.nPos + i) % key.size()]));
+            }
+        };
+        const auto write = [&](const FlatFilePos& pos, std::span<const std::byte> bytes) {
+            AutoFile stream{writer.Open(files, pos, obfuscation)};
+            BOOST_REQUIRE(!stream.IsNull());
+            BOOST_CHECK_EQUAL(stream.tell(), pos.nPos);
+            stream.write(bytes);
+            BOOST_REQUIRE(writer.Keep(stream, pos.nFile));
+            check_bytes(pos, bytes);
+        };
+
+        write({0, 0}, first);
+        write({0, 3}, second); // Adjacent append.
+        write({0, 17}, last);  // Forward seek over a gap.
+        write({0, 2}, last);   // Backward seek and overwrite.
+        write({1, 0}, second); // Rotation must discard the first file's cursor.
+        BOOST_REQUIRE(writer.Close(0)); // Closing a different file must leave the current cursor valid.
+        write({1, 3}, first);
+        BOOST_REQUIRE(writer.Close(1));
+        BOOST_REQUIRE(files.Flush({1, 6}, /*finalize=*/true));
+        write({1, 6}, last); // Reopen the finalized file with its actual offset.
+        BOOST_REQUIRE(writer.Close());
+        check_bytes({0, 0}, std::span{first}.first(2));
+        check_bytes({0, 2}, last);
+        check_bytes({0, 5}, std::span{second}.last(1));
+        check_bytes({0, 17}, last);
+        check_bytes({1, 0}, second);
+        check_bytes({1, 3}, first);
+        check_bytes({1, 6}, last);
+    }
 }
 
 BOOST_FIXTURE_TEST_CASE(windows_block_and_undo_write_buffer_boundaries, LargeWindowsBlockWriteSetup)

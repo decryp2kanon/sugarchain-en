@@ -1397,6 +1397,9 @@ bool BlockManager::WriteFileCache::Close(int file_num)
     return success && !m_write_error;
 #else
     if (!m_file || (file_num != -1 && file_num != m_file_num)) return true;
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+    m_file_pos.reset();
+#endif
     if (std::fclose(std::exchange(m_file, nullptr)) != 0) {
         LogError("Failed to close cached block storage file %05d: %s", m_file_num, SysErrorString(errno));
         return false;
@@ -1414,8 +1417,8 @@ AutoFile BlockManager::WriteFileCache::Open(const FlatFileSeq& sequence, const F
     }
 #endif
     if (m_file && pos.nFile == m_file_num) {
-#ifdef __APPLE__
-        // Continue from the logical offset without forcing buffered appends out.
+#if defined(__APPLE__) || (defined(WIN32) && (defined(__x86_64__) || defined(_M_X64)))
+        // Reuse the current writer position when appending contiguously.
         if (m_file_pos && *m_file_pos == pos.nPos) {
             return AutoFile{std::exchange(m_file, nullptr), obfuscation, *m_file_pos};
         }
@@ -1428,7 +1431,11 @@ AutoFile BlockManager::WriteFileCache::Open(const FlatFileSeq& sequence, const F
 #if defined(__APPLE__) && defined(__x86_64__)
             m_file_pos = pos.nPos;
 #endif
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+            return AutoFile{std::exchange(m_file, nullptr), obfuscation, pos.nPos};
+#else
             return AutoFile{std::exchange(m_file, nullptr), obfuscation};
+#endif
         }
 #if defined(__APPLE__) && defined(__x86_64__)
         RecordError();
@@ -1444,6 +1451,10 @@ AutoFile BlockManager::WriteFileCache::Open(const FlatFileSeq& sequence, const F
     auto* opened{sequence.Open(pos, /*read_only=*/false, {m_stdio_buffer.get(), MAX_PENDING_BYTES})};
     if (!opened) RecordError();
     return AutoFile{opened, obfuscation};
+#elif defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+    auto* opened{sequence.Open(pos)};
+    if (!opened) return AutoFile{nullptr};
+    return AutoFile{opened, obfuscation, pos.nPos};
 #else
     return AutoFile{sequence.Open(pos), obfuscation};
 #endif
@@ -1461,6 +1472,8 @@ bool BlockManager::WriteFileCache::Keep(AutoFile& file, int file_num)
 #endif
 #ifdef __APPLE__
     m_file_pos = file.GetPosition();
+#elif defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+    const auto next_pos{file.GetPosition()};
 #endif
     m_file = file.release();
     m_file_num = file_num;
@@ -1471,7 +1484,12 @@ bool BlockManager::WriteFileCache::Keep(AutoFile& file, int file_num)
 #else
     // Publish bytes to other handles before exposing the record's index.
     // The block manager still commits them to disk at the usual flush points.
-    if (std::fflush(m_file) == 0) return true;
+    if (std::fflush(m_file) == 0) {
+#if defined(WIN32) && (defined(__x86_64__) || defined(_M_X64))
+        m_file_pos = next_pos;
+#endif
+        return true;
+    }
     const int write_error{errno};
     (void)Close();
     errno = write_error;

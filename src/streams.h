@@ -379,7 +379,7 @@ protected:
 
 public:
     explicit AutoFile(std::FILE* file, const Obfuscation& obfuscation = {});
-#ifdef __APPLE__
+#if defined(__APPLE__) || (defined(WIN32) && (defined(__x86_64__) || defined(_M_X64)))
     AutoFile(std::FILE* file, const Obfuscation& obfuscation, int64_t position)
         : m_file{file}, m_obfuscation{obfuscation}, m_position{position}
     {
